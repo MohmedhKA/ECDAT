@@ -1,0 +1,28 @@
+Unable to find image 'sagemath/sagemath:latest' locally
+latest: Pulling from sagemath/sagemath
+Digest: sha256:e068670ae5863b54b2550e72437ec637b0283acb0dc712c8584c124dbf44e667
+Status: Downloaded newer image for sagemath/sagemath:latest
+Lattice-Estimator Grid for Prime q = 137438953447 (2^37 - 25), sigma = 3.2
+
+
+=======================================================
+Running Cell: q37_n1024 (n=1024, q=137438953447, sigma=3.2)
+=======================================================
+bkw                  :: rop: ≈2^278.4, m: ≈2^263.8, mem: ≈2^264.8, b: 7, t1: 1, t2: 55, ℓ: 6, #cod: 969, #top: 0, #test: 50, tag: coded-bkw
+usvp                 :: rop: ≈2^98.1, red: ≈2^98.1, δ: 1.005678, β: 235, d: 2096, tag: usvp
+bdd                  :: rop: ≈2^96.9, red: ≈2^96.7, svp: ≈2^94.1, β: 230, η: 259, d: 2105, tag: bdd
+dual                 :: rop: ≈2^100.1, mem: ≈2^61.5, m: 1139, β: 238, d: 2163, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^99.9, red: ≈2^99.9, guess: ≈2^66.5, β: 238, p: 3, ζ: 0, t: 0, β': 257, N: ≈2^52.8, m: 1024
+{'arora-gb': rop: ≈2^inf, 'bkw': rop: ≈2^278.4, m: ≈2^263.8, mem: ≈2^264.8, b: 7, t1: 1, t2: 55, ℓ: 6, #cod: 969, #top: 0, #test: 50, tag: coded-bkw, 'usvp': rop: ≈2^98.1, red: ≈2^98.1, δ: 1.005678, β: 235, d: 2096, tag: usvp, 'bdd': rop: ≈2^96.9, red: ≈2^96.7, svp: ≈2^94.1, β: 230, η: 259, d: 2105, tag: bdd, 'bdd_hybrid': rop: ≈2^96.9, red: ≈2^96.7, svp: ≈2^94.1, β: 230, η: 259, ζ: 0, |S|: 1, d: 2140, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^164.7, red: ≈2^164.7, svp: ≈2^88.8, β: 235, η: 2, ζ: 0, |S|: 1, d: 2154, prob: ≈2^-64.4, ↻: ≈2^66.6, tag: hybrid, 'dual': rop: ≈2^100.1, mem: ≈2^61.5, m: 1139, β: 238, d: 2163, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^99.9, red: ≈2^99.9, guess: ≈2^66.5, β: 238, p: 3, ζ: 0, t: 0, β': 257, N: ≈2^52.8, m: 1024}
+
+=======================================================
+Running Cell: q37_n2048 (n=2048, q=137438953447, sigma=3.2)
+=======================================================
+bkw                  :: rop: ≈2^538.9, m: ≈2^523.1, mem: ≈2^524.1, b: 14, t1: 10, t2: 58, ℓ: 13, #cod: 1821, #top: 1, #test: 86, tag: coded-bkw
+usvp                 :: rop: ≈2^203.7, red: ≈2^203.7, δ: 1.002943, β: 612, d: 4084, tag: usvp
+bdd                  :: rop: ≈2^201.9, red: ≈2^201.8, svp: ≈2^198.9, β: 605, η: 636, d: 4177, tag: bdd
+dual                 :: rop: ≈2^207.6, mem: ≈2^138.1, m: ≈2^11.1, β: 622, d: 4253, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^206.0, red: ≈2^206.0, guess: ≈2^180.9, β: 617, p: 3, ζ: 10, t: 0, β': 615, N: ≈2^127.2, m: ≈2^11.0
+{'arora-gb': rop: ≈2^inf, 'bkw': rop: ≈2^538.9, m: ≈2^523.1, mem: ≈2^524.1, b: 14, t1: 10, t2: 58, ℓ: 13, #cod: 1821, #top: 1, #test: 86, tag: coded-bkw, 'usvp': rop: ≈2^203.7, red: ≈2^203.7, δ: 1.002943, β: 612, d: 4084, tag: usvp, 'bdd': rop: ≈2^201.9, red: ≈2^201.8, svp: ≈2^198.9, β: 605, η: 636, d: 4177, tag: bdd, 'bdd_hybrid': rop: ≈2^202.0, red: ≈2^201.8, svp: ≈2^198.9, β: 605, η: 636, ζ: 0, |S|: 1, d: 4210, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^448.6, red: ≈2^448.6, svp: ≈2^268.7, β: 613, η: 2, ζ: 0, |S|: 1, d: 4231, prob: ≈2^-242.4, ↻: ≈2^244.6, tag: hybrid, 'dual': rop: ≈2^207.6, mem: ≈2^138.1, m: ≈2^11.1, β: 622, d: 4253, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^206.0, red: ≈2^206.0, guess: ≈2^180.9, β: 617, p: 3, ζ: 10, t: 0, β': 615, N: ≈2^127.2, m: ≈2^11.0}
+
+--- ALL Q37 CELLS COMPLETE ---

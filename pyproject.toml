@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecdat"
+version = "0.1.0"
+description = "Enterprise Cryptographic Discovery and Analysis Tool"
+readme = "README.md"
+authors = [{ name = "Team SIH26164" }]
+requires-python = ">=3.11"
+dependencies = [
+    "cyclonedx-bom>=4.0.0",
+    "cryptography>=42.0.0",
+    "networkx>=3.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ecdat*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

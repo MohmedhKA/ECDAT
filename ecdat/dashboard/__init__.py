@@ -1,0 +1,3 @@
+from ecdat.dashboard.generator import generate_html_dashboard
+
+__all__ = ["generate_html_dashboard"]

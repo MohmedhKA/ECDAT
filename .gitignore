@@ -1,0 +1,116 @@
+# ==============================================================================
+# ECDAT (Enterprise Cryptographic Discovery, Attestation & Transition)
+# Git Ignore Configuration
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Python & Bytecode
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ------------------------------------------------------------------------------
+# Virtual Environments
+# ------------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# ------------------------------------------------------------------------------
+# Testing & Coverage
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+htmlcov/
+
+# ------------------------------------------------------------------------------
+# Node / JavaScript (e.g. Research/ presentation deck tooling)
+# ------------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# Runtime Scans & Generated Evaluation Outputs
+# ------------------------------------------------------------------------------
+# Generated scan outputs from pipeline runs (keep repos clean of scan artifacts)
+scans/
+**/ecdat_output/
+*.hex
+proofs/
+test_probe.txt
+
+# ------------------------------------------------------------------------------
+# Binaries & Compiled Executables
+# ------------------------------------------------------------------------------
+# Note: cbomkit-theia is ~40MB. If you prefer to distribute it via GitHub Releases
+# or download script instead of bloating Git history, keep this uncommented:
+bin/cbomkit-theia
+*.exe
+*.dll
+*.dylib
+
+# ------------------------------------------------------------------------------
+# IDE, Editor & OS Artifacts
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+.lo_profile/
+
+# ------------------------------------------------------------------------------
+# Environment Variables & Secrets
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+# Keep sample testbed certs tracked for automated tests:
+!testbeds/**/certs/*
