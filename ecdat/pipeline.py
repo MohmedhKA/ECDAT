@@ -8,10 +8,21 @@ import os
 import sys
 import json
 import argparse
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Tuple, Any, Optional
 
-from ecdat.models import CryptoAsset, MoscaScore, PrimitiveType, XTier
+from ecdat.models import (
+    CryptoAsset,
+    MoscaScore,
+    PrimitiveType,
+    XTier,
+    UnknownEntry,
+    IntentClass,
+    EvidenceLevel,
+    ExposureProfile,
+    AgilityLevel,
+)
 from ecdat.constants import CURRENT_YEAR
 from ecdat.x_inference.ast_tracer import analyze_python_file, XInferenceResult
 from ecdat.agility.buffer_audit import audit_python_buffer_file, BufferHazard
@@ -25,6 +36,8 @@ from ecdat.scanners.theia_bridge import run_theia_scan
 from ecdat.scanners.manifest_scanner import discover_manifest_crypto_dependencies
 from ecdat.scanners.source_scanner import discover_polyglot_crypto_assets
 from ecdat.scanners.filters import should_scan_file
+from ecdat.schema_extractor import extract_schemas_lifespan
+from ecdat.exposure_scanner import scan_deployment_exposure
 
 def _infer_primitive_and_alg(var_name: str, sink_call: Optional[str]) -> Tuple[PrimitiveType, str, int]:
     """Infers appropriate algorithm and primitive type from variable/call semantics."""
@@ -41,6 +54,38 @@ def _infer_primitive_and_alg(var_name: str, sink_call: Optional[str]) -> Tuple[P
         return PrimitiveType.ENCRYPTION, "AES-128-CBC", 128
     else:
         return PrimitiveType.ENCRYPTION, "AES-256-GCM", 256
+
+def _apply_schema_lifespan(asset: CryptoAsset, schema_lifespans: Dict[str, Tuple[XTier, float, str]]) -> None:
+    """Correlates asset with autonomous SQL/ORM schema retention inferences."""
+    if not schema_lifespans:
+        return
+    c_lower = asset.component_name.lower()
+    f_lower = asset.file_path.lower()
+    for entity, (tier, years, prov) in schema_lifespans.items():
+        e_lower = entity.lower()
+        if e_lower in c_lower or e_lower in f_lower:
+            asset.x_tier = tier
+            asset.x_auto_source = prov
+            break
+
+def _apply_deployment_exposure(asset: CryptoAsset, deployment_exposures: Dict[str, Tuple[ExposureProfile, float, str]]) -> None:
+    """Correlates asset with Kubernetes / Docker Compose deployment exposure profiles."""
+    if not deployment_exposures:
+        return
+    c_lower = asset.component_name.lower()
+    f_lower = asset.file_path.lower()
+    for svc, (prof, p_hndl, desc) in deployment_exposures.items():
+        s_lower = svc.lower()
+        if s_lower in c_lower or s_lower in f_lower or s_lower.replace("-", "") in c_lower.replace("-", ""):
+            asset.exposure_profile = prof
+            asset.p_hndl = p_hndl
+            return
+    # If all declared deployment services share a uniform profile, propagate to whole estate
+    profiles = {p for p, _, _ in deployment_exposures.values()}
+    if len(profiles) == 1:
+        prof = list(profiles)[0]
+        asset.exposure_profile = prof
+        asset.p_hndl = list(deployment_exposures.values())[0][1]
 
 def run_ecdat_scan(
     target_dir: str,
@@ -70,12 +115,66 @@ def run_ecdat_scan(
         except OSError:
             pass
 
-    # 1. Discover all first-party source files (Python, JS/TS, Go, Rust)
+    # 1. Discover all first-party source files (Python, JS/TS, Go, Rust, Java)
     EXCLUDED_DIRS = {
         "venv", ".venv", "env", "node_modules", "site-packages",
         "__pycache__", ".git", "dist", "build", "target", ".cache"
     }
-    SOURCE_EXTENSIONS = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs"}
+    SOURCE_EXTENSIONS = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs", ".java"}
+    UNINSPECTED_EXTENSIONS = {".so", ".dll", ".exe", ".bin", ".dylib", ".dat", ".class", ".o", ".a"}
+    KEYSTORE_EXTENSIONS = {".p12", ".pfx", ".jks", ".keystore"}
+
+    # 1a. Auditable Unknowns Ledger for boundary honesty
+    unknowns_ledger: List[UnknownEntry] = []
+    recorded_unknowns = set()
+
+    for item in target_path.iterdir():
+        if item.is_dir() and item.name in EXCLUDED_DIRS:
+            rel = os.path.relpath(str(item), str(target_path))
+            if rel not in recorded_unknowns:
+                recorded_unknowns.add(rel)
+                unknowns_ledger.append(UnknownEntry(
+                    item_path=rel,
+                    category="EXCLUDED_DIR",
+                    reason=f"Standard dependency / build artifact directory '{item.name}' excluded by scanning policy",
+                    recommended_action="Execute dedicated supply-chain audit on lockfiles if unmanaged vendor packages exist."
+                ))
+
+    for f in target_path.glob("**/*"):
+        if f.is_dir():
+            if f.name in EXCLUDED_DIRS and len(unknowns_ledger) < 100:
+                rel = os.path.relpath(str(f), str(target_path))
+                if rel not in recorded_unknowns:
+                    recorded_unknowns.add(rel)
+                    unknowns_ledger.append(UnknownEntry(
+                        item_path=rel,
+                        category="EXCLUDED_DIR",
+                        reason=f"Subdirectory '{f.name}' excluded by scanning policy",
+                        recommended_action="Review vendor dependency isolation."
+                    ))
+        elif f.is_file():
+            sfx = f.suffix.lower()
+            if sfx in UNINSPECTED_EXTENSIONS and not any(part in EXCLUDED_DIRS for part in f.parts) and len(unknowns_ledger) < 100:
+                rel = os.path.relpath(str(f), str(target_path))
+                if rel not in recorded_unknowns:
+                    recorded_unknowns.add(rel)
+                    unknowns_ledger.append(UnknownEntry(
+                        item_path=rel,
+                        category="UNINSPECTED_BINARY",
+                        reason=f"Compiled binary format '{sfx}' cannot be analyzed via static source AST",
+                        recommended_action="Perform binary symbol extraction or dynamic eBPF runtime audit."
+                    ))
+            elif sfx in KEYSTORE_EXTENSIONS and not any(part in EXCLUDED_DIRS for part in f.parts) and len(unknowns_ledger) < 100:
+                rel = os.path.relpath(str(f), str(target_path))
+                if rel not in recorded_unknowns:
+                    recorded_unknowns.add(rel)
+                    unknowns_ledger.append(UnknownEntry(
+                        item_path=rel,
+                        category="ENCRYPTED_KEYSTORE",
+                        reason="Encrypted keystore container requires credential decryption to audit constituent keys",
+                        recommended_action="Provide keystore password or credentials to unwrap and attest internal key material."
+                    ))
+
     all_source_files = [
         f for f in target_path.glob("**/*")
         if f.is_file() and f.suffix.lower() in SOURCE_EXTENSIONS and not any(part in EXCLUDED_DIRS for part in f.parts) and should_scan_file(str(f))
@@ -95,6 +194,10 @@ def run_ecdat_scan(
 
     # 1b. Audit Polyglot Package Manifests (package.json, go.mod, Cargo.toml, requirements.txt)
     manifest_deps = discover_manifest_crypto_dependencies(str(target_path))
+
+    # 1c. Autonomous Schema Lifespans & Deployment Exposure Scans
+    schema_lifespans = extract_schemas_lifespan(str(target_path))
+    deployment_exposures = scan_deployment_exposure(str(target_path))
 
     # 2. Build CryptoAsset records & compute Mosca scores + PQC recommendations
     assessments: List[Tuple[CryptoAsset, MoscaScore, MigrationRecommendation]] = []
@@ -116,8 +219,12 @@ def run_ecdat_scan(
             x_tier=inf.tier,
             x_confidence=inf.confidence,
             has_crypto_shredding=False,
+            intent_class=getattr(inf, "intent_class", IntentClass.CONFIDENTIALITY_ENVELOPE),
+            evidence_level=getattr(inf, "evidence_level", EvidenceLevel.E1_STATIC_ARTIFACT),
             raw_properties={"evidence": inf.evidence, "sink": inf.sink_call},
         )
+        _apply_schema_lifespan(asset, schema_lifespans)
+        _apply_deployment_exposure(asset, deployment_exposures)
 
         score = compute_mosca_score(asset, current_year=CURRENT_YEAR)
         rec = recommend_pqc_migration(asset)
@@ -125,10 +232,12 @@ def run_ecdat_scan(
         assessments.append((asset, score, rec))
         assets_for_merkle.append((asset, score))
 
-    # 2b. Polyglot In-Code Source Cryptographic Assets (JS/TS, Go, Rust)
+    # 2b. Polyglot In-Code Source Cryptographic Assets (JS/TS, Go, Rust, Java)
     polyglot_assets = discover_polyglot_crypto_assets(str(target_path))
     for p_asset in polyglot_assets:
         p_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+        _apply_schema_lifespan(p_asset, schema_lifespans)
+        _apply_deployment_exposure(p_asset, deployment_exposures)
         score = compute_mosca_score(p_asset, current_year=CURRENT_YEAR)
         rec = recommend_pqc_migration(p_asset)
         assessments.append((p_asset, score, rec))
@@ -140,6 +249,8 @@ def run_ecdat_scan(
         theia_assets = run_theia_scan(str(target_path))
         for fs_asset in theia_assets:
             fs_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+            _apply_schema_lifespan(fs_asset, schema_lifespans)
+            _apply_deployment_exposure(fs_asset, deployment_exposures)
             score = compute_mosca_score(fs_asset, current_year=CURRENT_YEAR)
             rec = recommend_pqc_migration(fs_asset)
             assessments.append((fs_asset, score, rec))
@@ -183,6 +294,7 @@ def run_ecdat_scan(
         all_buffer_hazards,
         merkle_root_hex,
         contagion_result=contagion_result,
+        unknowns_ledger=unknowns_ledger,
     )
     report_file = out_path / "ciso_migration_report.md"
     with open(report_file, "w", encoding="utf-8") as f:
@@ -195,12 +307,13 @@ def run_ecdat_scan(
         "serialNumber": f"urn:uuid:ecdat-{merkle_root_hex[:16]}",
         "version": 1,
         "metadata": {
-            "timestamp": "2026-09-04T15:00:00Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "tools": [{"name": "ECDAT", "version": "0.1.0", "vendor": "SIH26164"}],
             "properties": [
                 {"name": "ecdat:merkleRoot", "value": merkle_root_hex},
                 {"name": "ecdat:totalAssets", "value": str(len(assessments))},
                 {"name": "ecdat:manifestDependencies", "value": str(len(manifest_deps))},
+                {"name": "ecdat:unknownsLogged", "value": str(len(unknowns_ledger))},
             ],
         },
         "components": [
@@ -221,6 +334,11 @@ def run_ecdat_scan(
                     {"name": "ecdat:x_years_effective", "value": str(score.x_years_effective)},
                     {"name": "ecdat:y_max_years", "value": str(score.y_max_years)},
                     {"name": "ecdat:risk_level", "value": score.risk_level},
+                    {"name": "ecdat:intent_class", "value": asset.intent_class.value if hasattr(asset.intent_class, "value") else str(asset.intent_class)},
+                    {"name": "ecdat:evidence_level", "value": asset.evidence_level.value if hasattr(asset.evidence_level, "value") else str(asset.evidence_level)},
+                    {"name": "ecdat:exposure_profile", "value": asset.exposure_profile.value if hasattr(asset.exposure_profile, "value") else str(asset.exposure_profile)},
+                    {"name": "ecdat:p_hndl", "value": str(score.p_hndl)},
+                    {"name": "ecdat:r_q_score", "value": str(score.r_q_score)},
                     {"name": "ecdat:recommended_hybrid", "value": rec.recommended_hybrid},
                     {"name": "ecdat:recommended_pqc", "value": rec.recommended_pqc_standalone},
                 ],
@@ -244,6 +362,7 @@ def run_ecdat_scan(
         project_name=target_path.name,
         ciso_report_md=ciso_report_md,
         manifest_dependencies=manifest_deps,
+        unknowns_ledger=unknowns_ledger,
     )
     report_file_html = out_path / "report.html"
     with open(report_file_html, "w", encoding="utf-8") as f:
@@ -268,6 +387,8 @@ def run_ecdat_scan(
         "report_file": str(report_file),
         "root_file": str(root_file),
         "proofs_count": len(proof_packages),
+        "unknowns_count": len(unknowns_ledger),
+        "unknowns_ledger": [u.model_dump() if hasattr(u, "model_dump") else u.dict() for u in unknowns_ledger],
     }
 
 def main() -> int:

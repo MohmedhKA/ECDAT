@@ -1,19 +1,23 @@
 """
 ECDAT AST Taint & Dataflow Persistence Tracer:
 Analyzes Python source code to track cryptographic variables from creation/encryption
-to terminal persistence sinks (DB, Disk, S3, Memory), inferring the 4-tier data lifespan X.
+to terminal persistence sinks (DB, Disk, S3, Memory), inferring the 4-tier data lifespan X
+and the DSIS 4-class functional security intent.
 """
 
 import ast
 import re
 from typing import List, Dict, Optional, Set
 from pydantic import BaseModel, Field
-from ecdat.models import XTier
+from ecdat.models import XTier, IntentClass, EvidenceLevel
 from ecdat.x_inference.sink_stubs import match_sink_pattern
+from ecdat.intent.classifier import classify_intent
 
 CRYPTO_GENERATION_KEYWORDS = {
     "encrypt", "cipher", "generate_private_key", "generate_key",
-    "sign", "digest", "hmac", "token", "seal", "derive", "key_exchange"
+    "sign", "digest", "hexdigest", "hmac", "token", "seal", "derive",
+    "key_exchange", "sha256", "sha384", "sha512", "sha1", "md5", "hashlib",
+    "new"
 }
 
 class XInferenceResult(BaseModel):
@@ -24,6 +28,11 @@ class XInferenceResult(BaseModel):
     review_required: bool = Field(False, description="Whether human audit review is recommended")
     sink_call: Optional[str] = Field(None, description="The matched persistence sink syntax")
     line_number: int = Field(0, description="Line number of the cryptographic invocation")
+
+    # Master Plan Phase 1 Extensions: Dual-Sink Semantic Intent & Evidence State
+    intent_class: IntentClass = Field(IntentClass.CONFIDENTIALITY_ENVELOPE, description="Functional security intent")
+    intent_evidence: str = Field("", description="Intent classification rationale")
+    evidence_level: EvidenceLevel = Field(EvidenceLevel.E1_STATIC_ARTIFACT, description="E0-E5 evidence state")
 
 class CryptoTaintVisitor(ast.NodeVisitor):
     def __init__(self, source_code: str):
@@ -41,6 +50,11 @@ class CryptoTaintVisitor(ast.NodeVisitor):
         elif isinstance(node, ast.Call):
             return self._get_call_name(node.func)
         return ""
+
+    def _get_context_lines(self, line_no: int, radius: int = 5) -> str:
+        start = max(0, line_no - radius - 1)
+        end = min(len(self.source_lines), line_no + radius)
+        return "\n".join(self.source_lines[start:end])
 
     def visit_Assign(self, node: ast.Assign):
         # Detect: var = crypto_function(...)
@@ -62,6 +76,8 @@ class CryptoTaintVisitor(ast.NodeVisitor):
             if isinstance(target, ast.Name) and target.id in self.crypto_vars:
                 var = target.id
                 if var not in self.analyzed_vars:
+                    context_str = self._get_context_lines(node.lineno)
+                    intent, intent_desc = classify_intent(var_name=var, sink_call=f"del {var}", context_lines=context_str)
                     self.results.append(XInferenceResult(
                         target_variable=var,
                         tier=XTier.EPHEMERAL,
@@ -70,6 +86,9 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                         review_required=False,
                         sink_call=f"del {var}",
                         line_number=self.crypto_vars[var],
+                        intent_class=intent,
+                        intent_evidence=intent_desc,
+                        evidence_level=EvidenceLevel.E2_REACHABLE_PATH,
                     ))
                     self.analyzed_vars.add(var)
         self.generic_visit(node)
@@ -90,6 +109,9 @@ class CryptoTaintVisitor(ast.NodeVisitor):
             if var in self.analyzed_vars:
                 continue
 
+            context_str = self._get_context_lines(node.lineno)
+            intent, intent_desc = classify_intent(var_name=var, sink_call=call_str, context_lines=context_str)
+
             # Check if this call matches our pre-annotated persistence sink database
             matched = match_sink_pattern(call_str)
             if matched:
@@ -102,6 +124,9 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                     review_required=False,
                     sink_call=call_str,
                     line_number=self.crypto_vars[var],
+                    intent_class=intent,
+                    intent_evidence=intent_desc,
+                    evidence_level=EvidenceLevel.E2_REACHABLE_PATH,
                 ))
                 self.analyzed_vars.add(var)
             else:
@@ -118,6 +143,9 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                     review_required=True,
                     sink_call=call_str,
                     line_number=self.crypto_vars[var],
+                    intent_class=intent,
+                    intent_evidence=intent_desc,
+                    evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
                 ))
                 self.analyzed_vars.add(var)
 
@@ -126,7 +154,7 @@ class CryptoTaintVisitor(ast.NodeVisitor):
 def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List[XInferenceResult]:
     """
     Parses Python source code, performs AST dataflow tracing, and classifies
-    all detected cryptographic variables into the 4 persistence tiers.
+    all detected cryptographic variables into the 4 persistence tiers and intent classes.
     """
     try:
         tree = ast.parse(source_code, filename=file_path)
@@ -139,6 +167,9 @@ def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List
                 evidence=f"SyntaxError parsing {file_path}: {e}",
                 review_required=True,
                 line_number=getattr(e, "lineno", 0),
+                intent_class=IntentClass.CONFIDENTIALITY_ENVELOPE,
+                intent_evidence="Syntax error prevented AST intent analysis.",
+                evidence_level=EvidenceLevel.E0_UNCONFIRMED,
             )
         ]
 
@@ -149,6 +180,8 @@ def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List
     # They remained exclusively in local volatile registers/memory
     for var, lineno in visitor.crypto_vars.items():
         if var not in visitor.analyzed_vars:
+            context_str = visitor._get_context_lines(lineno)
+            intent, intent_desc = classify_intent(var_name=var, sink_call=None, context_lines=context_str)
             visitor.results.append(XInferenceResult(
                 target_variable=var,
                 tier=XTier.EPHEMERAL,
@@ -160,13 +193,16 @@ def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List
                 review_required=False,
                 sink_call=None,
                 line_number=lineno,
+                intent_class=intent,
+                intent_evidence=intent_desc,
+                evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
             ))
             visitor.analyzed_vars.add(var)
 
     return visitor.results
 
 def analyze_python_file(file_path: str) -> List[XInferenceResult]:
-    """Reads a Python file from disk and performs AST taint persistence analysis."""
+    """Reads a Python file from disk and performs AST taint persistence and intent analysis."""
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
     return analyze_python_source(content, file_path=file_path)

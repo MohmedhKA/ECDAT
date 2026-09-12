@@ -7,7 +7,7 @@ environment sample templates, developer test fixtures, and build caches across a
 import os
 import re
 from pathlib import Path
-from typing import Set
+from typing import Set, Optional
 
 # Generalized directory names to always exclude from cryptographic asset discovery
 EXCLUDED_DIR_NAMES: Set[str] = {
@@ -36,19 +36,24 @@ EXCLUDED_PATH_PATTERNS = [
 
 COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in EXCLUDED_PATH_PATTERNS]
 
-def should_scan_file(file_path: str) -> bool:
+def should_scan_file(file_path: str, base_dir: Optional[str] = None) -> bool:
     """
     Determines if a file should be included in cryptographic scanning.
     Returns False for documentation, build caches, test mocks, and environment templates.
     """
     p = Path(file_path)
+    if base_dir:
+        try:
+            p = p.resolve().relative_to(Path(base_dir).resolve())
+        except ValueError:
+            pass
 
-    # 1. Check directory components
-    parts = set(p.parts)
-    if parts.intersection(EXCLUDED_DIR_NAMES):
+    # 1. Check directory components (excluding filename)
+    dir_parts = set(p.parts[:-1]) if len(p.parts) > 1 else set()
+    if dir_parts.intersection(EXCLUDED_DIR_NAMES):
         return False
 
-    for part in p.parts:
+    for part in dir_parts:
         if part.lower() in EXCLUDED_DIR_NAMES:
             return False
 

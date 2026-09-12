@@ -11,10 +11,10 @@ from ecdat.models import XTier
 KNOWN_SINK_SIGNATURES: List[Dict[str, Any]] = [
     # ── 1. EPHEMERAL Sinks (~0 years) ──
     {
-        "patterns": [".sendall", ".send", "socket", "SSLSocket", "stream.write", "transport.write", "channel.write"],
+        "patterns": [".sendall", ".send", "socket", "SSLSocket", "stream.write", "transport.write", "channel.write", "setheader", "set_header", "response.write", "res.write"],
         "tier": XTier.EPHEMERAL,
         "confidence": "HIGH",
-        "description": "Network socket transmission; transient volatile buffer zeroed on session close.",
+        "description": "Network socket or HTTP transmission; transient volatile buffer zeroed on session close.",
     },
     {
         "patterns": ["sodium_memzero", "explicit_bzero", "Arrays.fill", "memset", "del "],

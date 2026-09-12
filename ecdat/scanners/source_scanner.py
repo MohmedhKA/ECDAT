@@ -11,7 +11,8 @@ import os
 import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
-from ecdat.models import CryptoAsset, PrimitiveType, XTier
+from ecdat.models import CryptoAsset, PrimitiveType, XTier, EvidenceLevel, IntentClass
+from ecdat.intent.classifier import classify_intent
 from ecdat.scanners.filters import should_scan_file
 
 EXCLUDED_DIRS = {
@@ -204,6 +205,118 @@ RUST_PATTERNS = [
     },
 ]
 
+# Regex patterns for Java Cryptography Architecture (JCA / JCE) operations
+JAVA_PATTERNS = [
+    {
+        "pattern": re.compile(r"Cipher\.getInstance\s*\(\s*[\"']([^\"']+)[\"']", re.MULTILINE),
+        "handler": "_handle_java_cipher"
+    },
+    {
+        "pattern": re.compile(r"KeyGenerator\.getInstance\s*\(\s*[\"']([^\"']+)[\"']", re.MULTILINE),
+        "handler": "_handle_java_key_generator"
+    },
+    {
+        "pattern": re.compile(r"KeyPairGenerator\.getInstance\s*\(\s*[\"']([^\"']+)[\"']", re.MULTILINE),
+        "handler": "_handle_java_keypair_generator"
+    },
+    {
+        "pattern": re.compile(r"MessageDigest\.getInstance\s*\(\s*[\"']([^\"']+)[\"']", re.MULTILINE),
+        "handler": "_handle_java_message_digest"
+    },
+    {
+        "pattern": re.compile(r"Signature\.getInstance\s*\(\s*[\"']([^\"']+)[\"']", re.MULTILINE),
+        "handler": "_handle_java_signature"
+    },
+    {
+        "pattern": re.compile(r"new\s+SecretKeySpec\s*\([^,]+,\s*[\"']([^\"']+)[\"']\)", re.MULTILINE),
+        "handler": "_handle_java_secret_key_spec"
+    },
+]
+
+def _handle_java_cipher(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    transform = match_str.strip().upper()
+    algo = transform.split("/")[0]
+    is_ecb = "ECB" in transform
+    if "DESEDE" in algo or "3DES" in algo:
+        return "3DES-168", 168, PrimitiveType.ENCRYPTION
+    elif "DES" in algo:
+        return "DES-56", 56, PrimitiveType.ENCRYPTION
+    elif "BLOWFISH" in algo:
+        return "Blowfish-128", 128, PrimitiveType.ENCRYPTION
+    elif "AES" in algo:
+        if is_ecb:
+            return "AES-ECB", 128, PrimitiveType.ENCRYPTION
+        return "AES-256", 256, PrimitiveType.ENCRYPTION
+    elif "RSA" in algo:
+        return "RSA-2048", 2048, PrimitiveType.KEY_EXCHANGE
+    elif "RC4" in algo or "ARCFOUR" in algo:
+        return "RC4-128", 128, PrimitiveType.ENCRYPTION
+    return algo, 128, PrimitiveType.ENCRYPTION
+
+def _handle_java_key_generator(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    algo = match_str.strip().upper()
+    if "AES" in algo:
+        return "AES-256", 256, PrimitiveType.ENCRYPTION
+    elif "DESEDE" in algo or "3DES" in algo:
+        return "3DES-168", 168, PrimitiveType.ENCRYPTION
+    elif "DES" in algo:
+        return "DES-56", 56, PrimitiveType.ENCRYPTION
+    elif "BLOWFISH" in algo:
+        return "Blowfish-128", 128, PrimitiveType.ENCRYPTION
+    elif "HMAC" in algo:
+        return algo, 256, PrimitiveType.HASH
+    return algo, 128, PrimitiveType.ENCRYPTION
+
+def _handle_java_keypair_generator(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    algo = match_str.strip().upper()
+    if "RSA" in algo:
+        return "RSA-2048", 2048, PrimitiveType.SIGNATURE
+    elif "EC" in algo or "ECDSA" in algo:
+        return "ECDSA-P256", 256, PrimitiveType.SIGNATURE
+    elif "DSA" in algo:
+        return "DSA-1024", 1024, PrimitiveType.SIGNATURE
+    elif "DIFFIEHELLMAN" in algo or "DH" in algo:
+        return "DH-2048", 2048, PrimitiveType.KEY_EXCHANGE
+    return algo, 2048, PrimitiveType.KEY_EXCHANGE
+
+def _handle_java_message_digest(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    algo = match_str.strip().upper()
+    if "MD5" in algo:
+        return "MD5", 128, PrimitiveType.HASH
+    elif "MD2" in algo:
+        return "MD2", 128, PrimitiveType.HASH
+    elif "MD4" in algo:
+        return "MD4", 128, PrimitiveType.HASH
+    elif "SHA-1" in algo or "SHA1" in algo:
+        return "SHA-1", 160, PrimitiveType.HASH
+    elif "SHA-256" in algo or "SHA256" in algo:
+        return "SHA-256", 256, PrimitiveType.HASH
+    elif "SHA-512" in algo:
+        return "SHA-512", 512, PrimitiveType.HASH
+    elif "SHA-384" in algo:
+        return "SHA-384", 384, PrimitiveType.HASH
+    return algo, 256, PrimitiveType.HASH
+
+def _handle_java_signature(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    algo = match_str.strip().upper()
+    if "RSA" in algo:
+        return f"RSA-{algo}", 2048, PrimitiveType.SIGNATURE
+    elif "ECDSA" in algo:
+        return f"ECDSA-{algo}", 256, PrimitiveType.SIGNATURE
+    elif "DSA" in algo:
+        return f"DSA-{algo}", 1024, PrimitiveType.SIGNATURE
+    return algo, 256, PrimitiveType.SIGNATURE
+
+def _handle_java_secret_key_spec(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
+    algo = match_str.strip().upper()
+    if "AES" in algo:
+        return "AES-256", 256, PrimitiveType.ENCRYPTION
+    elif "DES" in algo:
+        return "DES-56", 56, PrimitiveType.ENCRYPTION
+    elif "BLOWFISH" in algo:
+        return "Blowfish-128", 128, PrimitiveType.ENCRYPTION
+    return algo, 128, PrimitiveType.ENCRYPTION
+
 def _extract_line_number(source: str, match_start: int) -> int:
     """Computes 1-indexed line number from character offset."""
     return source[:match_start].count("\n") + 1
@@ -394,10 +507,66 @@ def scan_rust_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
 
     return assets
 
+def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
+    """Scans a Java source file for JCA/JCE in-code crypto operations."""
+    try:
+        content = file_path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return []
+
+    assets: List[CryptoAsset] = []
+    rel_path = str(file_path.relative_to(base_dir) if file_path.is_relative_to(base_dir) else file_path)
+    stem = file_path.stem
+
+    handler_map = {
+        "_handle_java_cipher": _handle_java_cipher,
+        "_handle_java_key_generator": _handle_java_key_generator,
+        "_handle_java_keypair_generator": _handle_java_keypair_generator,
+        "_handle_java_message_digest": _handle_java_message_digest,
+        "_handle_java_signature": _handle_java_signature,
+        "_handle_java_secret_key_spec": _handle_java_secret_key_spec,
+    }
+
+    for rule in JAVA_PATTERNS:
+        handler = handler_map.get(rule.get("handler", ""))
+        if not handler:
+            continue
+        for match in rule["pattern"].finditer(content):
+            line_no = _extract_line_number(content, match.start())
+            matched_arg = match.group(1)
+            alg, key_size, prim = handler(matched_arg)
+            is_shred, tier = _check_crypto_shredding_context(content, line_no)
+
+            intent, _ = classify_intent(var_name=stem, context_lines=match.group(0), primitive_type=prim)
+
+            assets.append(CryptoAsset(
+                asset_id=f"SRC-JAVA-{len(assets) + 1:03d}",
+                component_name=f"{stem}:{alg.lower().replace(' ', '_')}",
+                algorithm=alg,
+                key_size=key_size,
+                primitive_type=prim,
+                file_path=rel_path,
+                line_number=line_no,
+                x_tier=tier,
+                x_confidence="HIGH",
+                has_crypto_shredding=is_shred,
+                intent_class=intent,
+                evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
+                evidence_sources=["source_scanner:jca_ast_regex"],
+                raw_properties={
+                    "source": "source_scanner",
+                    "language": "java",
+                    "jca_api": rule.get("handler", ""),
+                    "matched_code": match.group(0)[:80],
+                }
+            ))
+
+    return assets
+
 def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
     """
     Recursively scans target_dir for in-code cryptographic operations across
-    JavaScript (.js, .mjs, .cjs, .ts), Go (.go), and Rust (.rs).
+    JavaScript (.js, .mjs, .cjs, .ts), Go (.go), Rust (.rs), and Java (.java).
     """
     target_path = Path(target_dir).resolve()
     if not target_path.exists():
@@ -409,9 +578,10 @@ def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
     for p in sorted(target_path.glob("**/*")):
         if not p.is_file():
             continue
-        if any(part in EXCLUDED_DIRS for part in p.parts):
+        rel = p.relative_to(target_path) if p.is_relative_to(target_path) else p
+        if any(part in EXCLUDED_DIRS for part in rel.parts[:-1]):
             continue
-        if not should_scan_file(str(p)):
+        if not should_scan_file(str(p), base_dir=str(target_path)):
             continue
 
         file_assets: List[CryptoAsset] = []
@@ -423,6 +593,8 @@ def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
             file_assets = scan_go_file(p, target_path)
         elif suffix == ".rs":
             file_assets = scan_rust_file(p, target_path)
+        elif suffix == ".java":
+            file_assets = scan_java_file(p, target_path)
 
         for a in file_assets:
             # Deduplicate per file and algorithm to maintain clean, high-signal CBOM

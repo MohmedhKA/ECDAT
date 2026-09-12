@@ -3,14 +3,16 @@ ECDAT Mosca Temporal Risk Engine: Implements Y_max = Z - X engineering budget
 with dual-Z regulatory and physical quantum arrival groundings.
 """
 
-from typing import Optional
+from typing import Optional, Tuple
 from ecdat.constants import (
     CURRENT_YEAR,
     OMB_M2615_SCHEDULE,
     GRI_2025_DISTRIBUTION,
     X_TIER_DEFAULT_YEARS,
+    CAMS_AGILITY_DISCOUNTS,
+    INTENT_CLASS_WEIGHTS,
 )
-from ecdat.models import CryptoAsset, MoscaScore, PrimitiveType, XTier
+from ecdat.models import CryptoAsset, MoscaScore, PrimitiveType, XTier, IntentClass
 
 def is_post_quantum(alg: str) -> bool:
     alg_upper = alg.upper()
@@ -79,8 +81,21 @@ def compute_mosca_score(
 
     alg_upper = asset.algorithm.upper()
 
+    # Enriched Quantum Risk Score R_Q
+    y_code_baseline = 2.0 if asset.primitive_type in (PrimitiveType.KEY_EXCHANGE, PrimitiveType.SIGNATURE) else 1.0
+    overdue_years = max(0.0, (effective_x + y_code_baseline) - years_to_mandate)
+
+    p_hndl = getattr(asset, "p_hndl", 1.0)
+    agility_level_val = asset.agility_level.value if hasattr(asset.agility_level, "value") else int(asset.agility_level)
+    agility_discount = CAMS_AGILITY_DISCOUNTS.get(agility_level_val, 0.0)
+
+    intent_val = asset.intent_class.value if hasattr(asset.intent_class, "value") else str(asset.intent_class)
+    intent_weight = INTENT_CLASS_WEIGHTS.get(intent_val, 1.0)
+
+    r_q = overdue_years * p_hndl * (1.0 - agility_discount) * intent_weight
+
     # Risk level categorization
-    if is_safe_quantum_or_symmetric(asset.algorithm):
+    if is_safe_quantum_or_symmetric(asset.algorithm) or intent_weight == 0.0 or p_hndl == 0.0:
         risk_level = "LOW"
     elif y_max <= 1.0:
         risk_level = "CRITICAL"
@@ -92,7 +107,17 @@ def compute_mosca_score(
         risk_level = "LOW"
 
     # Actionable planning notes for CISO
-    if "RISTRETTO" in alg_upper or "PEDERSEN" in alg_upper:
+    if intent_val == "OPERATIONAL_UTILITY":
+        planning_note = (
+            "OPERATIONAL UTILITY: Used for non-sensitive operational caching/deduplication (ETag/cache key). "
+            "Quantum exposure risk is 0.0; alert suppressed per DSIS policy."
+        )
+    elif p_hndl == 0.0:
+        planning_note = (
+            "AIRGAPPED DEPLOYMENT: No external network ingress/egress. "
+            "Harvest-Now-Decrypt-Later (HNDL) adversary capture probability is 0.0."
+        )
+    elif "RISTRETTO" in alg_upper or "PEDERSEN" in alg_upper:
         planning_note = (
             "PEDERSEN COMMITMENT: Information-theoretically hiding. "
             "Quantum adversaries running Shor's algorithm cannot invert commitments to recover secrets. "
@@ -142,4 +167,7 @@ def compute_mosca_score(
         risk_level=risk_level,
         crypto_shredding_viable=crypto_shredding_viable,
         planning_note=planning_note,
+        p_hndl=p_hndl,
+        agility_factor=agility_discount,
+        r_q_score=round(r_q, 2),
     )

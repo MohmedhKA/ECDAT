@@ -53,16 +53,43 @@ def verify_proof_package(proof_pkg: Dict[str, Any]) -> Tuple[bool, str]:
     sibling_path = proof_pkg["sibling_path"]
     expected_root = proof_pkg["expected_root"]
 
+    # Re-hash claimed metadata to verify internal claim integrity
+    asset_id = proof_pkg["asset_id"]
+    component = proof_pkg.get("component_name", "unknown")
+    path_hash = proof_pkg.get("path_hash")
+    alg = proof_pkg.get("algorithm", "unknown")
+    key_size = proof_pkg.get("key_size", 0)
+    primitive = proof_pkg.get("primitive_type", "")
+    x_tier = proof_pkg.get("x_tier", "")
+    risk = proof_pkg.get("risk_level", "unknown")
+    y_max = proof_pkg.get("y_max_years", 0.0)
+    salt = proof_pkg.get("salt", "ECDAT_SALT_2026")
+
+    if path_hash is not None:
+        canonical_representation = (
+            f"id:{asset_id}|"
+            f"comp:{component}|"
+            f"path_hash:{path_hash}|"
+            f"alg:{str(alg).upper()}|"
+            f"key_size:{key_size or 0}|"
+            f"primitive:{primitive}|"
+            f"x_tier:{x_tier}|"
+            f"risk:{risk}|"
+            f"y_max:{float(y_max):.2f}|"
+            f"salt:{salt}"
+        )
+        computed_leaf = hashlib.sha256(canonical_representation.encode("utf-8")).hexdigest()
+        if computed_leaf != leaf_hash:
+            return (
+                False,
+                f"METADATA TAMPER DETECTED: Claimed asset metadata does not hash to leaf commitment. "
+                f"Expected {leaf_hash}, computed {computed_leaf}."
+            )
+
     # Verify cryptographic path to root
     is_valid_path = verify_raw_merkle_path(leaf_hash, sibling_path, expected_root)
     if not is_valid_path:
         return False, "CRYPTOGRAPHIC MISMATCH: Sibling path does not compute to expected root. Proof is invalid or tampered."
-
-    asset_id = proof_pkg["asset_id"]
-    component = proof_pkg.get("component_name", "unknown")
-    alg = proof_pkg.get("algorithm", "unknown")
-    risk = proof_pkg.get("risk_level", "unknown")
-    y_max = proof_pkg.get("y_max_years", "unknown")
 
     return True, (
         f"VERIFIED: Asset '{asset_id}' ({component}, {alg}, Risk: {risk}, Y_max: {y_max}y) "

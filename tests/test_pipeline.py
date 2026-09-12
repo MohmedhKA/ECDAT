@@ -51,6 +51,9 @@ def test_end_to_end_pipeline_on_sample_app(tmp_path):
         report_content = f.read()
     assert "# ECDAT — Executive Cryptographic Risk & Migration Report" in report_content
     assert "4-Tier Data Lifespan ($X$) Distribution" in report_content
+    assert "Functional Security Intent (DSIS Lattice)" in report_content
+    assert "Deployment Exposure & Harvest Interception" in report_content
+    assert "Auditable Unknowns Ledger & Boundary Declarations" in report_content
     assert "FIXED BUFFER HAZARD" in report_content or "Buffer Overflow Hazards" in report_content
     assert "Privacy-Preserving Attestation" in report_content
 
@@ -60,11 +63,16 @@ def test_end_to_end_pipeline_on_sample_app(tmp_path):
     assert cbom_data["bomFormat"] == "CycloneDX"
     assert cbom_data["specVersion"] == "1.6"
     assert len(cbom_data["components"]) == result["total_assets"]
+    assert cbom_data["metadata"]["timestamp"] != "2026-09-04T15:00:00Z"  # Dynamic UTC timestamp
     for comp in cbom_data["components"]:
         prop_names = [p["name"] for p in comp["properties"]]
         assert "ecdat:x_tier" in prop_names
         assert "ecdat:y_max_years" in prop_names
         assert "ecdat:risk_level" in prop_names
+        assert "ecdat:intent_class" in prop_names
+        assert "ecdat:evidence_level" in prop_names
+        assert "ecdat:exposure_profile" in prop_names
+        assert "ecdat:r_q_score" in prop_names
         assert "ecdat:recommended_hybrid" in prop_names
 
     # 7. Verify Contagion Graph JSON export
@@ -93,6 +101,14 @@ def test_end_to_end_pipeline_on_sample_app(tmp_path):
     assert "crypto.subtle.digest" in html_data
     assert "asset-drawer" in html_data
     assert "cbom-search" in html_data
+    assert "tab-btn-unknowns" in html_data
+    assert "btn-suppress-op" in html_data
+    assert "tab-pane-unknowns" in html_data
     assert result["merkle_root"] in html_data
+
+    # 9. Verify Unknowns Ledger output
+    assert "unknowns_count" in result
+    assert "unknowns_ledger" in result
+    assert isinstance(result["unknowns_ledger"], list)
 
 

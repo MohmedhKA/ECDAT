@@ -94,3 +94,37 @@ X_TIER_DEFAULT_YEARS = {
     "ARCHIVAL": 10.0,
     "HUMAN_REVIEW": 5.0,  # Conservative default when ambiguous
 }
+
+# Deployment Exposure Interception Probabilities P_HNDL
+EXPOSURE_PROFILE_P_HNDL = {
+    "PUBLIC": 1.0,       # Ingress / LoadBalancer exposed to public Internet
+    "INTERNAL": 0.05,    # Private VPC / ClusterIP / internal service mesh
+    "AIRGAPPED": 0.0,    # Isolated environment without external network egress
+}
+
+# CAMS Agility Discounts (Reduction applied to migration urgency)
+CAMS_AGILITY_DISCOUNTS = {
+    0: 0.0,   # RIGID: Hardcoded algorithm literals (no discount)
+    1: 0.30,  # CONFIGURABLE: Config-driven parameters (30% discount)
+    2: 0.60,  # PROVIDER: Abstracted factory / provider architecture (60% discount)
+    3: 0.85,  # RUNTIME_AGILE: Dynamic crypto-agile facade with KMS (85% discount)
+}
+
+# Functional Security Intent Risk Multipliers (DSIS Lattice)
+INTENT_CLASS_WEIGHTS = {
+    "OPERATIONAL_UTILITY": 0.0,           # ETags, cache dedup, in-memory hashes (0% quantum exposure)
+    "INTEGRITY_CHECKSUM": 0.20,           # Short-lived builds, non-archival integrity checks
+    "AUTHENTICATION_SIGNATURE": 0.90,     # Session authentication, JWTs, mTLS
+    "CONFIDENTIALITY_ENVELOPE": 1.0,      # Data-at-rest & data-in-transit encryption
+}
+
+# Evidence State Descriptions
+EVIDENCE_LEVEL_DESCRIPTIONS = {
+    "E0_UNCONFIRMED": "Regex or keyword match without AST structure confirmation.",
+    "E1_STATIC_ARTIFACT": "AST-confirmed cryptographic API invocation in source code.",
+    "E2_REACHABLE_PATH": "Static data-flow trace confirms path from invocation to persistence sink.",
+    "E3_CONFIG_CONFIRMED": "Active deployment configuration or physical certificate file on disk.",
+    "E4_RUNTIME_OBSERVED": "Observed actively executing in live process memory/kernel.",
+    "E5_CORRELATED_SIGNED": "Multi-modal correlation confirmed and cryptographically signed.",
+    "DORMANT": "Static asset not observed executing during dynamic coverage window.",
+}

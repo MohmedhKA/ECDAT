@@ -119,12 +119,14 @@ def generate_asset_proof_package(
     Contains the asset's verified compliance claim, its leaf hash, sibling proof path,
     and expected Merkle root.
     """
+    path_hash = hashlib.sha256(asset.file_path.encode("utf-8")).hexdigest()[:16]
     leaf_hash = hash_asset_leaf(asset, score, salt=salt).hex()
     sibling_path = tree.get_proof(leaf_index)
 
     return {
         "asset_id": asset.asset_id,
         "component_name": asset.component_name,
+        "path_hash": path_hash,
         "algorithm": asset.algorithm,
         "key_size": asset.key_size,
         "primitive_type": asset.primitive_type.value,

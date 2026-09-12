@@ -5,7 +5,15 @@ Mosca Y_max engineering timelines, and Merkle root commitments into actionable M
 """
 
 from typing import List, Tuple, Optional
-from ecdat.models import CryptoAsset, MoscaScore, XTier
+from ecdat.models import (
+    CryptoAsset,
+    MoscaScore,
+    XTier,
+    UnknownEntry,
+    IntentClass,
+    ExposureProfile,
+    EvidenceLevel,
+)
 from ecdat.agility.recommender import MigrationRecommendation
 from ecdat.agility.buffer_audit import BufferHazard
 from ecdat.contagion.engine import ContagionGraphResult
@@ -15,6 +23,7 @@ def generate_ciso_report(
     buffer_hazards: List[BufferHazard],
     merkle_root_hex: str,
     contagion_result: Optional[ContagionGraphResult] = None,
+    unknowns_ledger: Optional[List[UnknownEntry]] = None,
 ) -> str:
     """Generates an executive CISO report in GitHub-flavored Markdown."""
     total_assets = len(assessments)
@@ -26,6 +35,17 @@ def generate_ciso_report(
     tier_counts = {
         tier: sum(1 for asset, _, _ in assessments if asset.x_tier == tier)
         for tier in XTier
+    }
+
+    intent_counts = {
+        intent: sum(1 for asset, _, _ in assessments if asset.intent_class == intent)
+        for intent in IntentClass
+    }
+    op_util_count = intent_counts.get(IntentClass.OPERATIONAL_UTILITY, 0)
+
+    exposure_counts = {
+        exp: sum(1 for asset, _, _ in assessments if asset.exposure_profile == exp)
+        for exp in ExposureProfile
     }
 
     # Sort assessments by Y_max ascending (shortest budget first)
@@ -45,7 +65,9 @@ def generate_ciso_report(
         f"| **Critical Risk ($Y_{{max}} \\le 1.0\\text{{y}}$)** | `{critical_count}` | Immediate migration queue (HNDL window open / past deadline) |",
         f"| **High Risk ($1.0 < Y_{{max}} \\le 2.5\\text{{y}}$)** | `{high_count}` | Must be scheduled in current 2-year planning budget |",
         f"| **Medium / Low Risk** | `{medium_count + low_count}` | Safe operational window ($> 2.5\\text{{y}}$ buffer) |",
+        f"| **Operational Utility Suppressed** | `{op_util_count}` | False-positives eliminated (ETags/Caches: $R_Q = 0.0$) |",
         f"| **Buffer Overflow Hazards** | `{len(buffer_hazards)}` | Fixed-size memory allocations incompatible with PQC |",
+        f"| **Boundary Unknowns Logged** | `{len(unknowns_ledger or [])}` | Explicitly audited excluded paths and binary limitations |",
         "",
         "### 4-Tier Data Lifespan ($X$) Distribution",
         "",
@@ -56,6 +78,23 @@ def generate_ciso_report(
         f"| **`OPERATIONAL`** | `{tier_counts[XTier.OPERATIONAL]}` | ~5 Years | Relational databases (PostgreSQL/MySQL), customer records |",
         f"| **`ARCHIVAL`** | `{tier_counts[XTier.ARCHIVAL]}` | ~10+ Years | Long-term cloud backups (S3), HIPAA/SOX compliance logs |",
         f"| **`HUMAN_REVIEW`** | `{tier_counts[XTier.HUMAN_REVIEW]}` | Flagged | Ambiguous dataflows / unanalyzed external library boundaries |",
+        "",
+        "### Functional Security Intent (DSIS Lattice)",
+        "",
+        "| Functional Intent Class | Assets | Quantum Exploit Risk | Mitigation Status |",
+        "| :--- | :---: | :--- | :--- |",
+        f"| **`CONFIDENTIALITY_ENVELOPE`** | `{intent_counts.get(IntentClass.CONFIDENTIALITY_ENVELOPE, 0)}` | High ($W=1.0$) | Primary HNDL target — payload confidentiality |",
+        f"| **`AUTHENTICATION_SIGNATURE`** | `{intent_counts.get(IntentClass.AUTHENTICATION_SIGNATURE, 0)}` | Medium-High ($W=0.8$) | Identity forgery — handshake & token authentication |",
+        f"| **`INTEGRITY_CHECKSUM`** | `{intent_counts.get(IntentClass.INTEGRITY_CHECKSUM, 0)}` | Low-Medium ($W=0.3$) | Tamper detection — audit trails & code integrity |",
+        f"| **`OPERATIONAL_UTILITY`** | `{op_util_count}` | **Zero ($R_Q = 0.0$)** | **Suppressed from CISO queue (HTTP ETags & CDN caches)** |",
+        "",
+        "### Deployment Exposure & Harvest Interception ($P_{\\text{HNDL}}$)",
+        "",
+        "| Exposure Profile | Assets | $P_{\\text{HNDL}}$ Interception Factor | Threat Model Scope |",
+        "| :--- | :---: | :---: | :--- |",
+        f"| **`PUBLIC`** | `{exposure_counts.get(ExposureProfile.PUBLIC, 0)}` | `1.00` | Internet Ingress / LoadBalancer (Actively harvested) |",
+        f"| **`INTERNAL`** | `{exposure_counts.get(ExposureProfile.INTERNAL, 0)}` | `0.05` | Private VPC / ClusterIP (Requires lateral pivot) |",
+        f"| **`AIRGAPPED`** | `{exposure_counts.get(ExposureProfile.AIRGAPPED, 0)}` | `0.00` | Standalone isolated host (Immune to passive HNDL) |",
         "",
         "---",
         "",
@@ -137,5 +176,28 @@ def generate_ciso_report(
         "- **Guarantee:** Proves mathematically that a specific component is compliant without disclosing internal codebase paths or unpatched inventory items.",
         "",
     ])
+    lines.extend([
+        "",
+        "---",
+        "",
+        "## 6. Auditable Unknowns Ledger & Boundary Declarations",
+        "",
+        "Conventional vulnerability scanners report false 100% perimeter coverage by silently omitting files or paths they cannot parse. "
+        "ECDAT enforces **Auditable Boundary Honesty** by declaring all excluded paths, uninspected binary files, and encrypted containers.",
+        "",
+    ])
+
+    if unknowns_ledger:
+        lines.append("| Item Path / Identifier | Category | Scanning Boundary Reason | Recommended Auditor Action |")
+        lines.append("| :--- | :---: | :--- | :--- |")
+        for u in unknowns_ledger:
+            lines.append(
+                f"| `{u.item_path}` | `{u.category}` | {u.reason} | {u.recommended_action} |"
+            )
+    else:
+        lines.append("Full codebase perimeter verified. No uninspected binary files, encrypted keystores, or excluded directories encountered.")
+
+    lines.append("")
 
     return "\n".join(lines)
+

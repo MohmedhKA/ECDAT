@@ -114,3 +114,5 @@ Thumbs.db
 *.pfx
 # Keep sample testbed certs tracked for automated tests:
 !testbeds/**/certs/*
+
+Research/

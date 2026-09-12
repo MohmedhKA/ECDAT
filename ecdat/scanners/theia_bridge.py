@@ -13,7 +13,7 @@ import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
-from ecdat.models import CryptoAsset, PrimitiveType, XTier
+from ecdat.models import CryptoAsset, PrimitiveType, XTier, EvidenceLevel, IntentClass
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_THEIA_BINARY_PATH = REPO_ROOT / "bin" / "cbomkit-theia"
@@ -272,6 +272,9 @@ def parse_theia_components(
                 x_tier=XTier.OPERATIONAL,
                 x_confidence="HIGH",
                 has_crypto_shredding=False,
+                intent_class=IntentClass.AUTHENTICATION_SIGNATURE,
+                evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
+                evidence_sources=["theia_bridge:x509_filesystem"],
                 raw_properties={
                     "source": "cbomkit-theia",
                     "assetType": "certificate",
@@ -381,6 +384,9 @@ def parse_theia_components(
                 x_tier=tier,
                 x_confidence="HIGH",
                 has_crypto_shredding=False,
+                intent_class=IntentClass.AUTHENTICATION_SIGNATURE if prim == PrimitiveType.SIGNATURE else IntentClass.CONFIDENTIALITY_ENVELOPE,
+                evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
+                evidence_sources=["theia_bridge:key_filesystem"],
                 raw_properties={
                     "source": "cbomkit-theia",
                     "assetType": "related-crypto-material",

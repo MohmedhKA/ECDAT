@@ -374,6 +374,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <svg class="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 <span>Attestation Sandbox</span>
             </button>
+            <button onclick="switchTab('unknowns')" id="tab-btn-unknowns" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>Unknowns Ledger (__UNKNOWNS_COUNT__)</span>
+            </button>
             <button onclick="switchTab('ciso')" id="tab-btn-ciso" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
                 <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 <span>Executive CISO Report</span>
@@ -582,6 +586,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     </button>
                     <button onclick="filterCbomTable('LOW')" id="filter-btn-LOW" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-emerald-300 transition">
                         LOW (__LOW_COUNT__)
+                    </button>
+                    <button onclick="toggleSuppressOperational()" id="btn-suppress-op" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-cyan-300 flex items-center gap-1.5 transition ml-1">
+                        <svg class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                        <span>Suppress Operational Utility</span>
+                        <span id="suppress-op-count" class="px-1.5 py-0.2 rounded bg-slate-800 text-[10px] text-cyan-400 font-bold font-mono">0</span>
                     </button>
                 </div>
 
@@ -819,7 +828,60 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
         </div>
 
-        <!-- ================= TAB 7: EXECUTIVE CISO REPORT ================= -->
+        <!-- ================= TAB 7: UNKNOWNS LEDGER ================= -->
+        <div id="tab-pane-unknowns" class="hidden space-y-4">
+
+            <!-- Tab 7 Info Banner -->
+            <div class="p-4 rounded-xl glass-panel border border-orange-500/20 bg-gradient-to-r from-slate-900/90 to-slate-900/50 flex items-start gap-3.5 shadow-lg">
+                <div class="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div class="flex-grow text-xs space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-200 uppercase tracking-wider text-[11px] font-mono">Auditable Unknowns Ledger &amp; Perimeter Boundary Honesty</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Tab Guide</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-[11px]">
+                        Traditional scanners claim false 100% security coverage by silently ignoring files they cannot parse. ECDAT practices <strong>Boundary Honesty</strong> by declaring all excluded third-party paths, uninspected binary files, and encrypted keystores.
+                    </p>
+                    <div class="pt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-slate-400">
+                        <span>&bull; <strong class="text-orange-300">Auditable Honesty:</strong> Auditors know exactly what was scanned and what technical limitations constrained coverage.</span>
+                        <span>&bull; <strong class="text-slate-300">Binary Boundaries:</strong> Compiled native libraries (.so, .dll) require eBPF runtime profiling or binary disassemblers.</span>
+                        <span>&bull; <strong class="text-cyan-300">Credential Boundaries:</strong> Encrypted keystores (.p12, .jks) require decryption passwords to inspect certificates.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl glass-panel border border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-white">Auditable Unknowns Ledger (<span class="font-mono text-orange-400">__UNKNOWNS_COUNT__</span> entries logged)</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Explicit declarations of scanning perimeter exclusions and format limitations.</p>
+                </div>
+                <div class="text-xs font-mono text-slate-400">
+                    <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-orange-400">Perimeter Defense-in-Depth</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                            <tr>
+                                <th class="py-3 px-4">Item Path / Identifier</th>
+                                <th class="py-3 px-4">Category</th>
+                                <th class="py-3 px-4">Perimeter Limitation / Reason</th>
+                                <th class="py-3 px-4">Recommended Auditor Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unknowns-table-body" class="divide-y divide-slate-800/60 font-mono">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 8: EXECUTIVE CISO REPORT ================= -->
         <div id="tab-pane-ciso" class="hidden space-y-4">
 
             <!-- Tab 7 Info Banner -->
@@ -944,10 +1006,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         const HAZARDS_DATA = __HAZARDS_JSON__;
         const PROOFS_DATA = __PROOFS_JSON__;
         const DEPS_DATA = __DEPS_JSON__;
+        const UNKNOWNS_DATA = __UNKNOWNS_JSON__;
         const MERKLE_ROOT_HEX = "__MERKLE_ROOT__";
         const CISO_MD_TEXT = __CISO_MD__;
 
         let activeCbomFilter = 'ALL';
+        let suppressOperationalUtility = false;
         let currentDrawerAsset = null;
 
         function triggerKaTeX() {
@@ -983,7 +1047,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
 
         function switchTab(tabId) {
-            const tabs = ['contagion', 'mosca', 'cbom', 'buffer', 'supplychain', 'proof', 'ciso'];
+            const tabs = ['contagion', 'mosca', 'cbom', 'buffer', 'supplychain', 'proof', 'unknowns', 'ciso'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
                 const pane = document.getElementById(`tab-pane-${t}`);
@@ -999,6 +1063,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             });
             if (tabId === 'mosca') renderGanttChart();
             if (tabId === 'supplychain') renderSupplyChainTable();
+            if (tabId === 'unknowns') renderUnknownsTable();
             if (tabId === 'ciso') renderCisoMarkdown();
             setTimeout(triggerKaTeX, 60);
         }
@@ -1102,21 +1167,48 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 return;
             }
 
+            const evColors = {
+                'E0_UNCONFIRMED': 'bg-slate-800 text-slate-400 border-slate-700',
+                'E1_STATIC_ARTIFACT': 'bg-blue-950/80 text-blue-300 border-blue-800',
+                'E2_REACHABLE_PATH': 'bg-cyan-950/80 text-cyan-300 border-cyan-800',
+                'E3_CONFIG_CONFIRMED': 'bg-emerald-950/80 text-emerald-300 border-emerald-800',
+                'E4_RUNTIME_OBSERVED': 'bg-purple-950/80 text-purple-300 border-purple-800',
+                'E5_CORRELATED_SIGNED': 'bg-amber-950/80 text-amber-300 border-amber-800',
+            };
+
+            const intentBadges = {
+                'OPERATIONAL_UTILITY': '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-slate-400 border border-slate-700" title="Operational Utility (ETag/Cache)">OP_UTIL</span>',
+                'AUTHENTICATION_SIGNATURE': '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-950/80 text-blue-300 border border-blue-800" title="Authentication Signature">AUTH</span>',
+                'INTEGRITY_CHECKSUM': '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-950/80 text-teal-300 border border-teal-800" title="Integrity Checksum">INTEG</span>',
+                'CONFIDENTIALITY_ENVELOPE': '<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-950/80 text-purple-300 border border-purple-800" title="Confidentiality Envelope">CONF</span>',
+            };
+
             assets.forEach(a => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-900/70 transition-colors border-b border-slate-800/60";
 
-                const riskBadge = a.risk_level === 'CRITICAL'
-                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-950/80 text-red-300 border border-red-800 whitespace-nowrap">$Y_{\\\\max} = ${a.y_max_years}\\\\text{y}$ CRITICAL</span>`
+                const evCode = a.evidence_level ? a.evidence_level.split('_')[0] : 'E1';
+                const evClass = evColors[a.evidence_level] || 'bg-slate-800 text-slate-400 border-slate-700';
+                const evBadge = `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${evClass}" title="Evidence Level: ${a.evidence_level || 'E1'}">${evCode}</span>`;
+                const intentBadge = intentBadges[a.intent_class] || intentBadges['CONFIDENTIALITY_ENVELOPE'];
+
+                const riskBadge = a.intent_class === 'OPERATIONAL_UTILITY'
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-400 border border-slate-700 whitespace-nowrap">$R_Q = 0.0$ SUPPRESSED</span>`
+                    : a.risk_level === 'CRITICAL'
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-950/80 text-red-300 border border-red-800 whitespace-nowrap">$Y_{\\max} = ${a.y_max_years}\\text{y}$ CRITICAL</span>`
                     : a.risk_level === 'HIGH'
-                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-950/80 text-amber-300 border border-amber-800 whitespace-nowrap">$Y_{\\\\max} = ${a.y_max_years}\\\\text{y}$ HIGH</span>`
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-950/80 text-amber-300 border border-amber-800 whitespace-nowrap">$Y_{\\max} = ${a.y_max_years}\\text{y}$ HIGH</span>`
                     : a.risk_level === 'MEDIUM'
-                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-yellow-950/80 text-yellow-300 border border-yellow-800 whitespace-nowrap">$Y_{\\\\max} = ${a.y_max_years}\\\\text{y}$ MEDIUM</span>`
-                    : `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 whitespace-nowrap">$Y_{\\\\max} = ${a.y_max_years}\\\\text{y}$ LOW</span>`;
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-yellow-950/80 text-yellow-300 border border-yellow-800 whitespace-nowrap">$Y_{\\max} = ${a.y_max_years}\\text{y}$ MEDIUM</span>`
+                    : `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 whitespace-nowrap">$Y_{\\max} = ${a.y_max_years}\\text{y}$ LOW</span>`;
 
                 tr.innerHTML = `
                     <td class="py-3 px-4">
-                        <div class="font-bold text-cyan-300">${a.asset_id}</div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-cyan-300">${a.asset_id}</span>
+                            ${evBadge}
+                            ${intentBadge}
+                        </div>
                         <div class="text-[11px] text-slate-400 max-w-[160px] truncate" title="${a.component}">${a.component}</div>
                     </td>
                     <td class="py-3 px-4">
@@ -1131,8 +1223,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <code class="text-[11px] bg-black/40 px-2 py-1 rounded text-amber-300 border border-slate-800/80 block max-w-[180px] truncate" title="${a.evidence}">${a.evidence}</code>
                     </td>
                     <td class="py-3 px-4 whitespace-nowrap">
-                        <div class="text-slate-300">$X_{\\\\text{eff}} = ${a.x_years}\\\\text{y}$</div>
-                        <div class="text-[10px] text-slate-500">${a.x_tier}</div>
+                        <div class="text-slate-300">$X_{\\text{eff}} = ${a.x_years}\\text{y}$</div>
+                        <div class="text-[10px] text-slate-500">${a.x_tier} &bull; $P_{\\text{HNDL}}: ${a.p_hndl !== undefined ? a.p_hndl : 1.0}$</div>
                     </td>
                     <td class="py-3 px-4">
                         ${riskBadge}
@@ -1151,6 +1243,54 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             });
 
             setTimeout(triggerKaTeX, 40);
+        }
+
+        function toggleSuppressOperational() {
+            suppressOperationalUtility = !suppressOperationalUtility;
+            const btn = document.getElementById('btn-suppress-op');
+            if (btn) {
+                if (suppressOperationalUtility) {
+                    btn.className = "px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition font-semibold ml-1";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-cyan-300 flex items-center gap-1.5 transition ml-1";
+                }
+            }
+            const query = (document.getElementById('cbom-search').value || '').toLowerCase();
+            applyCbomFilterAndSearch(query);
+            showToast(suppressOperationalUtility ? "Suppressed operational utility assets (ETags/Caches) from CBOM" : "Showing all assets including operational utility");
+        }
+
+        function updateOperationalSuppressionCount() {
+            const opCount = ASSETS_DATA.filter(a => a.intent_class === 'OPERATIONAL_UTILITY').length;
+            const counter = document.getElementById('suppress-op-count');
+            if (counter) counter.innerText = opCount;
+        }
+
+        function renderUnknownsTable() {
+            const tbody = document.getElementById('unknowns-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (UNKNOWNS_DATA.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500 font-mono">No scanning boundary unknowns or excluded files declared. Full perimeter audited.</td></tr>`;
+                return;
+            }
+            UNKNOWNS_DATA.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/70 transition-colors border-b border-slate-800/60";
+                const catBadge = u.category === 'EXCLUDED_DIR'
+                    ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">EXCLUDED_DIR</span>'
+                    : u.category === 'UNINSPECTED_BINARY'
+                    ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">UNINSPECTED_BINARY</span>'
+                    : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-950 text-orange-300 border border-orange-800">ENCRYPTED_KEYSTORE</span>';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-cyan-400 max-w-[280px] truncate" title="${u.item_path}">${u.item_path}</td>
+                    <td class="py-3 px-4">${catBadge}</td>
+                    <td class="py-3 px-4 text-slate-300 text-xs">${u.reason}</td>
+                    <td class="py-3 px-4 text-emerald-400 text-xs font-mono">${u.recommended_action}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function filterCbomTable(severity) {
@@ -1185,14 +1325,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         function applyCbomFilterAndSearch(query) {
             const filtered = ASSETS_DATA.filter(a => {
                 const matchSeverity = activeCbomFilter === 'ALL' || a.risk_level === activeCbomFilter;
+                const matchSuppress = !suppressOperationalUtility || a.intent_class !== 'OPERATIONAL_UTILITY';
                 const matchQuery = !query || 
                     a.asset_id.toLowerCase().includes(query) ||
                     a.component.toLowerCase().includes(query) ||
                     a.file_path.toLowerCase().includes(query) ||
                     a.algorithm.toLowerCase().includes(query) ||
                     (a.evidence && a.evidence.toLowerCase().includes(query)) ||
+                    (a.intent_class && a.intent_class.toLowerCase().includes(query)) ||
+                    (a.evidence_level && a.evidence_level.toLowerCase().includes(query)) ||
                     a.recommended_pqc.toLowerCase().includes(query);
-                return matchSeverity && matchQuery;
+                return matchSeverity && matchSuppress && matchQuery;
             });
             renderCbomRows(filtered);
         }
@@ -2024,6 +2167,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             try { initHazardsTable(); } catch (e) { console.error("Error in hazards table:", e); }
             try { renderSupplyChainTable(); } catch (e) { console.error("Error in supply chain:", e); }
             try { renderCbomRows(ASSETS_DATA); } catch (e) { console.error("Error in CBOM rows:", e); }
+            try { updateOperationalSuppressionCount(); } catch (e) {}
+            try { renderUnknownsTable(); } catch (e) {}
             try { triggerKaTeX(); } catch (e) {}
             setTimeout(triggerKaTeX, 350);
             setTimeout(triggerKaTeX, 1200);
@@ -2042,6 +2187,7 @@ def generate_html_dashboard(
     project_name: str = "Enterprise Cryptographic Estate",
     ciso_report_md: Optional[str] = None,
     manifest_dependencies: Optional[List[Any]] = None,
+    unknowns_ledger: Optional[List[Any]] = None,
 ) -> str:
     """
     Generates a single, self-contained HTML5 report ('report.html') featuring KaTeX LaTeX rendering,
@@ -2088,6 +2234,13 @@ def generate_html_dashboard(
             "evidence": evidence,
             "guidance": rec.implementation_guidance,
             "raw_properties": asset.raw_properties,
+            "intent_class": asset.intent_class.value if hasattr(asset.intent_class, "value") else str(asset.intent_class),
+            "evidence_level": asset.evidence_level.value if hasattr(asset.evidence_level, "value") else str(asset.evidence_level),
+            "agility_level": asset.agility_level.value if hasattr(asset.agility_level, "value") else int(asset.agility_level),
+            "exposure_profile": asset.exposure_profile.value if hasattr(asset.exposure_profile, "value") else str(asset.exposure_profile),
+            "p_hndl": getattr(score, "p_hndl", 1.0),
+            "r_q_score": getattr(score, "r_q_score", 0.0),
+            "agility_factor": getattr(score, "agility_factor", 0.0),
         })
 
     hazards_data = []
@@ -2113,11 +2266,22 @@ def generate_html_dashboard(
             elif isinstance(d, dict):
                 deps_data.append(d)
 
+    unknowns_data = []
+    if unknowns_ledger:
+        for u in unknowns_ledger:
+            if hasattr(u, "model_dump"):
+                unknowns_data.append(u.model_dump())
+            elif hasattr(u, "dict"):
+                unknowns_data.append(u.dict())
+            elif isinstance(u, dict):
+                unknowns_data.append(u)
+
     assets_json_str = json.dumps(assets_data)
     hazards_json_str = json.dumps(hazards_data)
     graph_json_str = json.dumps(contagion_result.graph_json)
     proof_packages_json_str = json.dumps(proof_packages)
     deps_json_str = json.dumps(deps_data)
+    unknowns_json_str = json.dumps(unknowns_data)
     ciso_md_escaped = json.dumps(ciso_report_md or "")
     merkle_short = f"{merkle_root_hex[:8]}...{merkle_root_hex[-8:]}" if len(merkle_root_hex) >= 16 else merkle_root_hex
 
@@ -2128,6 +2292,7 @@ def generate_html_dashboard(
         .replace("__HAZARDS_JSON__", hazards_json_str)
         .replace("__PROOFS_JSON__", proof_packages_json_str)
         .replace("__DEPS_JSON__", deps_json_str)
+        .replace("__UNKNOWNS_JSON__", unknowns_json_str)
         .replace("__MERKLE_ROOT__", merkle_root_hex)
         .replace("__MERKLE_ROOT_SHORT__", merkle_short)
         .replace("__PROJECT_NAME__", html.escape(project_name))
@@ -2139,6 +2304,7 @@ def generate_html_dashboard(
         .replace("__SUPERSPREADER_COUNT__", str(superspreader_count))
         .replace("__HAZARDS_COUNT__", str(len(buffer_hazards)))
         .replace("__DEPS_COUNT__", str(len(deps_data)))
+        .replace("__UNKNOWNS_COUNT__", str(len(unknowns_data)))
         .replace("__READINESS_SCORE__", str(readiness_score))
         .replace("__CISO_MD__", ciso_md_escaped)
     )
@@ -2146,3 +2312,4 @@ def generate_html_dashboard(
     return report_html
 
 generate_html_report = generate_html_dashboard
+
