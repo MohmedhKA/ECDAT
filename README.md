@@ -43,8 +43,13 @@ Quantum vulnerability depends fundamentally on how long encrypted data must rema
 * **Archival ($X \ge 10\text{y}$):** Medical records, identity ledgers, audit trails.
 
 ### 2. Actionable Mosca Runway ($Y_{\max}$) Budgeting
+
 Rather than outputting abstract risk scores, ECDAT computes an actionable engineering runway:
-$$Y_{\max} = (Z_{\text{reg}} - \text{current\_year}) - X_{\text{eff}}$$
+
+$$
+Y_{\max} = (Z_{\text{reg}} - T_{\text{current}}) - X_{\text{eff}}
+$$
+
 Anchored directly to the binding federal milestones of **NIST IR 8547** and **OMB M-26-15**:
 * **Phase 3 (2030):** High-priority key establishment deprecation (KEM, DH, RSA-OAEP).
 * **Phase 4 (2031):** Mandatory digital signature cutoff (RSA signatures, ECDSA).
