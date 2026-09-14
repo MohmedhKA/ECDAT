@@ -316,7 +316,7 @@ def _resolve_java_arg(raw_arg: str, content: str, file_path: Optional[Path] = No
 def _handle_java_cipher(match_str: str) -> Tuple[str, Optional[int], PrimitiveType]:
     transform = match_str.strip().upper()
     algo = transform.split("/")[0]
-    is_ecb = "ECB" in transform
+    is_ecb = "ECB" in transform or "/" not in transform
     if "DESEDE" in algo or "3DES" in algo:
         return "3DES-168", 168, PrimitiveType.ENCRYPTION
     elif "DES" in algo:
@@ -742,21 +742,30 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         )
         if not has_dynamic_random:
             has_static_key = bool(
-                re.search(r"byte\s*(?:\[\s*\])?\s*" + re.escape(key_arg) + r"\s*(?:\[\s*\])?\s*=\s*\{", content) or
+                re.search(r"byte\s*(?:\[\s*\])?\s*" + re.escape(key_arg) + r"\s*(?:\[\s*\])?\s*=\s*(?:new\s+byte\s*\[\s*\]\s*)?\{", content) or
                 re.search(r"String\s+" + re.escape(key_arg) + r"\s*=\s*[\"']", content) or
-                re.search(r"\{[0-9\s,xX\(\)byte\-]+\}", content) or
+                re.search(r"byte\s*(?:\[\s*\])?\s*[a-zA-Z0-9_]+\s*(?:\[\s*\])?\s*=\s*(?:new\s+byte\s*\[\s*\]\s*)?\{[0-9\s,xX\(\)byte\-]+\}", content) or
                 re.search(re.escape(key_arg) + r"\[\s*\d+\s*\]\s*=\s*\d+", content) or
-                "String.valueOf" in content or
-                "getBytes" in content
+                re.search(r"[a-zA-Z0-9_]+\[\s*\d+\s*\]\s*=\s*\d+", content) or
+                re.search(r"String\s+[a-zA-Z0-9_]*key\s*=\s*[\"'][^\"']+[\"']", content, re.IGNORECASE) or
+                re.search(r"String\s+defaultKey\s*=\s*[\"'][^\"']+[\"']", content)
             )
+            if not has_static_key:
+                str_var_m = re.search(r'\b' + re.escape(key_arg) + r'\s*=\s*([a-zA-Z0-9_]+)\.getBytes', content)
+                if str_var_m:
+                    str_var = str_var_m.group(1)
+                    if re.search(r'String\s+' + re.escape(str_var) + r'\s*=\s*["\'][^"\']+["\']', content):
+                        has_static_key = True
             if not has_static_key and file_path and file_path.parent.exists():
                 for sib in file_path.parent.glob("*.java"):
                     if sib != file_path:
                         try:
                             s_txt = sib.read_text(encoding="utf-8", errors="replace")
-                            if re.search(r"byte\s*\[\s*\]\s*[a-zA-Z0-9_]*\s*=\s*\{", s_txt) or "key" in s_txt:
-                                has_static_key = True
-                                break
+                            if stem in s_txt:
+                                if (re.search(r"byte\s*(?:\[\s*\])?\s*[a-zA-Z0-9_]+\s*(?:\[\s*\])?\s*=\s*\{", s_txt) or
+                                    re.search(r"String\s+[a-zA-Z0-9_]+\s*=\s*[\"'][^\"']+[\"']", s_txt)):
+                                    has_static_key = True
+                                    break
                         except Exception:
                             pass
             if has_static_key:
@@ -1032,11 +1041,24 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
     # 5. PBEKeySpec & KeyStore.load (Hardcoded / Predictable Passwords)
     has_secure_pwd_gen = bool(re.search(r"(?:random\.ints|ints\(\)|readPassword|getenv|System\.console)", content))
 
-    for m in re.finditer(r"new\s+PBEKeySpec\s*\(\s*([^,\)]+)", content):
+    for m in re.finditer(r"new\s+PBEKeySpec\s*\(\s*((?:[^,()]|\([^()]*\))+)(?:,\s*((?:[^,()]|\([^()]*\))+))?(?:,\s*((?:[^,()]|\([^()]*\))+))?", content):
         pass_arg = m.group(1).strip()
+        salt_arg = m.group(2).strip() if m.group(2) else None
+        count_arg = m.group(3).strip() if m.group(3) else None
         line_no = _extract_line_number(content, m.start())
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
-        if not has_secure_pwd_gen:
+        is_dynamic_pass = (
+            has_secure_pwd_gen or
+            (pass_arg == "password" and "getPassword" in content) or
+            "readPassword" in content or
+            "console" in content.lower()
+        )
+        has_static_pass = bool(
+            re.search(r'String\s+' + re.escape(pass_arg) + r'\s*=\s*["\'][^"\']+["\']', content) or
+            re.search(r'String\s+defaultKey\s*=\s*["\'][^"\']+["\']', content) or
+            re.search(r'["\'][a-zA-Z0-9_\-\.\$]{4,}["\']', pass_arg)
+        )
+        if not is_dynamic_pass and (has_static_pass or not any(x in pass_arg.lower() for x in ["getpassword", "arg", "param", "passcode"])):
             assets.append(CryptoAsset(
                 asset_id=f"SRC-JAVA-{len(assets) + 1:03d}",
                 component_name=f"{stem}:hardcoded_password",
@@ -1082,8 +1104,61 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
                     "matched_code": m.group(0)[:80],
                 }
             ))
+        if salt_arg:
+            has_dynamic_salt = bool(
+                re.search(r"nextBytes\s*\(\s*" + re.escape(salt_arg) + r"\s*\)", content) or
+                "SecureRandom" in content
+            )
+            if not has_dynamic_salt:
+                assets.append(CryptoAsset(
+                    asset_id=f"SRC-JAVA-{len(assets) + 1:03d}",
+                    component_name=f"{stem}:static_salt",
+                    algorithm="STATIC-SALT",
+                    key_size=None,
+                    primitive_type=PrimitiveType.KEY_EXCHANGE,
+                    file_path=rel_path,
+                    line_number=line_no,
+                    x_tier=tier,
+                    x_confidence="HIGH",
+                    has_crypto_shredding=is_shred,
+                    intent_class=IntentClass.CONFIDENTIALITY_ENVELOPE,
+                    evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
+                    evidence_sources=["source_scanner:jca_static_salt"],
+                    agility_level=AgilityLevel.RIGID,
+                    raw_properties={
+                        "source": "source_scanner",
+                        "language": "java",
+                        "misuse_category": "Static/Constant Salt",
+                        "cwe": "CWE-326",
+                        "matched_code": m.group(0)[:80],
+                    }
+                ))
+        if count_arg and count_arg.isdigit() and int(count_arg) < 1000:
+            assets.append(CryptoAsset(
+                asset_id=f"SRC-JAVA-{len(assets) + 1:03d}",
+                component_name=f"{stem}:pbe_weak_iteration",
+                algorithm="PBE-WEAK-ITERATION",
+                key_size=None,
+                primitive_type=PrimitiveType.KEY_EXCHANGE,
+                file_path=rel_path,
+                line_number=line_no,
+                x_tier=tier,
+                x_confidence="HIGH",
+                has_crypto_shredding=is_shred,
+                intent_class=IntentClass.CONFIDENTIALITY_ENVELOPE,
+                evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
+                evidence_sources=["source_scanner:jca_pbe_iteration"],
+                agility_level=AgilityLevel.RIGID,
+                raw_properties={
+                    "source": "source_scanner",
+                    "language": "java",
+                    "misuse_category": "PBE iteration < 1000",
+                    "cwe": "CWE-326",
+                    "matched_code": m.group(0)[:80],
+                }
+            ))
 
-    for m in re.finditer(r"\.load\s*\([^,]+,\s*([^)]+)\)", content):
+    for m in re.finditer(r"(?i)\b(?:ks|keystore|[a-zA-Z0-9_]*keyStore)\.load\s*\([^,\n]+,\s*([^)\n]+)\)", content):
         pass_arg = m.group(1).strip()
         line_no = _extract_line_number(content, m.start())
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
@@ -1169,7 +1244,7 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
             ))
 
     # 7. HTTP / HTTPS Transport
-    for m in re.finditer(r"new\s+URL\s*\(\s*[\"']http://|String\s+[a-zA-Z0-9_]*url\s*=\s*[\"']http://", content, re.IGNORECASE):
+    for m in re.finditer(r"new\s+URL\s*\(\s*[\"']http://|String\s+[a-zA-Z0-9_]*url\s*=\s*[\"']http://|[\"']http://(?!schemas\.|www\.w3\.org|java\.sun\.com)[a-zA-Z0-9_\.\-:/]+[\"']", content, re.IGNORECASE):
         line_no = _extract_line_number(content, m.start())
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
         assets.append(CryptoAsset(
@@ -1302,7 +1377,13 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         ))
 
     # 9. PRNG & Improper SSLSocketFactory
-    if re.search(r"new\s+Random\s*\(\s*\)", content) and "PBEParameterSpec" in content:
+    if re.search(r"new\s+Random\s*\(\s*\)", content) and (
+        "PBEParameterSpec" in content or
+        "randomBytes" in content or
+        "session" in content.lower() or
+        "nonce" in content.lower() or
+        "DigestAuthentication" in content
+    ):
         line_no = 1
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
         assets.append(CryptoAsset(
