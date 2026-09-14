@@ -7,17 +7,20 @@ and the DSIS 4-class functional security intent.
 
 import ast
 import re
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Set, Any
 from pydantic import BaseModel, Field
-from ecdat.models import XTier, IntentClass, EvidenceLevel
+from ecdat.models import XTier, IntentClass, EvidenceLevel, AgilityLevel
 from ecdat.x_inference.sink_stubs import match_sink_pattern
-from ecdat.intent.classifier import classify_intent
+from ecdat.intent import classify_intent
+from ecdat.agility.cams_detector import detect_cams_agility
 
+# AST Method Call Names indicating cryptographic generation
 CRYPTO_GENERATION_KEYWORDS = {
     "encrypt", "cipher", "generate_private_key", "generate_key",
-    "sign", "digest", "hexdigest", "hmac", "token", "seal", "derive",
-    "key_exchange", "sha256", "sha384", "sha512", "sha1", "md5", "hashlib",
-    "new"
+    "generatekeypair", "generate_key_pair", "derivekey", "derive_key",
+    "sign", "digest", "hexdigest", "hmac", "token", "token_bytes",
+    "urandom", "seal", "derive", "key_exchange", "ecdh", "kem",
+    "sha256", "sha384", "sha512", "sha1", "md5", "hashlib", "new"
 }
 
 class XInferenceResult(BaseModel):
@@ -29,15 +32,18 @@ class XInferenceResult(BaseModel):
     sink_call: Optional[str] = Field(None, description="The matched persistence sink syntax")
     line_number: int = Field(0, description="Line number of the cryptographic invocation")
 
-    # Master Plan Phase 1 Extensions: Dual-Sink Semantic Intent & Evidence State
+    # Master Plan Phase 1 & 2 Extensions: Dual-Sink Semantic Intent, Evidence State & CAMS
     intent_class: IntentClass = Field(IntentClass.CONFIDENTIALITY_ENVELOPE, description="Functional security intent")
     intent_evidence: str = Field("", description="Intent classification rationale")
     evidence_level: EvidenceLevel = Field(EvidenceLevel.E1_STATIC_ARTIFACT, description="E0-E5 evidence state")
+    agility_level: AgilityLevel = Field(AgilityLevel.RIGID, description="CAMS agility level (0-3)")
+    cams_evidence: str = Field("", description="CAMS agility rationale")
 
 class CryptoTaintVisitor(ast.NodeVisitor):
     def __init__(self, source_code: str):
         self.source_lines = source_code.splitlines()
         self.crypto_vars: Dict[str, int] = {}  # var_name -> line_number
+        self.crypto_nodes: Dict[str, Any] = {}  # var_name -> AST node
         self.results: List[XInferenceResult] = []
         self.analyzed_vars: Set[str] = set()
 
@@ -67,6 +73,7 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                     if isinstance(target, ast.Name):
                         var_name = target.id
                         self.crypto_vars[var_name] = node.lineno
+                        self.crypto_nodes[var_name] = node.value
 
         self.generic_visit(node)
 
@@ -78,6 +85,13 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                 if var not in self.analyzed_vars:
                     context_str = self._get_context_lines(node.lineno)
                     intent, intent_desc = classify_intent(var_name=var, sink_call=f"del {var}", context_lines=context_str)
+                    var_lineno = self.crypto_vars[var]
+                    line_src = self.source_lines[var_lineno - 1] if 0 < var_lineno <= len(self.source_lines) else ""
+                    cams_level, cams_desc = detect_cams_agility(
+                        source_line=line_src,
+                        surrounding_code=context_str,
+                        ast_node=self.crypto_nodes.get(var)
+                    )
                     self.results.append(XInferenceResult(
                         target_variable=var,
                         tier=XTier.EPHEMERAL,
@@ -85,10 +99,12 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                         evidence=f"Explicit variable destruction ('del {var}') at line {node.lineno}.",
                         review_required=False,
                         sink_call=f"del {var}",
-                        line_number=self.crypto_vars[var],
+                        line_number=var_lineno,
                         intent_class=intent,
                         intent_evidence=intent_desc,
                         evidence_level=EvidenceLevel.E2_REACHABLE_PATH,
+                        agility_level=cams_level,
+                        cams_evidence=cams_desc,
                     ))
                     self.analyzed_vars.add(var)
         self.generic_visit(node)
@@ -111,6 +127,13 @@ class CryptoTaintVisitor(ast.NodeVisitor):
 
             context_str = self._get_context_lines(node.lineno)
             intent, intent_desc = classify_intent(var_name=var, sink_call=call_str, context_lines=context_str)
+            var_lineno = self.crypto_vars[var]
+            line_src = self.source_lines[var_lineno - 1] if 0 < var_lineno <= len(self.source_lines) else ""
+            cams_level, cams_desc = detect_cams_agility(
+                source_line=line_src,
+                surrounding_code=context_str,
+                ast_node=self.crypto_nodes.get(var)
+            )
 
             # Check if this call matches our pre-annotated persistence sink database
             matched = match_sink_pattern(call_str)
@@ -123,10 +146,12 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                     evidence=f"{desc} (Matched sink: '{call_str}' at line {node.lineno}).",
                     review_required=False,
                     sink_call=call_str,
-                    line_number=self.crypto_vars[var],
+                    line_number=var_lineno,
                     intent_class=intent,
                     intent_evidence=intent_desc,
                     evidence_level=EvidenceLevel.E2_REACHABLE_PATH,
+                    agility_level=cams_level,
+                    cams_evidence=cams_desc,
                 ))
                 self.analyzed_vars.add(var)
             else:
@@ -142,10 +167,12 @@ class CryptoTaintVisitor(ast.NodeVisitor):
                     ),
                     review_required=True,
                     sink_call=call_str,
-                    line_number=self.crypto_vars[var],
+                    line_number=var_lineno,
                     intent_class=intent,
                     intent_evidence=intent_desc,
                     evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
+                    agility_level=cams_level,
+                    cams_evidence=cams_desc,
                 ))
                 self.analyzed_vars.add(var)
 
@@ -182,6 +209,12 @@ def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List
         if var not in visitor.analyzed_vars:
             context_str = visitor._get_context_lines(lineno)
             intent, intent_desc = classify_intent(var_name=var, sink_call=None, context_lines=context_str)
+            line_src = visitor.source_lines[lineno - 1] if 0 < lineno <= len(visitor.source_lines) else ""
+            cams_level, cams_desc = detect_cams_agility(
+                source_line=line_src,
+                surrounding_code=context_str,
+                ast_node=visitor.crypto_nodes.get(var)
+            )
             visitor.results.append(XInferenceResult(
                 target_variable=var,
                 tier=XTier.EPHEMERAL,
@@ -196,6 +229,8 @@ def analyze_python_source(source_code: str, file_path: str = "<memory>") -> List
                 intent_class=intent,
                 intent_evidence=intent_desc,
                 evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
+                agility_level=cams_level,
+                cams_evidence=cams_desc,
             ))
             visitor.analyzed_vars.add(var)
 

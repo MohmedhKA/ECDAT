@@ -19,6 +19,8 @@ EXCLUDED_DIR_NAMES: Set[str] = {
     "dist", "build", "target", "out", ".next", ".nuxt", "coverage",
     # Documentation & research scratchpads
     "docs", "documentation", "Research", "research", "reports", "benchmarks",
+    # Agent skills, IDE metadata, and AI workspace directories
+    ".agents", ".gemini", ".antigravity", ".codex", ".superpowers", "agents",
     # Test fixture & mock directories
     "fixtures", "mocks", "mock", "testdata", "test_fixtures",
 }
@@ -39,7 +41,7 @@ COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in EXCLUDED_PATH_PATTERN
 def should_scan_file(file_path: str, base_dir: Optional[str] = None) -> bool:
     """
     Determines if a file should be included in cryptographic scanning.
-    Returns False for documentation, build caches, test mocks, and environment templates.
+    Returns False for documentation, build caches, test mocks, environment templates, and hidden agent folders.
     """
     p = Path(file_path)
     if base_dir:
@@ -54,7 +56,7 @@ def should_scan_file(file_path: str, base_dir: Optional[str] = None) -> bool:
         return False
 
     for part in dir_parts:
-        if part.lower() in EXCLUDED_DIR_NAMES:
+        if (part.startswith(".") and part != ".") or part.lower() in EXCLUDED_DIR_NAMES:
             return False
 
     # 2. Whitelist standard package manifests that use .txt extension

@@ -21,6 +21,13 @@ CAMS_Y_MULTIPLIERS = {
     AgilityLevel.RUNTIME_AGILE: 0.15, # 85% reduction (policy update only)
 }
 
+CAMS_DESCRIPTIONS = {
+    AgilityLevel.RIGID: "Hardcoded string literals, inflexible primitives",
+    AgilityLevel.CONFIGURABLE: "Parameterized configs/env vars, no code edits",
+    AgilityLevel.PROVIDER: "Pluggable crypto provider abstraction",
+    AgilityLevel.RUNTIME_AGILE: "Dynamic runtime negotiation / agile wrapper",
+}
+
 # Regex patterns for detecting CAMS patterns across languages (Python, Java, JS/TS, Go, Rust)
 RUNTIME_AGILE_PATTERNS = [
     re.compile(r"KeysetHandle", re.IGNORECASE),
@@ -102,3 +109,6 @@ def get_cams_discount(level: AgilityLevel) -> float:
 def get_cams_y_multiplier(level: AgilityLevel) -> float:
     """Returns the migration effort multiplier [0.15 - 1.0] for the given CAMS level."""
     return CAMS_Y_MULTIPLIERS.get(level, 1.0)
+
+get_cams_effort_multiplier = get_cams_y_multiplier
+

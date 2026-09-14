@@ -4,7 +4,9 @@ from ecdat.agility.cams_detector import (
     detect_cams_agility,
     get_cams_discount,
     get_cams_y_multiplier,
+    get_cams_effort_multiplier,
     CAMS_Y_MULTIPLIERS,
+    CAMS_DESCRIPTIONS,
 )
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     "detect_cams_agility",
     "get_cams_discount",
     "get_cams_y_multiplier",
+    "get_cams_effort_multiplier",
     "CAMS_Y_MULTIPLIERS",
+    "CAMS_DESCRIPTIONS",
 ]

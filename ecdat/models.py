@@ -59,6 +59,39 @@ class ExposureProfile(str, Enum):
     INTERNAL = "INTERNAL"   # ClusterIP / private subnet (P_HNDL = 0.05)
     AIRGAPPED = "AIRGAPPED" # Standalone / no network egress (P_HNDL = 0.0)
 
+class RouteProfile(str, Enum):
+    """Network transport Path MTU profile for post-quantum packet fragmentation risk."""
+    STANDARD = "STANDARD"       # 1,500 B Ethernet (strict DF middlebox hazard for >1500B payloads)
+    FLEXIBLE = "FLEXIBLE"       # >= 1,500 B with verified IP reassembly or jumbo frames
+    CONSTRAINED = "CONSTRAINED" # < 1,280 B (VPN, IPsec, cellular tunnels, satellite links)
+
+class PathMTUResult(BaseModel):
+    """Network Path MTU Discovery and PQC fragmentation evaluation."""
+    route_profile: RouteProfile = Field(RouteProfile.STANDARD, description="Assigned transport route profile")
+    effective_mtu: int = Field(1500, description="Effective Path MTU in bytes")
+    mss: int = Field(1460, description="Effective Maximum Segment Size (MTU - 40B headers)")
+    probing_method: str = Field("configured_default", description="Technique: socket_mss, interface_cni, or configured_default")
+    df_bit_strict: bool = Field(True, description="Whether Don't Fragment bit is enforced by intermediate middleboxes")
+    middlebox_drop_risk: str = Field("MEDIUM", description="Probability of dropped packets on multi-segment handshakes")
+    pqc_flight_estimates: Dict[str, Any] = Field(default_factory=dict, description="Per-algorithm packet fragmentation estimates")
+
+    @property
+    def drop_risk(self) -> str:
+        return self.middlebox_drop_risk
+
+    @property
+    def notes(self) -> str:
+        if self.route_profile == RouteProfile.CONSTRAINED:
+            return "Constrained MTU / Tunnel route (< 1,280 B). Fragmented PQC packets suffer high drop risk."
+        elif self.route_profile == RouteProfile.FLEXIBLE:
+            return "Flexible MTU / Jumbo frame route (>= 1,500 B). Minimal middlebox drop risk."
+        return "Standard Ethernet route (1,500 B). ML-KEM-1024 and ML-DSA exceed MSS and require fragmentation."
+
+    @property
+    def flight_segments(self) -> Dict[str, Any]:
+        return self.pqc_flight_estimates
+
+
 class ConfidenceLevel(str, Enum):
     UNVALIDATED = "UNVALIDATED"
     LOW = "LOW"
@@ -115,3 +148,59 @@ class MoscaScore(BaseModel):
     p_hndl: float = Field(1.0, description="Network harvest probability factor")
     agility_factor: float = Field(0.0, description="CAMS agility discount [0.0 - 0.85]")
     r_q_score: float = Field(0.0, description="Enriched quantum risk score R_Q")
+
+class ParetoItem(BaseModel):
+    """An asset evaluated within the Pareto knapsack remediation portfolio."""
+    asset_id: str
+    component_name: str
+    algorithm: str
+    primitive_type: str
+    file_path: str
+    line_number: int = 0
+    r0_score: int = 0
+    cams_level: int = 0
+    risk_level: str = "MEDIUM"
+    delta_r: float = Field(..., description="Blast-radius-weighted quantum risk reduction score")
+    cost_dev_weeks: float = Field(..., description="Estimated engineering migration cost in dev-weeks")
+    efficiency: float = Field(..., description="Risk reduction per dev-week (delta_r / cost)")
+    is_selected: bool = Field(False, description="Whether selected within the target sprint budget")
+    cumulative_risk_pct: float = Field(0.0, description="Cumulative estate risk reduction percentage")
+    cumulative_cost_weeks: float = Field(0.0, description="Cumulative dev-weeks allocated")
+
+class ParetoPortfolioResult(BaseModel):
+    """Pareto migration portfolio optimization result with efficient frontier curve."""
+    budget_dev_weeks: float
+    total_assets_count: int
+    selected_count: int
+    total_cost_allocated: float
+    total_risk_reduced: float
+    total_estate_risk: float
+    risk_reduction_pct: float
+    items: List[ParetoItem]
+    frontier_points: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Coordinates of the efficient frontier curve [{cost, risk_pct, asset_id}]"
+    )
+
+class StochasticMoscaResult(BaseModel):
+    """Monte Carlo statistical simulation result for an asset."""
+    asset_id: str
+    algorithm: str
+    iterations: int = 5000
+    breach_probability: float = Field(..., description="Empirical probability P(X + Y > Z) * P_HNDL")
+    p50_safety_margin_years: float = Field(..., description="Median safety margin (Z - (Current + X + Y))")
+    p95_safety_margin_years: float = Field(..., description="5th percentile safety margin (VaR 95% worst case)")
+    var_95_breach_year: int = Field(..., description="Calendar year when breach probability crosses 5%")
+    risk_category: str = Field("MEDIUM", description="Probabilistic risk tier")
+
+class NegativeProofCertificate(BaseModel):
+    """Mathematically bounded negative proof attestation for CI/CD gates."""
+    certificate_id: str
+    timestamp: str
+    merkle_root_hex: str
+    target_project: str
+    audited_perimeter: Dict[str, Any]
+    quarantined_unknowns_count: int
+    assertions: List[Dict[str, Any]]
+    is_certified_clean: bool = True
+

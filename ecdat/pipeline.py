@@ -22,6 +22,8 @@ from ecdat.models import (
     EvidenceLevel,
     ExposureProfile,
     AgilityLevel,
+    RouteProfile,
+    PathMTUResult,
 )
 from ecdat.constants import CURRENT_YEAR
 from ecdat.x_inference.ast_tracer import analyze_python_file, XInferenceResult
@@ -38,6 +40,13 @@ from ecdat.scanners.source_scanner import discover_polyglot_crypto_assets
 from ecdat.scanners.filters import should_scan_file
 from ecdat.schema_extractor import extract_schemas_lifespan
 from ecdat.exposure_scanner import scan_deployment_exposure
+from ecdat.network.mtu_prober import probe_network_mtu
+from ecdat.attestation.envelope import build_intoto_statement, create_signed_dsse_envelope
+from ecdat.attestation.cyclonedx_966 import enrich_cyclonedx_component_966
+from ecdat.optimizer.pareto import optimize_pareto_portfolio
+from ecdat.mosca.stochastic import simulate_estate_stochastic_mosca
+from ecdat.attestation.negative_proof import generate_negative_proof_certificate
+
 
 def _infer_primitive_and_alg(var_name: str, sink_call: Optional[str]) -> Tuple[PrimitiveType, str, int]:
     """Infers appropriate algorithm and primitive type from variable/call semantics."""
@@ -92,6 +101,14 @@ def run_ecdat_scan(
     output_dir: Optional[str] = None,
     salt: str = "ECDAT_SALT_2026",
     enable_theia: bool = True,
+    probe_host: Optional[str] = None,
+    mtu_profile: Optional[str] = None,
+    override_mtu: Optional[int] = None,
+    signing_key: Optional[Any] = None,
+    budget_dev_weeks: float = 10.0,
+    stochastic_runs: int = 5000,
+    generate_negative_proof: bool = True,
+    subdirs: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Executes an end-to-end cryptographic discovery, temporal risk analysis,
@@ -100,6 +117,13 @@ def run_ecdat_scan(
     target_path = Path(target_dir).resolve()
     if not target_path.exists():
         raise FileNotFoundError(f"Target directory '{target_path}' does not exist.")
+
+    parsed_subdirs: Optional[List[str]] = None
+    if subdirs:
+        if isinstance(subdirs, str):
+            parsed_subdirs = [s.strip() for s in subdirs.split(",") if s.strip()]
+        elif isinstance(subdirs, (list, tuple, set)):
+            parsed_subdirs = [str(s).strip() for s in subdirs if str(s).strip()]
 
     if output_dir:
         out_path = Path(output_dir).resolve()
@@ -115,10 +139,25 @@ def run_ecdat_scan(
         except OSError:
             pass
 
+    # 0. Active Path MTU Prober & Route Profile (Pillar 5)
+    effective_route_profile = None
+    if mtu_profile:
+        try:
+            effective_route_profile = RouteProfile(mtu_profile.upper())
+        except ValueError:
+            effective_route_profile = None
+
+    path_mtu = probe_network_mtu(
+        target_host=probe_host,
+        override_profile=effective_route_profile,
+        override_mtu=override_mtu,
+    )
+
     # 1. Discover all first-party source files (Python, JS/TS, Go, Rust, Java)
     EXCLUDED_DIRS = {
         "venv", ".venv", "env", "node_modules", "site-packages",
-        "__pycache__", ".git", "dist", "build", "target", ".cache"
+        "__pycache__", ".git", "dist", "build", "target", ".cache",
+        ".agents", ".gemini", ".antigravity", ".codex", ".superpowers", "agents"
     }
     SOURCE_EXTENSIONS = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs", ".java"}
     UNINSPECTED_EXTENSIONS = {".so", ".dll", ".exe", ".bin", ".dylib", ".dat", ".class", ".o", ".a"}
@@ -177,8 +216,16 @@ def run_ecdat_scan(
 
     all_source_files = [
         f for f in target_path.glob("**/*")
-        if f.is_file() and f.suffix.lower() in SOURCE_EXTENSIONS and not any(part in EXCLUDED_DIRS for part in f.parts) and should_scan_file(str(f))
+        if f.is_file() and f.suffix.lower() in SOURCE_EXTENSIONS 
+        and not any((part.startswith(".") and part != ".") or part.lower() in EXCLUDED_DIRS for part in f.parts[:-1])
+        and should_scan_file(str(f))
     ]
+    if parsed_subdirs:
+        all_source_files = [
+            f for f in all_source_files
+            if any(sub in f.relative_to(target_path).parts for sub in parsed_subdirs)
+        ]
+
     py_files = [f for f in all_source_files if f.suffix.lower() == ".py"]
 
     all_inferences: List[Tuple[str, XInferenceResult]] = []
@@ -194,6 +241,11 @@ def run_ecdat_scan(
 
     # 1b. Audit Polyglot Package Manifests (package.json, go.mod, Cargo.toml, requirements.txt)
     manifest_deps = discover_manifest_crypto_dependencies(str(target_path))
+    if parsed_subdirs:
+        manifest_deps = [
+            m for m in manifest_deps
+            if any(sub in Path(getattr(m, "manifest_path", "")).parts for sub in parsed_subdirs)
+        ]
 
     # 1c. Autonomous Schema Lifespans & Deployment Exposure Scans
     schema_lifespans = extract_schemas_lifespan(str(target_path))
@@ -227,19 +279,24 @@ def run_ecdat_scan(
         _apply_deployment_exposure(asset, deployment_exposures)
 
         score = compute_mosca_score(asset, current_year=CURRENT_YEAR)
-        rec = recommend_pqc_migration(asset)
+        rec = recommend_pqc_migration(asset, path_mtu=path_mtu)
 
         assessments.append((asset, score, rec))
         assets_for_merkle.append((asset, score))
 
     # 2b. Polyglot In-Code Source Cryptographic Assets (JS/TS, Go, Rust, Java)
     polyglot_assets = discover_polyglot_crypto_assets(str(target_path))
+    if parsed_subdirs:
+        polyglot_assets = [
+            p for p in polyglot_assets
+            if any(sub in Path(p.file_path).parts for sub in parsed_subdirs)
+        ]
     for p_asset in polyglot_assets:
         p_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
         _apply_schema_lifespan(p_asset, schema_lifespans)
         _apply_deployment_exposure(p_asset, deployment_exposures)
         score = compute_mosca_score(p_asset, current_year=CURRENT_YEAR)
-        rec = recommend_pqc_migration(p_asset)
+        rec = recommend_pqc_migration(p_asset, path_mtu=path_mtu)
         assessments.append((p_asset, score, rec))
         assets_for_merkle.append((p_asset, score))
 
@@ -247,12 +304,17 @@ def run_ecdat_scan(
     theia_assets: List[CryptoAsset] = []
     if enable_theia:
         theia_assets = run_theia_scan(str(target_path))
+        if parsed_subdirs:
+            theia_assets = [
+                f for f in theia_assets
+                if any(sub in Path(f.file_path).parts for sub in parsed_subdirs)
+            ]
         for fs_asset in theia_assets:
             fs_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
             _apply_schema_lifespan(fs_asset, schema_lifespans)
             _apply_deployment_exposure(fs_asset, deployment_exposures)
             score = compute_mosca_score(fs_asset, current_year=CURRENT_YEAR)
-            rec = recommend_pqc_migration(fs_asset)
+            rec = recommend_pqc_migration(fs_asset, path_mtu=path_mtu)
             assessments.append((fs_asset, score, rec))
             assets_for_merkle.append((fs_asset, score))
 
@@ -288,6 +350,79 @@ def run_ecdat_scan(
     with open(graph_file, "w", encoding="utf-8") as f:
         json.dump(contagion_result.graph_json, f, indent=2)
 
+    # 4c. Signed in-toto / SLSA DSSE Attestation Envelope Generation (Pillar 6)
+    evidence_dist = {
+        lvl.value: sum(1 for a, _, _ in assessments if getattr(a, "evidence_level", EvidenceLevel.E1_STATIC_ARTIFACT) == lvl)
+        for lvl in EvidenceLevel
+    }
+    intent_dist = {
+        i.value: sum(1 for a, _, _ in assessments if getattr(a, "intent_class", IntentClass.CONFIDENTIALITY_ENVELOPE) == i)
+        for i in IntentClass
+    }
+    cams_dist = {
+        f"L{lvl.value}_{lvl.name}": sum(1 for a, _, _ in assessments if getattr(a, "agility_level", AgilityLevel.RIGID) == lvl)
+        for lvl in AgilityLevel
+    }
+    unknowns_dicts = [u.model_dump() if hasattr(u, "model_dump") else u.dict() for u in unknowns_ledger]
+
+    intoto_statement = build_intoto_statement(
+        project_name=target_path.name,
+        merkle_root_hex=merkle_root_hex,
+        target_path=str(target_path),
+        total_assets=len(assessments),
+        evidence_distribution=evidence_dist,
+        intent_distribution=intent_dist,
+        cams_distribution=cams_dist,
+        route_profile=path_mtu.route_profile.value,
+        effective_mtu=path_mtu.effective_mtu,
+        unknowns_ledger=unknowns_dicts,
+    )
+
+    dsse_envelope, pubkey, pubkey_pem = create_signed_dsse_envelope(intoto_statement, private_key=signing_key)
+
+    attestation_file = out_path / "attestation.dsse.json"
+    with open(attestation_file, "w", encoding="utf-8") as f:
+        json.dump(dsse_envelope, f, indent=2)
+
+    pubkey_file = out_path / "attestation_pubkey.pem"
+    with open(pubkey_file, "w", encoding="utf-8") as f:
+        f.write(pubkey_pem)
+
+    # 4d. Pareto Migration Portfolio Optimization (Pillar 7)
+    pareto_result = optimize_pareto_portfolio(
+        assessments=assessments,
+        contagion_result=contagion_result,
+        budget_dev_weeks=budget_dev_weeks,
+    )
+    pareto_file = out_path / "pareto_portfolio.json"
+    with open(pareto_file, "w", encoding="utf-8") as f:
+        json.dump(pareto_result.model_dump() if hasattr(pareto_result, "model_dump") else pareto_result.dict(), f, indent=2)
+
+    # 4e. Stochastic Monte Carlo Mosca Risk Simulation
+    stochastic_summary = simulate_estate_stochastic_mosca(
+        assessments=assessments,
+        iterations=stochastic_runs,
+    )
+    stochastic_file = out_path / "stochastic_mosca.json"
+    with open(stochastic_file, "w", encoding="utf-8") as f:
+        json.dump(stochastic_summary, f, indent=2)
+
+    # 4f. Standalone Negative Proof Certificate Generation (Pillar 6 Part B)
+    negative_proof_file = None
+    negative_proof_cert = None
+    if generate_negative_proof:
+        negative_proof_cert = generate_negative_proof_certificate(
+            assessments=assessments,
+            unknowns_ledger=unknowns_ledger,
+            target_path=str(target_path),
+            merkle_root_hex=merkle_root_hex,
+            project_name=target_path.name,
+            total_files_audited=len(all_source_files),
+        )
+        negative_proof_file = out_path / "negative_proof.json"
+        with open(negative_proof_file, "w", encoding="utf-8") as f:
+            json.dump(negative_proof_cert.model_dump() if hasattr(negative_proof_cert, "model_dump") else negative_proof_cert.dict(), f, indent=2)
+
     # 5. Generate and write CISO Markdown report
     ciso_report_md = generate_ciso_report(
         assessments,
@@ -295,12 +430,51 @@ def run_ecdat_scan(
         merkle_root_hex,
         contagion_result=contagion_result,
         unknowns_ledger=unknowns_ledger,
+        path_mtu=path_mtu,
+        attestation_envelope=dsse_envelope,
+        pareto_result=pareto_result,
+        stochastic_summary=stochastic_summary,
+        negative_proof=negative_proof_cert,
     )
     report_file = out_path / "ciso_migration_report.md"
     with open(report_file, "w", encoding="utf-8") as f:
         f.write(ciso_report_md)
 
-    # 6. Generate enriched CycloneDX 1.6 / ECMA-424 CBOM JSON
+
+    # 6. Generate enriched CycloneDX 1.6 / Discussion #966 CBOM JSON
+    cbom_components = []
+    for asset, score, rec in assessments:
+        comp = {
+            "type": "cryptographic-asset",
+            "name": asset.component_name,
+            "bom-ref": asset.asset_id,
+            "cryptoProperties": {
+                "assetType": "algorithm",
+                "algorithmProperties": {
+                    "name": asset.algorithm,
+                    "keyLength": asset.key_size,
+                    "primitive": asset.primitive_type.value,
+                },
+            },
+            "properties": [
+                {"name": "ecdat:x_tier", "value": asset.x_tier.value},
+                {"name": "ecdat:x_years_effective", "value": str(score.x_years_effective)},
+                {"name": "ecdat:y_max_years", "value": str(score.y_max_years)},
+                {"name": "ecdat:risk_level", "value": score.risk_level},
+                {"name": "ecdat:intent_class", "value": asset.intent_class.value if hasattr(asset.intent_class, "value") else str(asset.intent_class)},
+                {"name": "ecdat:evidence_level", "value": asset.evidence_level.value if hasattr(asset.evidence_level, "value") else str(asset.evidence_level)},
+                {"name": "ecdat:exposure_profile", "value": asset.exposure_profile.value if hasattr(asset.exposure_profile, "value") else str(asset.exposure_profile)},
+                {"name": "ecdat:p_hndl", "value": str(score.p_hndl)},
+                {"name": "ecdat:r_q_score", "value": str(score.r_q_score)},
+                {"name": "ecdat:recommended_hybrid", "value": rec.recommended_hybrid},
+                {"name": "ecdat:recommended_pqc", "value": rec.recommended_pqc_standalone},
+                {"name": "ecdat:cams_agility_level", "value": str(getattr(asset, "agility_level", AgilityLevel.RIGID).value)},
+                {"name": "ecdat:cams_agility_name", "value": getattr(asset, "agility_level", AgilityLevel.RIGID).name},
+            ],
+        }
+        enriched_comp = enrich_cyclonedx_component_966(comp, asset, score, rec, path_mtu=path_mtu)
+        cbom_components.append(enriched_comp)
+
     enriched_cbom = {
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",
@@ -308,43 +482,18 @@ def run_ecdat_scan(
         "version": 1,
         "metadata": {
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "tools": [{"name": "ECDAT", "version": "0.1.0", "vendor": "SIH26164"}],
+            "tools": [{"name": "ECDAT", "version": "2.0.0", "vendor": "SIH26164"}],
             "properties": [
                 {"name": "ecdat:merkleRoot", "value": merkle_root_hex},
                 {"name": "ecdat:totalAssets", "value": str(len(assessments))},
                 {"name": "ecdat:manifestDependencies", "value": str(len(manifest_deps))},
                 {"name": "ecdat:unknownsLogged", "value": str(len(unknowns_ledger))},
+                {"name": "ecdat:routeProfile", "value": path_mtu.route_profile.value},
+                {"name": "ecdat:effectiveMtu", "value": str(path_mtu.effective_mtu)},
+                {"name": "ecdat:dsseSigned", "value": "true"},
             ],
         },
-        "components": [
-            {
-                "type": "cryptographic-asset",
-                "name": asset.component_name,
-                "bom-ref": asset.asset_id,
-                "cryptoProperties": {
-                    "assetType": "algorithm",
-                    "algorithmProperties": {
-                        "name": asset.algorithm,
-                        "keyLength": asset.key_size,
-                        "primitive": asset.primitive_type.value,
-                    },
-                },
-                "properties": [
-                    {"name": "ecdat:x_tier", "value": asset.x_tier.value},
-                    {"name": "ecdat:x_years_effective", "value": str(score.x_years_effective)},
-                    {"name": "ecdat:y_max_years", "value": str(score.y_max_years)},
-                    {"name": "ecdat:risk_level", "value": score.risk_level},
-                    {"name": "ecdat:intent_class", "value": asset.intent_class.value if hasattr(asset.intent_class, "value") else str(asset.intent_class)},
-                    {"name": "ecdat:evidence_level", "value": asset.evidence_level.value if hasattr(asset.evidence_level, "value") else str(asset.evidence_level)},
-                    {"name": "ecdat:exposure_profile", "value": asset.exposure_profile.value if hasattr(asset.exposure_profile, "value") else str(asset.exposure_profile)},
-                    {"name": "ecdat:p_hndl", "value": str(score.p_hndl)},
-                    {"name": "ecdat:r_q_score", "value": str(score.r_q_score)},
-                    {"name": "ecdat:recommended_hybrid", "value": rec.recommended_hybrid},
-                    {"name": "ecdat:recommended_pqc", "value": rec.recommended_pqc_standalone},
-                ],
-            }
-            for asset, score, rec in assessments
-        ],
+        "components": cbom_components,
         "dependencies": [d.model_dump() if hasattr(d, "model_dump") else d.dict() for d in manifest_deps],
     }
 
@@ -363,6 +512,13 @@ def run_ecdat_scan(
         ciso_report_md=ciso_report_md,
         manifest_dependencies=manifest_deps,
         unknowns_ledger=unknowns_ledger,
+        path_mtu=path_mtu,
+        attestation_envelope=dsse_envelope,
+        pubkey_pem=pubkey_pem,
+        pareto_result=pareto_result,
+        stochastic_summary=stochastic_summary,
+        negative_proof=negative_proof_cert,
+        budget_dev_weeks=budget_dev_weeks,
     )
     report_file_html = out_path / "report.html"
     with open(report_file_html, "w", encoding="utf-8") as f:
@@ -386,10 +542,20 @@ def run_ecdat_scan(
         "cbom_file": str(cbom_file),
         "report_file": str(report_file),
         "root_file": str(root_file),
+        "attestation_file": str(attestation_file),
+        "pubkey_file": str(pubkey_file),
+        "pareto_portfolio_file": str(pareto_file),
+        "stochastic_mosca_file": str(stochastic_file),
+        "negative_proof_file": str(negative_proof_file) if negative_proof_file else None,
+        "path_mtu": path_mtu.effective_mtu,
+        "route_profile": path_mtu.route_profile.value,
+        "dsse_envelope": dsse_envelope,
+        "pubkey_pem": pubkey_pem,
         "proofs_count": len(proof_packages),
         "unknowns_count": len(unknowns_ledger),
         "unknowns_ledger": [u.model_dump() if hasattr(u, "model_dump") else u.dict() for u in unknowns_ledger],
     }
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI")
@@ -399,12 +565,35 @@ def main() -> int:
     scan_parser.add_argument("--target", required=True, help="Target project directory to scan")
     scan_parser.add_argument("--output", required=False, help="Custom output directory for CBOM, report, and proofs")
     scan_parser.add_argument("--no-theia", action="store_false", dest="enable_theia", default=True, help="Disable cbomkit-theia Go filesystem scanner")
+    scan_parser.add_argument("--probe-host", help="Probe remote network path MTU against target host (e.g. api.example.com)")
+    scan_parser.add_argument("--mtu-profile", choices=["standard", "flexible", "constrained"], help="Override network path MTU profile")
+    scan_parser.add_argument("--mtu-bytes", type=int, help="Override network path MTU in bytes (e.g. 1200 or 1500)")
+    scan_parser.add_argument("--budget", type=float, default=10.0, help="Sprint capacity budget in dev-weeks for Pareto optimizer (default: 10.0)")
+    scan_parser.add_argument("--stochastic-runs", type=int, default=5000, help="Number of Monte Carlo iterations for stochastic Mosca simulation (default: 5000)")
+    scan_parser.add_argument("--no-negative-proof", action="store_false", dest="generate_negative_proof", default=True, help="Disable standalone negative proof certificate generation")
+    scan_parser.add_argument("--subdirs", help="Comma-separated list of subdirectories to scan within target (e.g. backend,blockchain)")
+
+    verify_parser = subparsers.add_parser("verify-attestation", help="Verify an in-toto / SLSA DSSE attestation envelope against public key")
+    verify_parser.add_argument("--envelope", required=True, help="Path to attestation.dsse.json file")
+    verify_parser.add_argument("--pubkey", required=True, help="Path to attestation_pubkey.pem file")
+    verify_parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
     args = parser.parse_args()
 
     if args.command == "scan":
         print(f"[*] Starting ECDAT cryptographic discovery on: {args.target}")
-        result = run_ecdat_scan(args.target, output_dir=args.output, enable_theia=args.enable_theia)
+        result = run_ecdat_scan(
+            args.target,
+            output_dir=args.output,
+            enable_theia=args.enable_theia,
+            probe_host=args.probe_host,
+            mtu_profile=args.mtu_profile,
+            override_mtu=args.mtu_bytes,
+            budget_dev_weeks=args.budget,
+            stochastic_runs=args.stochastic_runs,
+            generate_negative_proof=args.generate_negative_proof,
+            subdirs=args.subdirs,
+        )
         print(f"[+] Scan Complete!")
         print(f"    - Total Assets:      {result['total_assets']}")
         print(f"      * AST Inferences:  {result['source_code_assets']}")
@@ -412,13 +601,33 @@ def main() -> int:
         print(f"      * Supply Chain:    {result['manifest_dependencies_count']} (Polyglot Manifest Packages)")
         print(f"    - Buffer Hazards:    {result['buffer_hazards']}")
         print(f"    - Superspreaders:    {result['contagion_superspreaders']}")
+        print(f"    - Transport MTU:     {result['path_mtu']} B ({result['route_profile']})")
         print(f"    - Merkle Root:       0x{result['merkle_root']}")
+        print(f"    - Signed DSSE:       {result['attestation_file']}")
+        print(f"    - Attestation Key:   {result['pubkey_file']}")
+        print(f"    - Pareto Portfolio:  {result.get('pareto_portfolio_file')}")
+        print(f"    - Stochastic Mosca:  {result.get('stochastic_mosca_file')}")
+        if result.get('negative_proof_file'):
+            print(f"    - Negative Proof:    {result['negative_proof_file']}")
         print(f"    - Contagion Graph:   {result['contagion_graph_file']}")
         print(f"    - HTML Report:       {result['report_file_html']}")
         print(f"    - Output Directory:  {result['output_directory']}")
         print(f"    - CISO Report:       {result['report_file']}")
         print(f"    - Enriched CBOM:     {result['cbom_file']}")
         return 0
+    elif args.command == "verify-attestation":
+        from ecdat.attestation.verifier import verify_dsse_envelope_from_file
+        is_valid, msg, stmt = verify_dsse_envelope_from_file(args.envelope, args.pubkey, expected_root_hex=args.root)
+        if is_valid:
+            proj = stmt["subject"][0].get("name", "unknown") if stmt else "unknown"
+            root_val = stmt["subject"][0]["digest"].get("sha256", "") if stmt else ""
+            print(f"[+] SUCCESS — {msg}")
+            print(f"    - Target Project: {proj}")
+            print(f"    - Merkle Root:    0x{root_val}")
+            return 0
+        else:
+            print(f"[-] VERIFICATION FAILED: {msg}", file=sys.stderr)
+            return 1
     return 1
 
 if __name__ == "__main__":

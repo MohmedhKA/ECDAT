@@ -96,14 +96,24 @@ def build_contagion_network(
     stem_to_path: Dict[str, str] = {}
     crypto_modules: Set[str] = set()
 
+    # Exclude any hidden directories, virtualenvs, and agent folders
+    excluded_dirs = {
+        "venv", ".venv", "env", "node_modules", "site-packages", "__pycache__", ".git",
+        "dist", "build", "target", ".cache", ".agents", ".gemini", ".antigravity", ".codex", ".superpowers", "agents"
+    }
+    valid_file_paths = [
+        f for f in file_paths
+        if not any((part.startswith(".") and part != ".") or part.lower() in excluded_dirs for part in Path(f).parts[:-1])
+    ]
+
     # 1. Register all local code modules
-    for fpath in file_paths:
+    for fpath in valid_file_paths:
         stem = Path(fpath).stem
         stem_to_path[stem] = fpath
         G.add_node(stem, file_path=fpath, algorithms=set())
 
     # Add edges based on local imports
-    for fpath in file_paths:
+    for fpath in valid_file_paths:
         consumer_stem = Path(fpath).stem
         imports = extract_module_dependencies(fpath)
         for imp in imports:
