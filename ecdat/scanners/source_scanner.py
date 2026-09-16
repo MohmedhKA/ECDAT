@@ -244,42 +244,146 @@ KNOWN_JAVA_ALGS_RE = re.compile(
     re.IGNORECASE
 )
 
-def _resolve_java_arg(raw_arg: str, content: str, file_path: Optional[Path] = None) -> str:
+def _trace_java_var(var_name: str, before_pos: int, content: str, max_depth: int = 8) -> Optional[str]:
+    """
+    Backwards data-flow trace for Java variable identifiers.
+    Handles:
+      - Variable re-assignment and alias chains (flow-sensitivity)
+      - Three-step variable swaps (valueswap)
+      - Object field dereferences (e.g. obj.field, configClass.algoConfig1)
+      - Object instantiations and factory invocations (new Class("VAL"), GetObject("VAL"))
+      - Identity wrapper functions (Identity("VAL"))
+    """
+    curr_var = var_name.strip().strip("\"'")
+    if any(q in var_name for q in ('"', "'")):
+        return curr_var
+    if curr_var.isdigit():
+        return curr_var
+
+    curr_pos = before_pos
+    for _ in range(max_depth):
+        if (curr_var.startswith('"') and curr_var.endswith('"')) or (curr_var.startswith("'") and curr_var.endswith("'")):
+            return curr_var.strip("\"'")
+        if curr_var.isdigit():
+            return curr_var
+
+        pre = content[:curr_pos]
+
+        # 1. Object field dereference: e.g. cryptoClass2.algorithm or configClass.algoConfig1
+        if "." in curr_var:
+            obj_name, field_name = curr_var.split(".", 1)
+            pat_field = r'\b' + re.escape(obj_name) + r'\.' + re.escape(field_name) + r'\s*=\s*([^;]+);'
+            matches = list(re.finditer(pat_field, pre))
+            if matches:
+                last_m = matches[-1]
+                curr_var = last_m.group(1).strip()
+                curr_pos = last_m.start()
+                continue
+            pat_ctor = r'\b' + re.escape(obj_name) + r'\s*=\s*(?:new\s+[A-Z][a-zA-Z0-9_]*|[a-zA-Z0-9_]+)\s*\(\s*([^,)]+)'
+            matches_ctor = list(re.finditer(pat_ctor, pre))
+            if matches_ctor:
+                last_ctor = matches_ctor[-1]
+                curr_var = last_ctor.group(1).strip()
+                curr_pos = last_ctor.start()
+                continue
+
+        # 2. Local variable assignment: [Type] curr_var = RHS;
+        pat = r'(?:[a-zA-Z0-9_<>[\]]+\s+)?\b' + re.escape(curr_var) + r'\s*=\s*([^;]+);'
+        matches = list(re.finditer(pat, pre))
+        if not matches:
+            break
+        last_m = matches[-1]
+        rhs = last_m.group(1).strip()
+        curr_pos = last_m.start()
+
+        str_lit = re.search(r'["\']([^"\']+)["\']', rhs)
+        if str_lit:
+            return str_lit.group(1).strip()
+        if re.search(r'new\s+(?:byte|char|int)\s*\[', rhs):
+            return curr_var
+        int_lit = re.search(r'\b(\d+)\b', rhs)
+        if int_lit:
+            return int_lit.group(1).strip()
+        call_arg = re.search(r'(?:[a-zA-Z0-9_.]+\s*\(\s*)*([a-zA-Z0-9_.]+)\s*\)*', rhs)
+        if call_arg:
+            curr_var = call_arg.group(1).strip()
+        else:
+            curr_var = rhs
+    # 3. Interprocedural method or constructor parameter binding:
+    # If curr_var is a parameter of the enclosing method (e.g. method1(String algo)),
+    # locate the call site in the same class/file and trace the passed argument.
+    pre = content[:before_pos]
+    method_pat = re.compile(r"\b(?:public|private|protected|static|\s)+\s*(?:[\w<>\[\]]+\s+)?(\w+)\s*\(([^)]*)\)\s*(?:throws\s+[\w,\s]+)?\{")
+    matches = list(method_pat.finditer(pre))
+    if matches:
+        enc_m = matches[-1]
+        mname = enc_m.group(1)
+        params_str = enc_m.group(2).strip()
+        if params_str and mname != "main":
+            params = [p.strip().split()[-1] for p in params_str.split(",") if p.strip()]
+            if curr_var in params:
+                param_idx = params.index(curr_var)
+                call_pat = re.compile(r"\b(?:new\s+)?" + re.escape(mname) + r"\s*\(([^)]+)\)")
+                for call_m in call_pat.finditer(content):
+                    if call_m.start() >= enc_m.start() and call_m.start() <= enc_m.end():
+                        continue
+                    before_call = content[max(0, call_m.start() - 30):call_m.start()]
+                    if re.search(r'\b(?:void|int|String|boolean|byte\[\]|[A-Z][a-zA-Z0-9_]*)\s+$', before_call) and not before_call.strip().endswith("new"):
+                        continue
+                    args = [a.strip() for a in call_m.group(1).split(",")]
+                    if param_idx < len(args):
+                        actual_arg = args[param_idx]
+                        call_res = _trace_java_var(actual_arg, call_m.start(), content, max_depth - 1)
+                        if call_res:
+                            return call_res
+                        if any(q in actual_arg for q in ('"', "'")):
+                            return actual_arg.strip("\"'")
+
+    return None
+
+def _resolve_java_arg(raw_arg: str, content: str, file_path: Optional[Path] = None, before_pos: Optional[int] = None) -> str:
     """Resolves string literals or variable identifiers for Java crypto arguments."""
     clean = re.sub(r'^(?:String\.valueOf|\(String\))\s*\(\s*([^\)]+)\s*\)', r'\1', raw_arg.strip())
     arg_clean = clean.strip().strip("\"'")
     if any(q in raw_arg for q in ("\"", "'")):
         return arg_clean
 
-    # 1. Local variable declaration: String var = "VAL" or var = "VAL"
-    var_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*["\']([^"\']+)["\']', content)
+    pos = before_pos if before_pos is not None else len(content)
+
+    # 1. Backwards data-flow trace (flow-, object-, and valueswap-sensitive)
+    traced = _trace_java_var(arg_clean, pos, content)
+    if traced and (traced != arg_clean or any(q in traced for q in ('"', "'"))):
+        return traced.strip("\"'")
+
+    # 2. Local variable declaration: String var = "VAL" or var = "VAL" or var = Identity("VAL")
+    var_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*["\']([^"\']+)["\']', content)
     if var_match:
         return var_match.group(1).strip()
 
-    # 2. Chained variable: String var1 = var2;
-    chain_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*([a-zA-Z0-9_]+)\s*;', content)
+    # 3. Chained variable: String var1 = var2; or var1 = Identity(var2);
+    chain_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*([a-zA-Z0-9_]+)\s*\)?\s*;', content)
     if chain_match:
         chained_var = chain_match.group(1).strip()
-        c_match = re.search(r'(?:String|var)?\s*' + re.escape(chained_var) + r'\s*=\s*["\']([^"\']+)["\']', content)
+        c_match = re.search(r'(?:String|var)?\s*' + re.escape(chained_var) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*["\']([^"\']+)["\']', content)
         if c_match:
             return c_match.group(1).strip()
 
-    # 3. Local Constructor invocation: new Crypto2("VAL") or new Class(...)
+    # 4. Local Constructor invocation: new Crypto2("VAL") or new Class(...)
     ctor_match = re.search(r'new\s+[A-Z][a-zA-Z0-9_]*\s*\(\s*["\']([^"\']+)["\']', content)
     if ctor_match:
         return ctor_match.group(1).strip()
 
-    # 4. Map or container insertion: hm.put("key", "VAL")
+    # 5. Map or container insertion: hm.put("key", "VAL")
     map_match = re.search(r'\.put\s*\(\s*[^,]+\s*,\s*["\']([^"\']+)["\']', content)
     if map_match:
         return map_match.group(1).strip()
 
-    # 5. Method call with literal argument in current file: e.g. encrypt("VAL", ...) or go("VAL")
+    # 6. Method call with literal argument in current file: e.g. encrypt("VAL", ...) or go("VAL")
     call_match = re.search(r'\b(?:go|encrypt|test|main|check|set[A-Z]\w*)\s*\([^)]*["\']([^"\']+)["\']', content)
     if call_match and ("algo" in arg_clean.lower() or "crypto" in arg_clean.lower() or "default" in arg_clean.lower() or arg_clean in ("passedAlgo", "cryptoAlgo")):
         return call_match.group(1).strip()
 
-    # 6. Companion caller/sibling files that explicitly import, instantiate, or reference this class
+    # 7. Companion caller/sibling files that explicitly import, instantiate, or reference this class
     if file_path and file_path.parent.exists():
         stem = file_path.stem
         for sibling in file_path.parent.glob("*.java"):
@@ -290,7 +394,7 @@ def _resolve_java_arg(raw_arg: str, content: str, file_path: Optional[Path] = No
                     if not re.search(r'\b' + re.escape(stem) + r'\b', sib_content):
                         continue
                     # Sibling references this class: search for matching variable definition
-                    s_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*["\']([^"\']+)["\']', sib_content)
+                    s_match = re.search(r'(?:String|var)?\s*' + re.escape(arg_clean) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*["\']([^"\']+)["\']', sib_content)
                     if s_match:
                         return s_match.group(1).strip()
                     # Search for constructor or method call passing an algorithm string
@@ -303,12 +407,9 @@ def _resolve_java_arg(raw_arg: str, content: str, file_path: Optional[Path] = No
                 except Exception:
                     pass
 
-    # 7. Check if any known cryptographic algorithm string literal exists in the current file
+    # 8. Check if any known cryptographic algorithm string literal exists in the current file
     alg_match = KNOWN_JAVA_ALGS_RE.search(content)
     if alg_match and ("algo" in arg_clean.lower() or "crypto" in arg_clean.lower() or "default" in arg_clean.lower() or arg_clean in ("passedAlgo", "cryptoAlgo")):
-        return alg_match.group(1).strip()
-
-    if alg_match:
         return alg_match.group(1).strip()
 
     return arg_clean
@@ -333,6 +434,8 @@ def _handle_java_cipher(match_str: str) -> Tuple[str, Optional[int], PrimitiveTy
         return "RC4-128", 128, PrimitiveType.ENCRYPTION
     elif "RC2" in algo:
         return "RC2-128", 128, PrimitiveType.ENCRYPTION
+    elif "RC5" in algo:
+        return "RC5-128", 128, PrimitiveType.ENCRYPTION
     elif "IDEA" in algo:
         return "IDEA-128", 128, PrimitiveType.ENCRYPTION
     return algo, 128, PrimitiveType.ENCRYPTION
@@ -349,37 +452,70 @@ def _handle_java_key_generator(match_str: str) -> Tuple[str, Optional[int], Prim
         return "Blowfish-128", 128, PrimitiveType.ENCRYPTION
     elif "RC4" in algo or "ARCFOUR" in algo:
         return "RC4-128", 128, PrimitiveType.ENCRYPTION
+    elif "RC2" in algo:
+        return "RC2-128", 128, PrimitiveType.ENCRYPTION
+    elif "RC5" in algo:
+        return "RC5-128", 128, PrimitiveType.ENCRYPTION
     elif "HMAC" in algo:
         return algo, 256, PrimitiveType.HASH
     return algo, 128, PrimitiveType.ENCRYPTION
 
 def _handle_java_keypair_generator(match_str: str, content: str = "", file_path: Optional[Path] = None) -> Tuple[str, Optional[int], PrimitiveType]:
     algo = match_str.strip().upper()
-    init_m = re.search(r'\b(?:initialize|init)\s*\(\s*([a-zA-Z0-9_]+)\s*\)', content)
+    init_m = re.search(r'\b(?:initialize|init)\s*\(\s*([a-zA-Z0-9_.]+)\s*\)', content)
     found_size = None
     if init_m:
         arg_val = init_m.group(1).strip()
         if arg_val.isdigit():
             found_size = int(arg_val)
         else:
-            size_m = re.findall(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(\d+)', content)
-            if size_m:
-                found_size = int(size_m[-1])
-            elif file_path and file_path.parent.exists():
-                for sib in file_path.parent.glob("*.java"):
-                    if sib != file_path:
-                        try:
-                            s_txt = sib.read_text(encoding="utf-8", errors="replace")
-                            s_size = re.findall(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(\d+)', s_txt)
-                            if s_size:
-                                found_size = int(s_size[-1])
-                                break
-                            s_call = re.search(r'\b(?:go|test|main)\s*\(\s*(\d+)\s*\)', s_txt)
-                            if s_call:
-                                found_size = int(s_call.group(1))
-                                break
-                        except Exception:
-                            pass
+            traced = _trace_java_var(arg_val, init_m.start(), content)
+            if traced and traced.isdigit():
+                found_size = int(traced)
+            else:
+                pre_content = content[:init_m.start()]
+                size_m = re.findall(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', pre_content)
+                if not size_m:
+                    size_m = re.findall(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', content)
+                if size_m:
+                    found_size = int(size_m[-1])
+                else:
+                    chain_m = re.search(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*([a-zA-Z0-9_]+)', content)
+                    if chain_m:
+                        ch_val = chain_m.group(1).strip()
+                        c_size = re.findall(r'\b(?:int|long)?\s*' + re.escape(ch_val) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', content)
+                        if c_size:
+                            found_size = int(c_size[-1])
+                # Check if arg_val is a method parameter called with a known size
+                if not found_size:
+                    m_decl = re.search(r'\b([a-zA-Z0-9_]+)\s*\([^)]*\b' + re.escape(arg_val) + r'\b[^)]*\)\s*(?:throws[^{]+)?\{', content)
+                    if m_decl:
+                        func_name = m_decl.group(1).strip()
+                        call_m = re.search(r'\b' + re.escape(func_name) + r'\s*\(\s*([a-zA-Z0-9_.]+)', content)
+                        if call_m:
+                            passed_arg = call_m.group(1).strip()
+                            traced_p = _trace_java_var(passed_arg, call_m.start(), content)
+                            if traced_p and traced_p.isdigit():
+                                found_size = int(traced_p)
+                            else:
+                                p_size = re.findall(r'\b(?:int|long)?\s*' + re.escape(passed_arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', content)
+                                if p_size:
+                                    found_size = int(p_size[-1])
+                if not found_size and file_path and file_path.parent.exists():
+                    for sib in file_path.parent.glob("*.java"):
+                        if sib != file_path:
+                            try:
+                                s_txt = sib.read_text(encoding="utf-8", errors="replace")
+                                s_size = re.findall(r'\b(?:int|long)?\s*' + re.escape(arg_val) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', s_txt)
+                                if s_size:
+                                    found_size = int(s_size[-1])
+                                    break
+                                s_call = re.search(r'\b(?:go|test|main)\s*\(\s*(\d+)\s*\)', s_txt)
+                                if s_call:
+                                    found_size = int(s_call.group(1))
+                                    break
+                            except Exception:
+                                pass
     if not found_size:
         sizes = [int(x) for x in re.findall(r'\b(?:keySize|keysize)\s*=\s*(\d+)', content)]
         if sizes:
@@ -643,27 +779,129 @@ def scan_rust_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
 
     return assets
 
-def _preprocess_java_path_conditions(content: str) -> str:
-    """Evaluates statically provable branch conditions (e.g. constant choice) to remove dead code branches."""
-    choice_m = re.search(r'\bint\s+choice\s*=\s*(\d+)', content)
-    if not choice_m:
-        return content
-    choice_val = int(choice_m.group(1))
+def _find_matching_brace(s: str, start: int) -> int:
+    depth = 0
+    for i in range(start, len(s)):
+        if s[i] == "{":
+            depth += 1
+        elif s[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+    return -1
 
-    if_m = re.search(r'if\s*\(\s*choice\s*>\s*(\d+)\s*\)', content)
-    if if_m:
-        thresh = int(if_m.group(1))
-        if choice_val > thresh:
-            # 1. if (choice > 1) stmt1; else stmt2; -> stmt1;
-            c = re.sub(r'if\s*\(\s*choice\s*>\s*\d+\s*\)\s*([^;]+;)\s*else\s*([^;]+;)', r'\1', content)
-            # 2. Reassignment: Type var = expr; ... if (choice > 1) var = expr2;
-            c = re.sub(
-                r'((?:[A-Za-z0-9_<>\s]+\s+)?([A-Za-z0-9_]+)\s*=\s*[^;]+;)\s*if\s*\(\s*choice\s*>\s*\d+\s*\)\s*(\2\s*=\s*[^;]+;)',
-                r'\3',
-                c
-            )
-            return c
+def _blank_out(s: str, start: int, end: int) -> str:
+    sub = s[start:end]
+    blanked = "".join("\n" if c == "\n" else " " for c in sub)
+    return s[:start] + blanked + s[end:]
+
+def _preprocess_java_path_conditions(content: str) -> str:
+    """Evaluates statically provable branch conditions (e.g. constant choice/condition) to eliminate dead code branches."""
+    constants = {}
+    for m in re.finditer(r"\bint\s+([a-zA-Z0-9_]+)\s*=\s*(\d+)\s*;", content):
+        constants[m.group(1)] = int(m.group(2))
+    if not constants:
+        return content
+
+    # Reassignment overwrite without else:
+    # e.g.: cipher = ...; if (choice > 1) cipher = ...;
+    for var_name, var_val in constants.items():
+        for if_m in re.finditer(r"\bif\s*\(\s*" + re.escape(var_name) + r"\s*(>|<|==|!=|>=|<=)\s*(\d+)\s*\)", content):
+            op, val = if_m.group(1), int(if_m.group(2))
+            if op == ">": cond_val = var_val > val
+            elif op == "<": cond_val = var_val < val
+            elif op == "==": cond_val = var_val == val
+            elif op == "!=": cond_val = var_val != val
+            elif op == ">=": cond_val = var_val >= val
+            elif op == "<=": cond_val = var_val <= val
+            else: continue
+
+            if cond_val:
+                reassign_pat = re.compile(
+                    r"((?:[A-Za-z0-9_<>[\]]+\s+)?([A-Za-z0-9_]+)\s*=\s*[^;]+;)\s*" +
+                    re.escape(if_m.group(0)) +
+                    r"\s*(\2\s*=\s*[^;]+;)"
+                )
+                m_reassign = reassign_pat.search(content)
+                if m_reassign:
+                    content = _blank_out(content, m_reassign.start(1), m_reassign.end(1))
+
+    for m in list(re.finditer(r"\bif\s*\(([^)]+)\)", content)):
+        cond_str = m.group(1).strip()
+        cond_m = re.match(r"([a-zA-Z0-9_]+)\s*(==|!=|>=|<=|>|<)\s*(\d+)", cond_str)
+        if not cond_m:
+            continue
+        var_name, op, val_str = cond_m.group(1), cond_m.group(2), cond_m.group(3)
+        if var_name not in constants:
+            continue
+        var_val = constants[var_name]
+        val = int(val_str)
+        if op == ">": cond_val = var_val > val
+        elif op == "<": cond_val = var_val < val
+        elif op == "==": cond_val = var_val == val
+        elif op == "!=": cond_val = var_val != val
+        elif op == ">=": cond_val = var_val >= val
+        elif op == "<=": cond_val = var_val <= val
+        else: continue
+
+        idx = m.end()
+        while idx < len(content) and content[idx].isspace():
+            idx += 1
+        if idx >= len(content):
+            continue
+
+        if content[idx] == "{":
+            if_end = _find_matching_brace(content, idx)
+            if if_end == -1:
+                continue
+            if_body_start, if_body_end = idx + 1, if_end
+            next_idx = if_end + 1
+        else:
+            semi = content.find(";", idx)
+            if semi == -1:
+                continue
+            if_body_start, if_body_end = idx, semi + 1
+            next_idx = semi + 1
+
+        rem = content[next_idx:]
+        else_m = re.match(r"\s*else\b", rem)
+        if bool(else_m):
+            else_start = next_idx + else_m.end()
+            while else_start < len(content) and content[else_start].isspace():
+                else_start += 1
+            if else_start < len(content):
+                if content[else_start] == "{":
+                    else_end = _find_matching_brace(content, else_start)
+                    else_body_start, else_body_end = (else_start + 1, else_end) if else_end != -1 else (None, None)
+                else:
+                    semi = content.find(";", else_start)
+                    else_body_start, else_body_end = (else_start, semi + 1) if semi != -1 else (None, None)
+            else:
+                else_body_start, else_body_end = None, None
+        else:
+            else_body_start, else_body_end = None, None
+
+        if cond_val:
+            if else_body_start is not None:
+                content = _blank_out(content, else_body_start, else_body_end)
+        else:
+            content = _blank_out(content, if_body_start, if_body_end)
+
     return content
+
+def _strip_java_comments(text: str) -> str:
+    """Strips block and inline comments while strictly preserving string literals, line counts, and offsets."""
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith("/"):
+            return "".join("\n" if c == "\n" else " " for c in s)
+        else:
+            return s
+    pattern = re.compile(
+        r"//.*?$|/\*.*?\*/|'(?:\\.|[^\\'])*'|\"(?:\\.|[^\\\"])*\"",
+        re.DOTALL | re.MULTILINE
+    )
+    return re.sub(pattern, replacer, text)
 
 def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
     """Scans a Java source file for JCA/JCE in-code crypto operations and misuse patterns."""
@@ -671,6 +909,9 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         content = file_path.read_text(encoding="utf-8", errors="replace")
     except Exception:
         return []
+
+    # Strip comments safely without damaging URLs or strings
+    content = _strip_java_comments(content)
 
     # Path sensitivity dead-branch elimination
     content = _preprocess_java_path_conditions(content)
@@ -697,7 +938,7 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         for match in rule["pattern"].finditer(content):
             line_no = _extract_line_number(content, match.start())
             matched_arg = match.group(1)
-            resolved_arg = _resolve_java_arg(matched_arg, content, file_path)
+            resolved_arg = _resolve_java_arg(matched_arg, content, file_path, before_pos=match.start())
 
             if rule.get("handler") == "_handle_java_keypair_generator":
                 alg, key_size, prim = _handle_java_keypair_generator(resolved_arg, content, file_path)
@@ -798,7 +1039,11 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
     # 3. Predictable / Dynamic SecureRandom Seeds (setSeed / new SecureRandom(seed))
     for m in re.finditer(r"(?:[a-zA-Z0-9_]+)\.setSeed\s*\(\s*([^)]+)\)", content):
         arg = m.group(1).strip()
-        has_dynamic_seed = bool(re.search(r"(?:nextLong|nextBytes)\s*\(", content))
+        has_dynamic_seed = bool(
+            re.search(r'\b' + re.escape(arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\.)?(?:nextLong|nextBytes|generateSeed)\s*\(', content) or
+            re.search(r'\.setSeed\s*\(\s*(?:[a-zA-Z0-9_.]+\.)?(?:nextLong|nextBytes|generateSeed)\s*\(', content) or
+            re.search(r'nextBytes\s*\(\s*' + re.escape(arg) + r'\s*\)', content)
+        )
         line_no = _extract_line_number(content, m.start())
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
         if not has_dynamic_seed:
@@ -850,7 +1095,11 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
 
     for m in re.finditer(r"new\s+SecureRandom\s*\(\s*([^)]+)\)", content):
         arg = m.group(1).strip()
-        has_dynamic_seed = bool(re.search(r"(?:nextLong|nextBytes)\s*\(", content))
+        has_dynamic_seed = bool(
+            re.search(r'\b' + re.escape(arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\.)?(?:nextLong|nextBytes|generateSeed)\s*\(', content) or
+            re.search(r'new\s+SecureRandom\s*\(\s*(?:[a-zA-Z0-9_.]+\.)?(?:nextLong|nextBytes|generateSeed)\s*\(', content) or
+            re.search(r'nextBytes\s*\(\s*' + re.escape(arg) + r'\s*\)', content)
+        )
         line_no = _extract_line_number(content, m.start())
         is_shred, tier = _check_crypto_shredding_context(content, line_no)
         if arg and not has_dynamic_seed:
@@ -909,39 +1158,101 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
 
         is_weak_count = False
         if count_arg.isdigit():
-            is_weak_count = int(count_arg) < 1000
+            is_weak_count = int(count_arg) <= 1000
         else:
-            map_get_m = re.search(r'\b' + re.escape(count_arg) + r'\s*=\s*[a-zA-Z0-9_]+\.get\s*\(\s*["\']([^"\']+)["\']\s*\)', content)
-            if map_get_m:
-                m_key = map_get_m.group(1)
-                m_put = re.search(r'\.put\s*\(\s*["\']' + re.escape(m_key) + r'["\']\s*,\s*(?:new\s+Integer\s*\(\s*)?(\d+)', content)
-                if m_put:
-                    is_weak_count = int(m_put.group(1)) < 1000
+            traced_count = _trace_java_var(count_arg, m.start(), content)
+            if traced_count and traced_count.isdigit():
+                is_weak_count = int(traced_count) <= 1000
             else:
-                counts = [int(x) for x in re.findall(r'\b(?:int|long)?\s*' + re.escape(count_arg) + r'\s*=\s*(\d+)', content)]
-                if counts:
-                    is_weak_count = (counts[-1] < 1000)
+                map_get_m = re.search(r'\b' + re.escape(count_arg) + r'\s*=\s*[a-zA-Z0-9_]+\.get\s*\(\s*["\']([^"\']+)["\']\s*\)', content)
+                if map_get_m:
+                    m_key = map_get_m.group(1)
+                    m_put = re.search(r'\.put\s*\(\s*["\']' + re.escape(m_key) + r'["\']\s*,\s*(?:new\s+Integer\s*\(\s*)?(\d+)', content)
+                    if m_put:
+                        is_weak_count = int(m_put.group(1)) <= 1000
                 else:
-                    ctor_call = re.search(r'new\s+[A-Z][a-zA-Z0-9_]*\s*\(\s*(\d+)\s*\)', content)
-                    if ctor_call and int(ctor_call.group(1)) < 1000 and "AES" not in ctor_call.group(0):
-                        is_weak_count = True
-                    elif file_path and file_path.parent.exists():
-                        for sib in file_path.parent.glob("*.java"):
-                            if sib != file_path:
-                                try:
-                                    s_txt = sib.read_text(encoding="utf-8", errors="replace")
-                                    s_assign = re.findall(r'\b(?:int|long)?\s*(?:count|iteration)\s*=\s*(\d+)', s_txt)
-                                    if s_assign and int(s_assign[-1]) < 1000:
-                                        is_weak_count = True
-                                        break
-                                    s_call = re.search(r'\b(?:go|test|method\d*)\s*\(\s*(\d+)\s*\)', s_txt)
-                                    if s_call and int(s_call.group(1)) < 1000:
-                                        is_weak_count = True
-                                        break
-                                except Exception:
-                                    pass
+                    pre_c = content[:m.start()]
+                    counts = [int(x) for x in re.findall(r'\b(?:int|long)?\s*' + re.escape(count_arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', pre_c)]
+                    if not counts:
+                        counts = [int(x) for x in re.findall(r'\b(?:int|long)?\s*' + re.escape(count_arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', content)]
+                    if counts:
+                        is_weak_count = (counts[-1] <= 1000)
+                    else:
+                        # Check method parameter callers
+                        m_decl = re.search(r'\b([a-zA-Z0-9_]+)\s*\([^)]*\b' + re.escape(count_arg) + r'\b[^)]*\)\s*(?:throws[^{]+)?\{', content)
+                        if m_decl:
+                            func_name = m_decl.group(1).strip()
+                            call_m = re.search(r'\b' + re.escape(func_name) + r'\s*\([^,]+,\s*([a-zA-Z0-9_.]+)', content)
+                            if call_m:
+                                passed_arg = call_m.group(1).strip()
+                                traced_p = _trace_java_var(passed_arg, call_m.start(), content)
+                                if traced_p and traced_p.isdigit():
+                                    is_weak_count = int(traced_p) <= 1000
+                                else:
+                                    p_cnts = [int(x) for x in re.findall(r'\b(?:int|long)?\s*' + re.escape(passed_arg) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*(\d+)', content)]
+                                    if p_cnts:
+                                        is_weak_count = (p_cnts[-1] <= 1000)
+                        if not is_weak_count:
+                            ctor_call = re.search(r'new\s+[A-Z][a-zA-Z0-9_]*\s*\(\s*(\d+)\s*\)', content)
+                            if ctor_call and int(ctor_call.group(1)) <= 1000 and "AES" not in ctor_call.group(0):
+                                is_weak_count = True
+                            elif file_path and file_path.parent.exists():
+                                for sib in file_path.parent.glob("*.java"):
+                                    if sib != file_path:
+                                        try:
+                                            s_txt = sib.read_text(encoding="utf-8", errors="replace")
+                                            s_assign = re.findall(r'\b(?:int|long)?\s*(?:count|iteration)\s*=\s*(\d+)', s_txt)
+                                            if s_assign and int(s_assign[-1]) <= 1000:
+                                                is_weak_count = True
+                                                break
+                                            s_call = re.search(r'\b(?:go|test|method\d*)\s*\(\s*(\d+)\s*\)', s_txt)
+                                            if s_call and int(s_call.group(1)) <= 1000:
+                                                is_weak_count = True
+                                                break
+                                        except Exception:
+                                            pass
 
-        is_static_salt = not bool(re.search(r"nextBytes\s*\(\s*" + re.escape(salt_arg) + r"\s*\)", content))
+        # Flow-aware dynamic salt check
+        pre_content = content[:m.start()]
+        pat_salt = r'(?:[a-zA-Z0-9_<>[\]]+\s+)?\b' + re.escape(salt_arg) + r'\s*=\s*([^;]+);'
+        assigns_salt = list(re.finditer(pat_salt, pre_content))
+        last_assign_salt = assigns_salt[-1].start() if assigns_salt else -1
+
+        nb_salt = list(re.finditer(r'(?:([a-zA-Z0-9_]+)\.)?nextBytes\s*\(\s*' + re.escape(salt_arg) + r'\s*\)', pre_content))
+        last_nb_salt = nb_salt[-1].start() if nb_salt else -1
+
+        is_dynamic_salt = False
+        if last_nb_salt > last_assign_salt:
+            rcv = nb_salt[-1].group(1)
+            if not (rcv and re.search(r'\b' + re.escape(rcv) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*new\s+Random\s*\(', pre_content)):
+                is_dynamic_salt = True
+        else:
+            src_salt = _trace_java_var(salt_arg, m.start(), content)
+            if src_salt:
+                if any(c in src_salt for c in ('"', "'", "getBytes", "{")):
+                    is_dynamic_salt = False
+                else:
+                    nb_src = list(re.finditer(r'(?:([a-zA-Z0-9_]+)\.)?nextBytes\s*\(\s*' + re.escape(src_salt) + r'\s*\)', pre_content))
+                    if nb_src:
+                        rcv_s = nb_src[-1].group(1)
+                        if not (rcv_s and re.search(r'\b' + re.escape(rcv_s) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*new\s+Random\s*\(', pre_content)):
+                            is_dynamic_salt = True
+
+        if not is_dynamic_salt:
+            m_decl = re.search(r'\b([a-zA-Z0-9_]+)\s*\([^)]*\b' + re.escape(salt_arg) + r'\b[^)]*\)\s*\{', content)
+            if m_decl:
+                func_name = m_decl.group(1).strip()
+                call_m = re.search(r'\b' + re.escape(func_name) + r'\s*\(\s*([a-zA-Z0-9_.]+)', content)
+                if call_m:
+                    passed_arg = call_m.group(1).strip()
+                    if re.search(r'nextBytes\s*\(\s*' + re.escape(passed_arg) + r'\s*\)', content):
+                        is_dynamic_salt = True
+                    else:
+                        p_src = _trace_java_var(passed_arg, call_m.start(), content)
+                        if p_src and re.search(r'nextBytes\s*\(\s*' + re.escape(p_src) + r'\s*\)', content):
+                            is_dynamic_salt = True
+
+        is_static_salt = not is_dynamic_salt
 
         if is_weak_count:
             assets.append(CryptoAsset(
@@ -1212,10 +1523,57 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
     # 6. IvParameterSpec (Static IV)
     for m in re.finditer(r"new\s+IvParameterSpec\s*\(\s*([^)]+)\)", content):
         iv_arg = m.group(1).strip()
-        is_dynamic = bool(
-            re.search(r"nextBytes\s*\(\s*" + re.escape(iv_arg) + r"\s*\)", content) or
-            (re.search(r"SecureRandom\s+[a-zA-Z0-9_]+\s*=\s*new\s+SecureRandom", content) and "nextBytes" in content)
-        )
+        pre_content = content[:m.start()]
+
+        pat = r'(?:[a-zA-Z0-9_<>[\]]+\s+)?\b' + re.escape(iv_arg) + r'\s*=\s*([^;]+);'
+        assigns = list(re.finditer(pat, pre_content))
+        last_assign_pos = assigns[-1].start() if assigns else -1
+
+        nb_matches = list(re.finditer(r'(?:([a-zA-Z0-9_]+)\.)?nextBytes\s*\(\s*' + re.escape(iv_arg) + r'\s*\)', pre_content))
+        last_nb_pos = nb_matches[-1].start() if nb_matches else -1
+
+        is_dynamic = False
+        if last_nb_pos > last_assign_pos:
+            rcv = nb_matches[-1].group(1)
+            traced_rcv = _trace_java_var(rcv, last_nb_pos, pre_content) if rcv else None
+            is_untrusted = bool(
+                (rcv and re.search(r'\b' + re.escape(rcv) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*new\s+Random\s*\(', pre_content)) or
+                (traced_rcv and "Random()" in traced_rcv and "SecureRandom" not in traced_rcv)
+            )
+            if is_untrusted:
+                is_dynamic = False
+            else:
+                is_dynamic = True
+        else:
+            src_var = _trace_java_var(iv_arg, m.start(), content)
+            if src_var:
+                if any(c in src_var for c in ('"', "'", "getBytes", "{")):
+                    is_dynamic = False
+                else:
+                    nb2 = list(re.finditer(r'(?:([a-zA-Z0-9_]+)\.)?nextBytes\s*\(\s*' + re.escape(src_var) + r'\s*\)', pre_content))
+                    if nb2:
+                        rcv2 = nb2[-1].group(1)
+                        traced_rcv2 = _trace_java_var(rcv2, nb2[-1].start(), pre_content) if rcv2 else None
+                        is_untrusted2 = bool(
+                            (rcv2 and re.search(r'\b' + re.escape(rcv2) + r'\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*new\s+Random\s*\(', pre_content)) or
+                            (traced_rcv2 and "Random()" in traced_rcv2 and "SecureRandom" not in traced_rcv2)
+                        )
+                        if not is_untrusted2:
+                            is_dynamic = True
+
+        if not is_dynamic:
+            m_decl = re.search(r'\b([a-zA-Z0-9_]+)\s*\([^)]*\b' + re.escape(iv_arg) + r'\b[^)]*\)\s*\{', content)
+            if m_decl:
+                func_name = m_decl.group(1).strip()
+                call_m = re.search(r'\b' + re.escape(func_name) + r'\s*\(\s*([a-zA-Z0-9_.]+)', content)
+                if call_m:
+                    passed_arg = call_m.group(1).strip()
+                    if re.search(r'nextBytes\s*\(\s*' + re.escape(passed_arg) + r'\s*\)', content):
+                        is_dynamic = True
+                    else:
+                        p_src = _trace_java_var(passed_arg, call_m.start(), content)
+                        if p_src and re.search(r'nextBytes\s*\(\s*' + re.escape(p_src) + r'\s*\)', content):
+                            is_dynamic = True
         if not is_dynamic:
             line_no = _extract_line_number(content, m.start())
             is_shred, tier = _check_crypto_shredding_context(content, line_no)
@@ -1377,9 +1735,25 @@ def scan_java_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         ))
 
     # 9. PRNG & Improper SSLSocketFactory
-    if re.search(r"new\s+Random\s*\(\s*\)", content) and (
+    has_untrusted_prng = False
+    for m_nb in re.finditer(r"\b([a-zA-Z0-9_.]+)\.next(?:Bytes|Int|Long|Double|Float)?\s*\(", content):
+        rcv = m_nb.group(1).strip()
+        if re.search(r"\b" + re.escape(rcv) + r"\s*=\s*(?:[a-zA-Z0-9_.]+\s*\(\s*)*new\s+Random\s*\(", content):
+            has_untrusted_prng = True
+            break
+        traced_rcv = _trace_java_var(rcv, m_nb.start(), content)
+        if traced_rcv and "Random()" in traced_rcv and "SecureRandom" not in traced_rcv:
+            has_untrusted_prng = True
+            break
+    if not has_untrusted_prng and re.search(r"new\s+Random\s*\(\s*\)\.next", content):
+        has_untrusted_prng = True
+
+    if has_untrusted_prng and (
         "PBEParameterSpec" in content or
+        "IvParameterSpec" in content or
+        "Cipher" in content or
         "randomBytes" in content or
+        "ivBytes" in content or
         "session" in content.lower() or
         "nonce" in content.lower() or
         "DigestAuthentication" in content

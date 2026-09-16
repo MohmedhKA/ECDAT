@@ -28,7 +28,7 @@ def is_classically_broken_or_misuse(asset: CryptoAsset) -> bool:
     alg = asset.algorithm.upper()
 
     broken_primitives = [
-        "DES", "3DES", "DESEDE", "RC4", "ARCFOUR", "RC2", "BLOWFISH", "IDEA",
+        "DES", "3DES", "DESEDE", "RC4", "ARCFOUR", "RC2", "RC5", "BLOWFISH", "IDEA",
         "MD5", "MD4", "MD2", "SHA-1", "SHA1", "HMAC-MD5", "HMAC-SHA1",
         "ECB", "STATIC-IV", "PREDICTABLE-KEY", "STATIC-SALT", "PREDICTABLE-SEED",
         "PBE-WEAK-ITERATION", "HARDCODED-PASSWORD", "PREDICTABLE-KEYSTORE",
