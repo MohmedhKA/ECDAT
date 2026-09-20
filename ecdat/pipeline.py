@@ -721,6 +721,16 @@ def probe_cmd(endpoint, timeout, output):
     return probe_live_tls_infrastructure(endpoint=endpoint, timeout=timeout, output=output)
 
 
+@cli.command("serve")
+@click.option("--port", default=8080, type=int, help="Port to bind server (default: 8080)")
+@click.option("--host", default="127.0.0.1", type=str, help="Host interface to bind (default: 127.0.0.1)")
+@click.option("--reports-dir", default=None, type=str, help="Directory containing scanned project reports")
+def serve_cmd(port, host, reports_dir):
+    """Start the ECDAT Multi-Project Fleet Dashboard Server."""
+    from ecdat.dashboard.server import start_server
+    return start_server(host=host, port=port, reports_dir=reports_dir)
+
+
 @cli.command("gate")
 @click.option("--target", "-t", required=True, type=str, help="Target project directory to scan")
 @click.option("--fail-on", default="CRITICAL", type=click.Choice(["CRITICAL", "HIGH", "MEDIUM", "LOW"], case_sensitive=False), help="Failure severity threshold")
@@ -790,6 +800,11 @@ def main() -> int:
     dash_parser.add_argument("--report", help="Path to report.html or output directory containing report.html")
     dash_parser.add_argument("--port", type=int, default=8000, help="Port to serve report on (default: 8000)")
     dash_parser.add_argument("--no-browser", action="store_true", help="Do not open web browser automatically")
+
+    serve_parser = subparsers.add_parser("serve", help="Start the ECDAT Multi-Project Fleet Dashboard Server")
+    serve_parser.add_argument("--port", type=int, default=8080, help="Port to bind server (default: 8080)")
+    serve_parser.add_argument("--host", default="127.0.0.1", help="Host interface to bind (default: 127.0.0.1)")
+    serve_parser.add_argument("--reports-dir", default=None, help="Directory containing scanned project reports")
 
     probe_parser = subparsers.add_parser("probe", help="Probe remote TLS endpoint for live cryptographic posture")
     probe_parser.add_argument("endpoint", help="Target URL or hostname to probe (e.g. https://example.com:443)")
@@ -914,6 +929,9 @@ def main() -> int:
     elif args.command == "probe":
         assets = probe_live_tls_infrastructure(args.endpoint, timeout=args.timeout, output=args.output)
         return 0 if assets else 1
+    elif args.command == "serve":
+        from ecdat.dashboard.server import start_server
+        return start_server(host=args.host, port=args.port, reports_dir=args.reports_dir)
     return 1
 
 if __name__ == "__main__":
