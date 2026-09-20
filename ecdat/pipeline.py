@@ -49,6 +49,8 @@ from ecdat.attestation.cyclonedx_966 import enrich_cyclonedx_component_966
 from ecdat.optimizer.pareto import optimize_pareto_portfolio
 from ecdat.mosca.stochastic import simulate_estate_stochastic_mosca
 from ecdat.attestation.negative_proof import generate_negative_proof_certificate
+from ecdat.report_sarif import export_sarif_file, generate_sarif_dict
+from ecdat.gate import evaluate_quality_gate, GateResult
 
 
 def _infer_primitive_and_alg(var_name: str, sink_call: Optional[str]) -> Tuple[PrimitiveType, str, int]:
@@ -282,6 +284,7 @@ def run_ecdat_scan(
         _apply_deployment_exposure(asset, deployment_exposures)
 
         score = compute_mosca_score(asset, current_year=CURRENT_YEAR)
+        asset.risk_level = score.risk_level
         rec = recommend_pqc_migration(asset, path_mtu=path_mtu)
 
         assessments.append((asset, score, rec))
@@ -299,6 +302,7 @@ def run_ecdat_scan(
         _apply_schema_lifespan(p_asset, schema_lifespans)
         _apply_deployment_exposure(p_asset, deployment_exposures)
         score = compute_mosca_score(p_asset, current_year=CURRENT_YEAR)
+        p_asset.risk_level = score.risk_level
         rec = recommend_pqc_migration(p_asset, path_mtu=path_mtu)
         assessments.append((p_asset, score, rec))
         assets_for_merkle.append((p_asset, score))
@@ -317,6 +321,7 @@ def run_ecdat_scan(
             _apply_schema_lifespan(fs_asset, schema_lifespans)
             _apply_deployment_exposure(fs_asset, deployment_exposures)
             score = compute_mosca_score(fs_asset, current_year=CURRENT_YEAR)
+            fs_asset.risk_level = score.risk_level
             rec = recommend_pqc_migration(fs_asset, path_mtu=path_mtu)
             assessments.append((fs_asset, score, rec))
             assets_for_merkle.append((fs_asset, score))
@@ -333,6 +338,7 @@ def run_ecdat_scan(
         _apply_schema_lifespan(c_asset, schema_lifespans)
         _apply_deployment_exposure(c_asset, deployment_exposures)
         score = compute_mosca_score(c_asset, current_year=CURRENT_YEAR)
+        c_asset.risk_level = score.risk_level
         rec = recommend_pqc_migration(c_asset, path_mtu=path_mtu)
         assessments.append((c_asset, score, rec))
         assets_for_merkle.append((c_asset, score))
@@ -530,6 +536,11 @@ def run_ecdat_scan(
     with open(cbom_file, "w", encoding="utf-8") as f:
         json.dump(enriched_cbom, f, indent=2)
 
+    # 6b. Generate OASIS SARIF 2.1.0 Static Analysis Report
+    sarif_file = out_path / "cbom.sarif.json"
+    discovered_assets = [a for a, _, _ in assessments]
+    export_sarif_file(discovered_assets, sarif_file)
+
     # 7. Generate standalone Visual Interactive HTML Report (and backward-compatible dashboard.html)
     report_html = generate_html_report(
         assessments=assessments,
@@ -574,6 +585,8 @@ def run_ecdat_scan(
         "report_file_html": str(report_file_html),
         "output_directory": str(out_path),
         "cbom_file": str(cbom_file),
+        "sarif_file": str(sarif_file),
+        "assets": discovered_assets,
         "report_file": str(report_file),
         "root_file": str(root_file),
         "attestation_file": str(attestation_file),
@@ -589,6 +602,35 @@ def run_ecdat_scan(
         "unknowns_count": len(unknowns_ledger),
         "unknowns_ledger": [u.model_dump() if hasattr(u, "model_dump") else u.dict() for u in unknowns_ledger],
     }
+
+
+class PipelineResult(list):
+    """
+    List subclass containing CryptoAsset items, allowing both list operations
+    and dictionary-like access to the underlying scan metadata.
+    """
+    def __init__(self, assets: List[CryptoAsset], scan_result: Optional[Dict[str, Any]] = None):
+        super().__init__(assets)
+        self.scan_result = scan_result or {}
+        self.assets = assets
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return self.scan_result[item]
+        return super().__getitem__(item)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self.scan_result.get(key, default)
+
+
+def run_pipeline(target_dir: str, **kwargs) -> PipelineResult:
+    """
+    Executes the cryptographic discovery and risk pipeline, returning
+    a PipelineResult with discovered CryptoAsset items and metadata.
+    """
+    scan_res = run_ecdat_scan(target_dir, **kwargs)
+    assets = scan_res.get("assets", [])
+    return PipelineResult(assets, scan_result=scan_res)
 
 
 def probe_live_tls_infrastructure(
@@ -679,6 +721,42 @@ def probe_cmd(endpoint, timeout, output):
     return probe_live_tls_infrastructure(endpoint=endpoint, timeout=timeout, output=output)
 
 
+@cli.command("gate")
+@click.option("--target", "-t", required=True, type=str, help="Target project directory to scan")
+@click.option("--fail-on", default="CRITICAL", type=click.Choice(["CRITICAL", "HIGH", "MEDIUM", "LOW"], case_sensitive=False), help="Failure severity threshold")
+@click.option("--max-allowed", default=0, type=int, help="Maximum allowed violations before gate failure")
+@click.option("--sarif", default=None, type=str, help="Path to output SARIF JSON file")
+@click.option("--policy", default="nist-sp-800-131a", type=str, help="Cryptographic compliance policy")
+@click.pass_context
+def gate_cmd(ctx, target, fail_on, max_allowed, sarif, policy):
+    """Evaluate CI/CD Cryptographic Quality Gate against a target project."""
+    assets = run_pipeline(target)
+    gate_result = evaluate_quality_gate(
+        assets,
+        fail_on=fail_on.upper(),
+        max_allowed=max_allowed,
+        policy=policy,
+    )
+    if sarif:
+        export_sarif_file(assets, Path(sarif))
+        print(f"[+] SARIF 2.1.0 report written to: {sarif}")
+    print(gate_result.banner)
+    if ctx and hasattr(ctx, "exit"):
+        ctx.exit(gate_result.exit_code)
+    return gate_result.exit_code
+
+
+@cli.command("scan")
+@click.option("--target", "-t", required=True, type=str, help="Target project directory to scan")
+@click.option("--output", "-o", default=None, help="Custom output directory for CBOM, report, and proofs")
+@click.option("--format", "output_format", default="all", type=click.Choice(["cbom", "sarif", "all"], case_sensitive=False), help="Output format")
+def scan_cmd(target, output, output_format):
+    """Run discovery, risk scoring, and Merkle commitment on a codebase."""
+    res = run_ecdat_scan(target_dir=target, output_dir=output)
+    print(f"[+] Scan Complete: {res['total_assets']} assets found.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -694,6 +772,14 @@ def main() -> int:
     scan_parser.add_argument("--stochastic-runs", type=int, default=5000, help="Number of Monte Carlo iterations for stochastic Mosca simulation (default: 5000)")
     scan_parser.add_argument("--no-negative-proof", action="store_false", dest="generate_negative_proof", default=True, help="Disable standalone negative proof certificate generation")
     scan_parser.add_argument("--subdirs", help="Comma-separated list of subdirectories to scan within target (e.g. backend,blockchain)")
+    scan_parser.add_argument("--format", choices=["cbom", "sarif", "all"], default="all", help="Output format (cbom, sarif, or all; default: all)")
+
+    gate_parser = subparsers.add_parser("gate", help="Evaluate CI/CD Cryptographic Quality Gate")
+    gate_parser.add_argument("--target", required=True, help="Target project directory to scan")
+    gate_parser.add_argument("--fail-on", default="CRITICAL", choices=["CRITICAL", "HIGH", "MEDIUM", "LOW"], help="Failure severity threshold (default: CRITICAL)")
+    gate_parser.add_argument("--max-allowed", type=int, default=0, help="Maximum allowed violations before gate failure (default: 0)")
+    gate_parser.add_argument("--sarif", default=None, help="Path to output SARIF JSON file")
+    gate_parser.add_argument("--policy", default="nist-sp-800-131a", help="Cryptographic compliance policy (default: nist-sp-800-131a)")
 
     verify_parser = subparsers.add_parser("verify-attestation", help="Verify an in-toto / SLSA DSSE attestation envelope against public key")
     verify_parser.add_argument("--envelope", required=True, help="Path to attestation.dsse.json file")
@@ -797,7 +883,21 @@ def main() -> int:
         print(f"    - Output Directory:  {result['output_directory']}")
         print(f"    - CISO Report:       {result['report_file']}")
         print(f"    - Enriched CBOM:     {result['cbom_file']}")
+        print(f"    - SARIF Report:      {result['sarif_file']}")
         return 0
+    elif args.command == "gate":
+        assets = run_pipeline(args.target)
+        gate_result = evaluate_quality_gate(
+            assets,
+            fail_on=args.fail_on.upper(),
+            max_allowed=args.max_allowed,
+            policy=args.policy,
+        )
+        if args.sarif:
+            export_sarif_file(assets, Path(args.sarif))
+            print(f"[+] SARIF 2.1.0 report written to: {args.sarif}")
+        print(gate_result.banner)
+        return gate_result.exit_code
     elif args.command == "verify-attestation":
         from ecdat.attestation.verifier import verify_dsse_envelope_from_file
         is_valid, msg, stmt = verify_dsse_envelope_from_file(args.envelope, args.pubkey, expected_root_hex=args.root)

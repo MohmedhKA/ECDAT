@@ -136,6 +136,7 @@ class CryptoAsset(BaseModel):
     exposure_profile: ExposureProfile = Field(ExposureProfile.PUBLIC, description="Network adversarial exposure")
     p_hndl: float = Field(1.0, description="Harvest-Now-Decrypt-Later interception probability [0.0 - 1.0]")
     x_auto_source: str = Field("default", description="Provenance of data lifespan X (e.g. sql_schema, orm_ttl, default)")
+    risk_level: Optional[str] = Field(None, description="Assessed risk level: CRITICAL, HIGH, MEDIUM, LOW")
 
     @property
     def is_pqc(self) -> bool:
@@ -159,9 +160,9 @@ class CryptoAsset(BaseModel):
         if any(b in alg for b in broken_primitives):
             return True
         if self.key_size and self.key_size < 2048:
-            if any(k in alg for k in ["RSA", "DH"]) or (alg == "DSA" or ("DSA" in alg and "ECDSA" not in alg and "ML-DSA" not in alg)):
+            if ("RSA" in alg or ("DH" in alg and "ECDH" not in alg)) or (alg == "DSA" or ("DSA" in alg and "ECDSA" not in alg and "ML-DSA" not in alg)):
                 return True
-            if "ECDSA" in alg and self.key_size < 224:
+            if ("ECDSA" in alg or "ECDH" in alg) and self.key_size < 224:
                 return True
         raw = getattr(self, "raw_properties", {}) or {}
         return bool(raw.get("misuse_category") or raw.get("cwe"))
