@@ -767,6 +767,68 @@ def scan_cmd(target, output, output_format):
     return 0
 
 
+@cli.command("remediate")
+@click.option("--target", "-t", required=True, type=str, help="Target file or directory to remediate")
+@click.option("--rule", default=None, type=str, help="Specific remediation rule ID (e.g. REPLACE_CBC_GCM, REPLACE_MD5_SHA256)")
+@click.option("--dry-run", is_flag=True, help="Preview unified diff without modifying files on disk")
+@click.option("--journal", default=None, type=str, help="Custom journal path for transactions")
+def remediate_cmd(target, rule, dry_run, journal):
+    """1-Click automated code remediation for cryptographic vulnerabilities."""
+    from ecdat.remediation.engine import RemediationEngine
+    engine = RemediationEngine(journal_path=journal)
+    results = engine.remediate_target(target, rule=rule, dry_run=dry_run)
+    if dry_run:
+        print(f"[*] ECDAT Remediation Dry-Run: {len(results)} potential patches found.\n")
+        for r in results:
+            print(f"--- File: {r['target_file']} ({r['rule_id']}) ---")
+            print(r['diff'])
+    else:
+        print(f"[+] ECDAT Remediation Applied: {len(results)} transactions committed to journal.\n")
+        for r in results:
+            print(f"  [+] {r['tx_id']}: {r['description']} -> {r['target_file']}")
+    return 0
+
+
+@cli.command("undo")
+@click.option("--tx", default=None, type=str, help="Specific transaction ID to undo (default: last applied)")
+@click.option("--journal", default=None, type=str, help="Custom journal path")
+def undo_cmd(tx, journal):
+    """Revert the last (or specified) cryptographic remediation transaction."""
+    from ecdat.remediation.engine import RemediationEngine
+    engine = RemediationEngine(journal_path=journal)
+    try:
+        success = engine.undo_tx(tx) if tx else engine.undo_last()
+        if success:
+            print(f"[+] Successfully reverted remediation transaction{' ' + tx if tx else ''}.")
+            return 0
+        else:
+            print("[-] No active remediation transaction found to undo.", file=sys.stderr)
+            return 1
+    except Exception as e:
+        print(f"[!] Undo failed: {e}", file=sys.stderr)
+        return 1
+
+
+@cli.command("redo")
+@click.option("--tx", default=None, type=str, help="Specific transaction ID to redo (default: last reverted)")
+@click.option("--journal", default=None, type=str, help="Custom journal path")
+def redo_cmd(tx, journal):
+    """Reapply the last (or specified) reverted cryptographic remediation transaction."""
+    from ecdat.remediation.engine import RemediationEngine
+    engine = RemediationEngine(journal_path=journal)
+    try:
+        success = engine.redo_tx(tx) if tx else engine.redo_last()
+        if success:
+            print(f"[+] Successfully reapplied remediation transaction{' ' + tx if tx else ''}.")
+            return 0
+        else:
+            print("[-] No reverted remediation transaction found to redo.", file=sys.stderr)
+            return 1
+    except Exception as e:
+        print(f"[!] Redo failed: {e}", file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -810,6 +872,20 @@ def main() -> int:
     probe_parser.add_argument("endpoint", help="Target URL or hostname to probe (e.g. https://example.com:443)")
     probe_parser.add_argument("--timeout", type=float, default=5.0, help="Connection timeout in seconds")
     probe_parser.add_argument("--output", "-o", default=None, help="Output directory or JSON file")
+
+    remed_parser = subparsers.add_parser("remediate", help="1-Click automated code remediation for cryptographic vulnerabilities")
+    remed_parser.add_argument("--target", required=True, help="Target file or directory to remediate")
+    remed_parser.add_argument("--rule", default=None, help="Specific remediation rule ID (e.g. REPLACE_CBC_GCM, REPLACE_MD5_SHA256)")
+    remed_parser.add_argument("--dry-run", action="store_true", help="Preview unified diff without modifying files on disk")
+    remed_parser.add_argument("--journal", default=None, help="Custom journal path for transactions")
+
+    undo_parser = subparsers.add_parser("undo", help="Revert the last (or specified) cryptographic remediation transaction")
+    undo_parser.add_argument("--tx", default=None, help="Specific transaction ID to undo (default: last applied)")
+    undo_parser.add_argument("--journal", default=None, help="Custom journal path")
+
+    redo_parser = subparsers.add_parser("redo", help="Reapply the last (or specified) reverted cryptographic remediation transaction")
+    redo_parser.add_argument("--tx", default=None, help="Specific transaction ID to redo (default: last reverted)")
+    redo_parser.add_argument("--journal", default=None, help="Custom journal path")
 
     args = parser.parse_args()
 
@@ -932,6 +1008,48 @@ def main() -> int:
     elif args.command == "serve":
         from ecdat.dashboard.server import start_server
         return start_server(host=args.host, port=args.port, reports_dir=args.reports_dir)
+    elif args.command == "remediate":
+        from ecdat.remediation.engine import RemediationEngine
+        engine = RemediationEngine(journal_path=args.journal)
+        results = engine.remediate_target(args.target, rule=args.rule, dry_run=args.dry_run)
+        if args.dry_run:
+            print(f"[*] ECDAT Remediation Dry-Run: {len(results)} potential patches found.\n")
+            for r in results:
+                print(f"--- File: {r['target_file']} ({r['rule_id']}) ---")
+                print(r['diff'])
+        else:
+            print(f"[+] ECDAT Remediation Applied: {len(results)} transactions committed to journal.\n")
+            for r in results:
+                print(f"  [+] {r['tx_id']}: {r['description']} -> {r['target_file']}")
+        return 0
+    elif args.command == "undo":
+        from ecdat.remediation.engine import RemediationEngine
+        engine = RemediationEngine(journal_path=args.journal)
+        try:
+            success = engine.undo_tx(args.tx) if args.tx else engine.undo_last()
+            if success:
+                print(f"[+] Successfully reverted remediation transaction{' ' + args.tx if args.tx else ''}.")
+                return 0
+            else:
+                print("[-] No active remediation transaction found to undo.", file=sys.stderr)
+                return 1
+        except Exception as e:
+            print(f"[!] Undo failed: {e}", file=sys.stderr)
+            return 1
+    elif args.command == "redo":
+        from ecdat.remediation.engine import RemediationEngine
+        engine = RemediationEngine(journal_path=args.journal)
+        try:
+            success = engine.redo_tx(args.tx) if args.tx else engine.redo_last()
+            if success:
+                print(f"[+] Successfully reapplied remediation transaction{' ' + args.tx if args.tx else ''}.")
+                return 0
+            else:
+                print("[-] No reverted remediation transaction found to redo.", file=sys.stderr)
+                return 1
+        except Exception as e:
+            print(f"[!] Redo failed: {e}", file=sys.stderr)
+            return 1
     return 1
 
 if __name__ == "__main__":
