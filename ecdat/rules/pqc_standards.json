@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ECDAT PQC Standards Catalog",
+  "description": "Declarative catalog of NIST FIPS 203/204/205 and IETF RFC 9180 post-quantum cryptographic standards",
+  "version": "1.0.0",
+  "standards": [
+    {
+      "name": "ML-KEM-512",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 203",
+      "category": "KEM",
+      "security_level": 1,
+      "public_key_bytes": 800,
+      "ciphertext_or_signature_bytes": 768,
+      "shared_secret_bytes": 32,
+      "replacement_targets": [
+        "RSA-1024",
+        "RSA-2048",
+        "ECDH-P256",
+        "X25519",
+        "DH-2048"
+      ],
+      "performance_rating": "VERY_FAST",
+      "is_primary": false,
+      "description": "NIST FIPS 203 ML-KEM-512: Category 1 Lattice-Based Key Encapsulation Mechanism for constrained network MTUs"
+    },
+    {
+      "name": "ML-KEM-768",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 203",
+      "category": "KEM",
+      "security_level": 3,
+      "public_key_bytes": 1184,
+      "ciphertext_or_signature_bytes": 1088,
+      "shared_secret_bytes": 32,
+      "replacement_targets": [
+        "RSA-2048",
+        "RSA-3072",
+        "ECDH-P256",
+        "ECDH-P384",
+        "X25519",
+        "DH-2048",
+        "DH-3072"
+      ],
+      "performance_rating": "FAST",
+      "is_primary": true,
+      "description": "NIST FIPS 203 ML-KEM-768: Category 3 Primary Lattice-Based Key Encapsulation Mechanism (recommended default)"
+    },
+    {
+      "name": "ML-KEM-1024",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 203",
+      "category": "KEM",
+      "security_level": 5,
+      "public_key_bytes": 1568,
+      "ciphertext_or_signature_bytes": 1568,
+      "shared_secret_bytes": 32,
+      "replacement_targets": [
+        "RSA-4096",
+        "ECDH-P521",
+        "DH-4096"
+      ],
+      "performance_rating": "MODERATE",
+      "is_primary": false,
+      "description": "NIST FIPS 203 ML-KEM-1024: Category 5 High-Security Lattice-Based Key Encapsulation Mechanism for archival confidentiality"
+    },
+    {
+      "name": "ML-DSA-44",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 204",
+      "category": "SIGNATURE",
+      "security_level": 2,
+      "public_key_bytes": 1312,
+      "ciphertext_or_signature_bytes": 2420,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-1024",
+        "RSA-2048",
+        "ECDSA-P256",
+        "ED25519",
+        "DSA-2048"
+      ],
+      "performance_rating": "VERY_FAST",
+      "is_primary": false,
+      "description": "NIST FIPS 204 ML-DSA-44: Category 2 Lattice-Based Digital Signature Scheme"
+    },
+    {
+      "name": "ML-DSA-65",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 204",
+      "category": "SIGNATURE",
+      "security_level": 3,
+      "public_key_bytes": 1952,
+      "ciphertext_or_signature_bytes": 3309,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-2048",
+        "RSA-3072",
+        "ECDSA-P256",
+        "ECDSA-P384",
+        "ED25519",
+        "DSA-2048",
+        "DSA-3072"
+      ],
+      "performance_rating": "FAST",
+      "is_primary": true,
+      "description": "NIST FIPS 204 ML-DSA-65: Category 3 Primary Lattice-Based Digital Signature Scheme (recommended default)"
+    },
+    {
+      "name": "ML-DSA-87",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 204",
+      "category": "SIGNATURE",
+      "security_level": 5,
+      "public_key_bytes": 2592,
+      "ciphertext_or_signature_bytes": 4627,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-4096",
+        "ECDSA-P521",
+        "ED448"
+      ],
+      "performance_rating": "BALANCED",
+      "is_primary": false,
+      "description": "NIST FIPS 204 ML-DSA-87: Category 5 High-Security Lattice-Based Digital Signature Scheme for root CAs and long-term signatures"
+    },
+    {
+      "name": "SLH-DSA-SHA2-128s",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 205",
+      "category": "SIGNATURE",
+      "security_level": 1,
+      "public_key_bytes": 32,
+      "ciphertext_or_signature_bytes": 7856,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-2048",
+        "ECDSA-P256"
+      ],
+      "performance_rating": "SLOW",
+      "is_primary": false,
+      "description": "NIST FIPS 205 SLH-DSA-SHA2-128s: Category 1 Small-Footprint Stateless Hash-Based Signature Scheme (Lattice Fallback)"
+    },
+    {
+      "name": "SLH-DSA-SHAKE-128s",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 205",
+      "category": "SIGNATURE",
+      "security_level": 1,
+      "public_key_bytes": 32,
+      "ciphertext_or_signature_bytes": 7856,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-2048",
+        "ECDSA-P256"
+      ],
+      "performance_rating": "SLOW",
+      "is_primary": false,
+      "description": "NIST FIPS 205 SLH-DSA-SHAKE-128s: Category 1 SHAKE-based Stateless Hash-Based Signature Scheme (Lattice Fallback)"
+    },
+    {
+      "name": "SLH-DSA-SHA2-256s",
+      "standard_org": "NIST",
+      "standard_ref": "FIPS 205",
+      "category": "SIGNATURE",
+      "security_level": 5,
+      "public_key_bytes": 64,
+      "ciphertext_or_signature_bytes": 29792,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "RSA-4096",
+        "ECDSA-P521"
+      ],
+      "performance_rating": "VERY_SLOW",
+      "is_primary": false,
+      "description": "NIST FIPS 205 SLH-DSA-SHA2-256s: Category 5 High-Security Stateless Hash-Based Signature Scheme (Lattice Fallback)"
+    },
+    {
+      "name": "Composite-KEM",
+      "standard_org": "IETF",
+      "standard_ref": "RFC 9180",
+      "category": "KEM",
+      "security_level": 3,
+      "public_key_bytes": 1216,
+      "ciphertext_or_signature_bytes": 1120,
+      "shared_secret_bytes": 32,
+      "replacement_targets": [
+        "RSA-2048",
+        "RSA-3072",
+        "ECDH-P256",
+        "X25519",
+        "DH-2048"
+      ],
+      "performance_rating": "FAST",
+      "is_primary": false,
+      "description": "IETF RFC 9180 / Hybrid Composite KEM: X25519 + ML-KEM-768 for dual-layer classical and post-quantum defense"
+    },
+    {
+      "name": "Composite-Sign",
+      "standard_org": "IETF",
+      "standard_ref": "RFC 9180 / IETF Composite Signatures",
+      "category": "SIGNATURE",
+      "security_level": 3,
+      "public_key_bytes": 2016,
+      "ciphertext_or_signature_bytes": 3373,
+      "shared_secret_bytes": null,
+      "replacement_targets": [
+        "ECDSA-P256",
+        "RSA-2048",
+        "RSA-3072",
+        "ED25519"
+      ],
+      "performance_rating": "FAST",
+      "is_primary": false,
+      "description": "IETF Composite Signatures: ECDSA-P256 + ML-DSA-65 dual-verification signature scheme"
+    }
+  ]
+}
