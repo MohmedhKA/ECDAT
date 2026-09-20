@@ -653,8 +653,20 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
                 target_path = matching[0]["directory"]
                 custom_name = matching[0]["name"]
 
-            if not target_path or not Path(target_path).exists():
-                return JSONResponse({"status": "error", "error": f"Target path '{target_path}' does not exist."}, status_code=400)
+            # Check if target is a live TLS/HTTPS endpoint
+            is_url_or_tls = target_path.startswith("http://") or target_path.startswith("https://") or (":" in target_path and not Path(target_path).exists())
+            if is_url_or_tls:
+                from ecdat.pipeline import probe_live_tls_infrastructure
+                assets = probe_live_tls_infrastructure(endpoint=target_path, output=str(out_dir))
+                return JSONResponse({
+                    "status": "success",
+                    "project": custom_name,
+                    "output_dir": str(out_dir),
+                    "total_assets": len(assets) if assets else 0
+                })
+
+            if not Path(target_path).exists():
+                return JSONResponse({"status": "error", "error": f"Target path '{target_path}' does not exist on disk."}, status_code=400)
 
             # If existing project with an established report directory, refresh in-place
             if matching and matching[0].get("report_path"):
@@ -665,7 +677,7 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
 
             # Run pipeline asynchronously using standard pipeline logic
             from ecdat.pipeline import run_pipeline
-            res = run_pipeline(target=target_path, output_dir=str(out_dir))
+            res = run_pipeline(target_dir=target_path, output_dir=str(out_dir))
 
             return JSONResponse({
                 "status": "success",
@@ -673,6 +685,84 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
                 "output_dir": str(out_dir),
                 "total_assets": len(res.assets) if hasattr(res, "assets") else 0
             })
+        except Exception as e:
+            return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+    async def api_remediation_preview_handler(request):
+        try:
+            body = await request.json()
+            file_path = body.get("file_path", "").strip()
+            rule = body.get("rule", "").strip() or None
+            if not file_path or not Path(file_path).exists():
+                return JSONResponse({"status": "error", "error": f"File '{file_path}' does not exist."}, status_code=400)
+            from ecdat.remediation.engine import RemediationEngine
+            engine = RemediationEngine()
+            patch = engine.generate_patch(file_path, rule=rule)
+            is_protected = "evoting" in file_path.lower() or "e-voting" in file_path.lower()
+            return JSONResponse({
+                "status": "success",
+                "file_path": file_path,
+                "has_changes": patch.has_changes,
+                "changes_count": patch.changes_count,
+                "rule_id": patch.rule_id,
+                "description": patch.description,
+                "diff": patch.diff,
+                "is_protected": is_protected
+            })
+        except Exception as e:
+            return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+    async def api_remediation_apply_handler(request):
+        try:
+            body = await request.json()
+            file_path = body.get("file_path", "").strip()
+            rule = body.get("rule", "").strip() or None
+            if not file_path or not Path(file_path).exists():
+                return JSONResponse({"status": "error", "error": f"File '{file_path}' does not exist."}, status_code=400)
+
+            # Strict guard against modifying protected repositories
+            if "evoting" in file_path.lower() or "e-voting" in file_path.lower():
+                return JSONResponse({
+                    "status": "error",
+                    "error": "PROTECTED REPOSITORY: Automated remediation is strictly disabled for E-Voting-V2 to preserve research integrity."
+                }, status_code=403)
+
+            from ecdat.remediation.engine import RemediationEngine
+            engine = RemediationEngine()
+            patch = engine.generate_patch(file_path, rule=rule)
+            if not patch.has_changes:
+                return JSONResponse({"status": "noop", "message": "No matching remediation patterns found in target file."})
+            tx = engine.apply_patch(file_path, patch)
+            return JSONResponse({
+                "status": "success",
+                "transaction": tx
+            })
+        except Exception as e:
+            return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+    async def api_remediation_undo_handler(request):
+        try:
+            body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+            tx_id = body.get("tx_id", "").strip() or None
+            from ecdat.remediation.engine import RemediationEngine
+            engine = RemediationEngine()
+            ok = engine.undo_tx(tx_id) if tx_id else engine.undo_last()
+            if ok:
+                return JSONResponse({"status": "success", "message": f"Successfully reverted transaction {tx_id or 'last'}."})
+            return JSONResponse({"status": "error", "error": "No active transaction available to undo."}, status_code=404)
+        except Exception as e:
+            return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+    async def api_remediation_redo_handler(request):
+        try:
+            body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+            tx_id = body.get("tx_id", "").strip() or None
+            from ecdat.remediation.engine import RemediationEngine
+            engine = RemediationEngine()
+            ok = engine.redo_tx(tx_id) if tx_id else engine.redo_last()
+            if ok:
+                return JSONResponse({"status": "success", "message": f"Successfully reapplied transaction {tx_id or 'last'}."})
+            return JSONResponse({"status": "error", "error": "No reverted transaction available to redo."}, status_code=404)
         except Exception as e:
             return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
 
@@ -685,6 +775,10 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         Route("/api/project/{name}/version", endpoint=api_project_version_handler, methods=["GET"]),
         Route("/api/project/{name}/export", endpoint=api_export_handler, methods=["GET"]),
         Route("/api/scan", endpoint=api_scan_handler, methods=["POST"]),
+        Route("/api/remediation/preview", endpoint=api_remediation_preview_handler, methods=["POST"]),
+        Route("/api/remediation/apply", endpoint=api_remediation_apply_handler, methods=["POST"]),
+        Route("/api/remediation/undo", endpoint=api_remediation_undo_handler, methods=["POST"]),
+        Route("/api/remediation/redo", endpoint=api_remediation_redo_handler, methods=["POST"]),
     ]
 
     return Starlette(debug=False, routes=routes)

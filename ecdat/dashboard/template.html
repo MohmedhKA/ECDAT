@@ -1511,9 +1511,19 @@
                     <div class="text-[11px] text-slate-400">RFC 9180 Hybrid Pairing:</div>
                     <div id="drawer-hybrid-target" class="text-emerald-300 font-semibold">ECDSA-P256 + ML-DSA-65</div>
                 </div>
-                <div class="text-[11px] text-slate-400 pt-1 leading-relaxed" id="drawer-guidance">
-                    Migrate signatures to composite dual-verification standard.
+            <!-- 1-Click Code Remediation Card -->
+            <div id="drawer-remed-card" class="p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 font-mono space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">1-Click Code Remediation</span>
+                    <span id="drawer-remed-badge" class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/80 font-bold">REMEDIABLE</span>
                 </div>
+                <div id="drawer-remed-desc" class="text-[11px] text-slate-300 leading-relaxed">
+                    Automated cryptographic hardening & hybrid migration available.
+                </div>
+                <button id="btn-remed-preview" onclick="openRemediationModal()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs font-mono flex items-center justify-center gap-1.5 transition shadow-md shadow-cyan-900/30 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Preview 1-Click Fix</span>
+                </button>
             </div>
         </div>
 
@@ -1524,6 +1534,63 @@
             <button onclick="copyDrawerAssetJson()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono transition">
                 Copy JSON
             </button>
+        </div>
+    </div>
+
+    <!-- 1-Click Code Remediation Interactive Modal -->
+    <div id="remediation-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl border border-cyan-500/40 bg-slate-950 p-6 max-w-3xl w-full shadow-2xl space-y-4 font-mono text-xs max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">1-Click Cryptographic Remediation</h3>
+                </div>
+                <button onclick="closeRemediationModal()" class="text-slate-400 hover:text-white text-base cursor-pointer">&times;</button>
+            </div>
+
+            <!-- Modal Info Header -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] flex-shrink-0">
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                    <span class="text-slate-500 uppercase text-[9px] font-bold block">Target Source File</span>
+                    <span id="remed-modal-filepath" class="text-cyan-300 font-bold break-all">source.py</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                    <span class="text-slate-500 uppercase text-[9px] font-bold block">Remediation Policy</span>
+                    <span id="remed-modal-rule" class="text-emerald-300 font-bold">REPLACE_CBC_GCM</span>
+                </div>
+            </div>
+
+            <!-- Key Situation & Parameter Safety Notice -->
+            <div id="remed-key-situation-notice" class="p-3 rounded-xl bg-slate-900/90 border border-amber-500/40 text-[11px] text-amber-200/90 space-y-1 flex-shrink-0">
+                <div class="font-bold flex items-center gap-1.5 text-amber-300">
+                    <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span>Key & Parameter Impact Analysis:</span>
+                </div>
+                <div id="remed-key-situation-text" class="text-slate-300 text-[10.5px] leading-relaxed">
+                    Migrating from CBC mode to authenticated AES-256-GCM. Ensure key length is 32 bytes (256-bit) and replace 16-byte CBC IV with a 12-byte (96-bit) unique nonce.
+                </div>
+            </div>
+
+            <!-- Unified Diff Viewer -->
+            <div class="flex-1 min-h-[220px] overflow-hidden flex flex-col space-y-1">
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>Unified Diff Preview:</span>
+                    <span id="remed-diff-changes" class="text-cyan-400 font-bold">1 change</span>
+                </div>
+                <pre id="remed-diff-box" class="flex-1 p-3 rounded-xl bg-[#030712] border border-slate-800 text-slate-200 overflow-x-auto text-[11px] font-mono leading-relaxed select-all custom-scrollbar"></pre>
+            </div>
+
+            <!-- Modal Action Buttons & Status -->
+            <div class="border-t border-slate-800 pt-3 flex items-center justify-between gap-3 flex-shrink-0">
+                <div id="remed-status-msg" class="text-[11px] text-slate-400"></div>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeRemediationModal()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer">Close</button>
+                    <button id="btn-remed-undo" onclick="executeRemediationUndo()" class="hidden px-3 py-1.5 rounded-lg bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-800 font-bold cursor-pointer">Undo Fix</button>
+                    <button id="btn-remed-apply" onclick="executeRemediationApply()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer">
+                        <span>Apply 1-Click Patch</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3915,6 +3982,193 @@
         }
         setInterval(checkServerFreshness, 8000);
         window.addEventListener('focus', checkServerFreshness);
+
+        // 1-Click Code Remediation Interactive Modal Controller
+        let _activeRemediationFile = null;
+        let _activeRemediationRule = null;
+
+        async function openRemediationModal() {
+            if (!currentDrawerAsset) return;
+            const asset = currentDrawerAsset;
+            const modal = document.getElementById('remediation-modal');
+            const filePathEl = document.getElementById('remed-modal-filepath');
+            const ruleEl = document.getElementById('remed-modal-rule');
+            const diffBox = document.getElementById('remed-diff-box');
+            const diffChanges = document.getElementById('remed-diff-changes');
+            const noticeText = document.getElementById('remed-key-situation-text');
+            const applyBtn = document.getElementById('btn-remed-apply');
+            const undoBtn = document.getElementById('btn-remed-undo');
+            const statusMsg = document.getElementById('remed-status-msg');
+
+            _activeRemediationFile = asset.file_path || '';
+            let rule = 'REPLACE_CBC_GCM';
+            const algo = (asset.algorithm || '').toUpperCase();
+            if (algo.includes('MD5')) rule = 'REPLACE_MD5_SHA256';
+            else if (algo.includes('SHA-1') || algo.includes('SHA1')) rule = 'REPLACE_SHA1_SHA256';
+            else if (algo.includes('DES') || algo.includes('BLOWFISH')) rule = 'REPLACE_DES_AES_GCM';
+            else if (algo.includes('CBC')) rule = 'REPLACE_CBC_GCM';
+            _activeRemediationRule = rule;
+
+            if (filePathEl) filePathEl.textContent = `${_activeRemediationFile} (L${asset.line_number || '?'})`;
+            if (ruleEl) ruleEl.textContent = rule;
+            if (statusMsg) statusMsg.textContent = '';
+            if (undoBtn) undoBtn.classList.add('hidden');
+
+            // Key Situation & Parameter Safety Analysis Text
+            if (noticeText) {
+                if (rule === 'REPLACE_CBC_GCM') {
+                    noticeText.innerHTML = '<strong>Key Situation:</strong> Migrating to AES-256-GCM requires a <strong>32-byte (256-bit)</strong> key buffer. Replace 16-byte CBC IV with a <strong>12-byte (96-bit)</strong> unique nonce. <em>Never reuse a nonce under the same key.</em>';
+                } else if (rule === 'REPLACE_MD5_SHA256' || rule === 'REPLACE_SHA1_SHA256') {
+                    noticeText.innerHTML = '<strong>Key & Buffer Situation:</strong> Migrating digest to SHA-256 expands output from 16/20 bytes to <strong>32 bytes (64-char hex)</strong>. Verify database column widths and downstream signature verification buffers.';
+                } else if (rule === 'REPLACE_DES_AES_GCM') {
+                    noticeText.innerHTML = '<strong>Key Situation:</strong> Migrating from legacy 56/64-bit DES/Blowfish to AES-256-GCM. Re-keying is mandatory with a freshly generated 256-bit cryptographically secure key.';
+                } else {
+                    noticeText.innerHTML = '<strong>Post-Quantum Transition:</strong> Classical asymmetric primitives (RSA/ECC) require generating new NIST FIPS 203/204 key pairs and deploying RFC 9180 hybrid combiners.';
+                }
+            }
+
+            // Check Protected Target Guard (e.g. E-Voting-V2)
+            const isProtected = _activeRemediationFile.toLowerCase().includes('evoting') || _activeRemediationFile.toLowerCase().includes('e-voting');
+            if (isProtected) {
+                if (applyBtn) {
+                    applyBtn.disabled = true;
+                    applyBtn.className = 'px-4 py-1.5 rounded-lg bg-slate-800 text-slate-500 font-bold border border-slate-700 cursor-not-allowed';
+                    applyBtn.innerHTML = '<span>🔒 Protected Target (E-Voting-V2)</span>';
+                }
+                if (statusMsg) {
+                    statusMsg.innerHTML = '<span class="text-amber-400 font-bold">Research Integrity Protection: In-place modification disabled for E-Voting-V2.</span>';
+                }
+            } else {
+                if (applyBtn) {
+                    applyBtn.disabled = false;
+                    applyBtn.className = 'px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer';
+                    applyBtn.innerHTML = '<span>Apply 1-Click Patch</span>';
+                }
+            }
+
+            if (diffBox) diffBox.innerHTML = '<span class="text-slate-500">Generating unified dry-run patch...</span>';
+            if (modal) modal.classList.remove('hidden');
+
+            // Fetch Dry-Run Preview
+            if (window.location.protocol.startsWith('http')) {
+                try {
+                    const resp = await fetch('/api/remediation/preview', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ file_path: _activeRemediationFile, rule: rule })
+                    });
+                    const data = await resp.json();
+                    if (resp.ok && data.has_changes) {
+                        if (diffChanges) diffChanges.textContent = `${data.changes_count} substitution(s)`;
+                        renderHighlightedDiff(data.diff, diffBox);
+                    } else if (resp.ok) {
+                        if (diffChanges) diffChanges.textContent = '0 changes';
+                        diffBox.innerHTML = '<span class="text-emerald-400">File is already clean or uses dynamic factory instantiation. No static changes needed.</span>';
+                        if (applyBtn && !isProtected) applyBtn.disabled = true;
+                    } else {
+                        diffBox.innerHTML = `<span class="text-rose-400">Preview Error: ${data.error || 'Failed to inspect file'}</span>`;
+                    }
+                } catch (err) {
+                    renderClientFallbackDiff(asset, rule, diffBox, diffChanges);
+                }
+            } else {
+                renderClientFallbackDiff(asset, rule, diffBox, diffChanges);
+            }
+        }
+
+        function renderHighlightedDiff(diffText, container) {
+            if (!container) return;
+            const lines = diffText.split('\n');
+            const highlighted = lines.map(line => {
+                if (line.startsWith('+') && !line.startsWith('+++')) {
+                    return `<span class="text-emerald-400 bg-emerald-950/40 block px-1">${escapeHtml(line)}</span>`;
+                } else if (line.startsWith('-') && !line.startsWith('---')) {
+                    return `<span class="text-rose-400 bg-rose-950/40 block px-1">${escapeHtml(line)}</span>`;
+                } else if (line.startsWith('@@')) {
+                    return `<span class="text-cyan-400 font-bold block px-1">${escapeHtml(line)}</span>`;
+                }
+                return `<span class="text-slate-400 block px-1">${escapeHtml(line)}</span>`;
+            }).join('');
+            container.innerHTML = highlighted;
+        }
+
+        function renderClientFallbackDiff(asset, rule, diffBox, diffChanges) {
+            if (diffChanges) diffChanges.textContent = 'Offline CLI Recipe';
+            diffBox.innerHTML = `
+<span class="text-cyan-400 font-bold"># Standalone Offline Report Mode</span>
+<span class="text-slate-400">To apply automated remediation from terminal with rollback journal:</span>
+
+<span class="text-emerald-400 font-bold">ecdat remediate --target "${escapeHtml(asset.file_path)}" --rule ${rule}</span>
+
+<span class="text-slate-400"># To dry-run and inspect diff without modifying disk:</span>
+<span class="text-amber-300">ecdat remediate --target "${escapeHtml(asset.file_path)}" --rule ${rule} --dry-run</span>
+
+<span class="text-slate-400"># To roll back changes at any time:</span>
+<span class="text-rose-400">ecdat undo</span>`;
+        }
+
+        function closeRemediationModal() {
+            const modal = document.getElementById('remediation-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function executeRemediationApply() {
+            if (!_activeRemediationFile) return;
+            const btn = document.getElementById('btn-remed-apply');
+            const undoBtn = document.getElementById('btn-remed-undo');
+            const statusMsg = document.getElementById('remed-status-msg');
+            if (btn) { btn.disabled = true; btn.innerText = 'Applying Patch...'; }
+            if (statusMsg) statusMsg.innerHTML = '<span class="text-cyan-400 animate-pulse">Committing atomic patch and journal entry...</span>';
+
+            try {
+                const resp = await fetch('/api/remediation/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file_path: _activeRemediationFile, rule: _activeRemediationRule })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.status === 'success') {
+                    if (statusMsg) statusMsg.innerHTML = '<span class="text-emerald-400 font-bold">✓ Successfully applied and verified on disk!</span>';
+                    if (btn) { btn.innerText = 'Applied ✓'; btn.className = 'px-4 py-1.5 rounded-lg bg-emerald-800 text-white font-bold cursor-default'; }
+                    if (undoBtn) undoBtn.classList.remove('hidden');
+                    showDashboardToast('Remediation patch applied successfully!', 'success');
+                } else {
+                    if (statusMsg) statusMsg.innerHTML = `<span class="text-rose-400 font-bold">Error: ${data.error || data.message || 'Apply failed'}</span>`;
+                    if (btn) { btn.disabled = false; btn.innerText = 'Retry Apply'; }
+                }
+            } catch (err) {
+                if (statusMsg) statusMsg.innerHTML = `<span class="text-rose-400 font-bold">Network Error: ${err.message}</span>`;
+                if (btn) { btn.disabled = false; btn.innerText = 'Apply 1-Click Patch'; }
+            }
+        }
+
+        async function executeRemediationUndo() {
+            const undoBtn = document.getElementById('btn-remed-undo');
+            const statusMsg = document.getElementById('remed-status-msg');
+            const applyBtn = document.getElementById('btn-remed-apply');
+            if (undoBtn) { undoBtn.disabled = true; undoBtn.innerText = 'Reverting...'; }
+
+            try {
+                const resp = await fetch('/api/remediation/undo', { method: 'POST' });
+                const data = await resp.json();
+                if (resp.ok) {
+                    if (statusMsg) statusMsg.innerHTML = '<span class="text-amber-300 font-bold">✓ Successfully reverted to original state!</span>';
+                    if (undoBtn) { undoBtn.innerText = 'Reverted ✓'; }
+                    if (applyBtn) {
+                        applyBtn.disabled = false;
+                        applyBtn.className = 'px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer';
+                        applyBtn.innerText = 'Re-Apply Patch';
+                    }
+                    showDashboardToast('Remediation reverted successfully!', 'info');
+                } else {
+                    if (statusMsg) statusMsg.innerHTML = `<span class="text-rose-400 font-bold">Undo Error: ${data.error || 'Failed'}</span>`;
+                    if (undoBtn) undoBtn.disabled = false;
+                }
+            } catch (err) {
+                if (statusMsg) statusMsg.innerHTML = `<span class="text-rose-400 font-bold">Network Error: ${err.message}</span>`;
+                if (undoBtn) undoBtn.disabled = false;
+            }
+        }
 
         function showDashboardToast(msg, type='info') {
             let toast = document.getElementById('ecdat-live-toast');

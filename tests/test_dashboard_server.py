@@ -222,6 +222,56 @@ def test_dynamic_hydration_with_module_status(tmp_path):
     assert "checkServerFreshness()" in resp.text
 
 
+def test_api_scan_endpoint(tmp_path):
+    repo_root = Path(__file__).resolve().parent.parent
+    sample_target = str(repo_root / "testbeds" / "sample_crypto_app")
+    reports_root = tmp_path / "reports"
+
+    app = create_fleet_app(reports_dir=reports_root)
+
+    # Valid scan request
+    body = json.dumps({"target": sample_target, "name": "sample_scan"}).encode("utf-8")
+    resp = call_asgi(app, "POST", "/api/scan", headers={"Content-Type": "application/json"}, body=body)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "success"
+    assert data["project"] == "sample_scan"
+    assert data["total_assets"] >= 1
+
+    # Invalid path
+    bad_body = json.dumps({"target": "/nonexistent/path/xyz123"}).encode("utf-8")
+    resp_bad = call_asgi(app, "POST", "/api/scan", headers={"Content-Type": "application/json"}, body=bad_body)
+    assert resp_bad.status_code == 400
+
+
+def test_api_remediation_preview_and_protection(tmp_path):
+    reports_root = tmp_path / "reports"
+    app = create_fleet_app(reports_dir=reports_root)
+
+    # 1. Preview on a temporary test file
+    test_file = tmp_path / "crypto_service.js"
+    test_file.write_text("const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);\n", encoding="utf-8")
+
+    preview_body = json.dumps({"file_path": str(test_file), "rule": "REPLACE_CBC_GCM"}).encode("utf-8")
+    resp_preview = call_asgi(app, "POST", "/api/remediation/preview", headers={"Content-Type": "application/json"}, body=preview_body)
+    assert resp_preview.status_code == 200
+    pdata = resp_preview.json()
+    assert pdata["status"] == "success"
+    assert pdata["has_changes"] is True
+    assert "aes-256-gcm" in pdata["diff"]
+    assert pdata["is_protected"] is False
+
+    # 2. Protection guard against E-Voting repository
+    evoting_mock = tmp_path / "evoting_backend" / "test.js"
+    evoting_mock.parent.mkdir(parents=True, exist_ok=True)
+    evoting_mock.write_text("const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);\n", encoding="utf-8")
+
+    apply_body = json.dumps({"file_path": str(evoting_mock)}).encode("utf-8")
+    resp_guard = call_asgi(app, "POST", "/api/remediation/apply", headers={"Content-Type": "application/json"}, body=apply_body)
+    assert resp_guard.status_code == 403
+    assert "PROTECTED REPOSITORY" in resp_guard.json()["error"]
+
+
 def test_zero_regex_compliance():
     from pathlib import Path
     for fname in ["server.py", "hydrator.py"]:
