@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECDAT — Cryptographic Discovery & Attestation Report</title>
+    <title>ECDAT Report - __PROJECT_NAME__ | Cryptographic Discovery & Attestation</title>
+    <meta name="description" content="ECDAT — Cryptographic Discovery & Attestation Report">
     <link rel="icon" type="image/png" href="data:image/png;base64,__ECDAT_LOGO_B64__">
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -390,6 +391,10 @@
                 <button onclick="exportCisoReportMd()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm" title="Download Executive CISO Markdown Briefing">
                     <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span>CISO (.md)</span>
+                </button>
+                <button onclick="downloadStandaloneReport()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm" title="Download Self-Contained Offline HTML Report">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Report (.html)</span>
                 </button>
             </div>
         </div>
@@ -2301,6 +2306,57 @@
                     .attr("y", -this.height * 2.5)
                     .attr("fill", "url(#dot-grid)");
 
+                // Check if contagion module was generated
+                if (window.ECDAT_MODULE_STATUS && window.ECDAT_MODULE_STATUS.contagion === false) {
+                    const centerG = this.svgGroup.append("g")
+                        .attr("transform", `translate(${this.width / 2}, ${this.height / 2})`);
+
+                    centerG.append("rect")
+                        .attr("x", -230).attr("y", -75)
+                        .attr("width", 460).attr("height", 150)
+                        .attr("rx", 16)
+                        .attr("fill", "rgba(15, 23, 42, 0.9)")
+                        .attr("stroke", "rgba(245, 158, 11, 0.5)")
+                        .attr("stroke-width", 1.5);
+
+                    centerG.append("text")
+                        .attr("y", -35).attr("text-anchor", "middle")
+                        .attr("font-size", "22px").text("⚠️");
+
+                    centerG.append("text")
+                        .attr("y", -8).attr("text-anchor", "middle")
+                        .attr("fill", "#f8fafc")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "13.5px").attr("font-weight", "bold")
+                        .text("Contagion Network Graph Not Available");
+
+                    centerG.append("text")
+                        .attr("y", 15).attr("text-anchor", "middle")
+                        .attr("fill", "#94a3b8")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "11px")
+                        .text("contagion_graph.json is missing. Re-run scan to map call graphs & R₀.");
+
+                    const btnG = centerG.append("g")
+                        .attr("transform", "translate(0, 44)")
+                        .attr("cursor", "pointer")
+                        .on("click", () => triggerCurrentProjectScan());
+
+                    btnG.append("rect")
+                        .attr("x", -75).attr("y", -14)
+                        .attr("width", 150).attr("height", 28)
+                        .attr("rx", 6)
+                        .attr("fill", "#0284c7");
+
+                    btnG.append("text")
+                        .attr("y", 4).attr("text-anchor", "middle")
+                        .attr("fill", "#ffffff")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "11px").attr("font-weight", "bold")
+                        .text("⚡ Run Scan Now");
+                    return;
+                }
+
                 if (!GRAPH_DATA || !GRAPH_DATA.nodes || GRAPH_DATA.nodes.length === 0) {
                     this.svgGroup.append("text")
                         .attr("x", this.width / 2)
@@ -2942,6 +2998,60 @@
             render() {
                 if (!this.svgGroup) return;
                 this.svgGroup.selectAll("*").remove();
+
+                // Check if lineage module was generated
+                if (window.ECDAT_MODULE_STATUS && window.ECDAT_MODULE_STATUS.lineage === false) {
+                    const colHeaders = document.getElementById('lineage-col-headers');
+                    if (colHeaders) colHeaders.classList.add('hidden');
+
+                    const centerG = this.svgGroup.append("g")
+                        .attr("transform", `translate(${this.width / 2}, ${this.height / 2})`);
+
+                    centerG.append("rect")
+                        .attr("x", -240).attr("y", -80)
+                        .attr("width", 480).attr("height", 160)
+                        .attr("rx", 16)
+                        .attr("fill", "rgba(15, 23, 42, 0.9)")
+                        .attr("stroke", "rgba(245, 158, 11, 0.5)")
+                        .attr("stroke-width", 1.5);
+
+                    centerG.append("text")
+                        .attr("y", -38).attr("text-anchor", "middle")
+                        .attr("font-size", "24px").text("⚠️");
+
+                    centerG.append("text")
+                        .attr("y", -8).attr("text-anchor", "middle")
+                        .attr("fill", "#f8fafc")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "14px").attr("font-weight", "bold")
+                        .text("Lineage Architecture Flow Not Available");
+
+                    centerG.append("text")
+                        .attr("y", 16).attr("text-anchor", "middle")
+                        .attr("fill", "#94a3b8")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "11px")
+                        .text("lineage_graph.json is missing. Re-run scan to discover ingress & egress flow.");
+
+                    const btnG = centerG.append("g")
+                        .attr("transform", "translate(0, 48)")
+                        .attr("cursor", "pointer")
+                        .on("click", () => triggerCurrentProjectScan());
+
+                    btnG.append("rect")
+                        .attr("x", -80).attr("y", -14)
+                        .attr("width", 160).attr("height", 28)
+                        .attr("rx", 6)
+                        .attr("fill", "#0284c7");
+
+                    btnG.append("text")
+                        .attr("y", 4).attr("text-anchor", "middle")
+                        .attr("fill", "#ffffff")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "11px").attr("font-weight", "bold")
+                        .text("⚡ Run Scan Now");
+                    return;
+                }
 
                 const data = (typeof LINEAGE_DATA !== 'undefined' && LINEAGE_DATA) ? LINEAGE_DATA : null;
                 const fm = (data && data.father_marko) ? data.father_marko : null;
@@ -3615,7 +3725,20 @@
 
         function drawParetoSvgChart(budgetWeeks, allocatedCost, currentRiskPct) {
             const container = document.getElementById('pareto-chart-svg-container');
-            if (!container || !PARETO_DATA || !PARETO_DATA.frontier_points) return;
+            if (!container) return;
+            if (!PARETO_DATA || !PARETO_DATA.frontier_points || PARETO_DATA.frontier_points.length === 0 || (window.ECDAT_MODULE_STATUS && window.ECDAT_MODULE_STATUS.pareto === false)) {
+                container.innerHTML = `
+                <div class="h-full min-h-[200px] flex flex-col items-center justify-center p-6 text-center font-mono space-y-2">
+                    <span class="text-2xl">⚠️</span>
+                    <span class="text-xs font-bold text-amber-300">Pareto Frontier Optimization Not Scanned</span>
+                    <span class="text-[11px] text-slate-400">pareto_portfolio.json was not generated for this project version.</span>
+                    <button onclick="triggerCurrentProjectScan()" class="mt-1 px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>Re-scan to Optimize</span>
+                    </button>
+                </div>`;
+                return;
+            }
             const pts = PARETO_DATA.frontier_points || [];
             if (pts.length === 0) return;
             
@@ -3701,14 +3824,19 @@
         }
 
         function renderStochasticCard() {
-            if (!STOCHASTIC_DATA) return;
-            const pBreach = STOCHASTIC_DATA.breach_probability !== undefined ? (STOCHASTIC_DATA.breach_probability * 100).toFixed(1) + '%' : 'N/A';
-            const varYear = STOCHASTIC_DATA.var_95_year !== undefined ? STOCHASTIC_DATA.var_95_year : (STOCHASTIC_DATA.cutoff_year || '2030');
-            const nIter = STOCHASTIC_DATA.iterations !== undefined ? STOCHASTIC_DATA.iterations.toLocaleString() : '2,000';
-
             const pElem = document.getElementById('stoch-breach-prob');
             const varElem = document.getElementById('stoch-var-year');
             const iterElem = document.getElementById('stoch-iterations');
+
+            if (!STOCHASTIC_DATA || Object.keys(STOCHASTIC_DATA).length === 0 || (window.ECDAT_MODULE_STATUS && window.ECDAT_MODULE_STATUS.stochastic === false)) {
+                if (pElem) pElem.innerHTML = '<span class="text-xs text-amber-400 font-mono">Not Scanned</span>';
+                if (varElem) varElem.innerHTML = '<span class="text-xs text-slate-500 font-mono">Run Scan</span>';
+                if (iterElem) iterElem.innerHTML = '<span class="text-xs text-slate-500 font-mono">N/A</span>';
+                return;
+            }
+            const pBreach = STOCHASTIC_DATA.breach_probability !== undefined ? (STOCHASTIC_DATA.breach_probability * 100).toFixed(1) + '%' : 'N/A';
+            const varYear = STOCHASTIC_DATA.var_95_year !== undefined ? STOCHASTIC_DATA.var_95_year : (STOCHASTIC_DATA.cutoff_year || '2030');
+            const nIter = STOCHASTIC_DATA.iterations !== undefined ? STOCHASTIC_DATA.iterations.toLocaleString() : '2,000';
 
             if (pElem) pElem.innerText = pBreach;
             if (varElem) varElem.innerText = varYear;
@@ -3722,6 +3850,16 @@
             if (mtuElem) mtuElem.innerText = `${mtu} B`;
         }
 
+        function downloadStandaloneReport() {
+            const proj = window.ECDAT_ACTIVE_PROJECT || '__PROJECT_NAME__';
+            if (window.location.protocol.startsWith('http')) {
+                showDashboardToast('Compiling standalone report.html...', 'info');
+                window.location.href = `/api/project/${proj}/export`;
+            } else {
+                showDashboardToast('Already in standalone file mode.', 'info');
+            }
+        }
+
         async function triggerCurrentProjectScan() {
             const btn = document.getElementById('btn-scan-now');
             const origHtml = btn ? btn.innerHTML : '';
@@ -3733,7 +3871,7 @@
             showDashboardToast('Triggering immediate cryptographic discovery scan...', 'info');
             
             const selectEl = document.getElementById('fleet-project-select');
-            const currentProj = selectEl ? selectEl.value : '__PROJECT_NAME__';
+            const currentProj = selectEl ? selectEl.value : (window.ECDAT_ACTIVE_PROJECT || '__PROJECT_NAME__');
             
             try {
                 const resp = await fetch('/api/scan', {
@@ -3754,6 +3892,29 @@
                 if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
             }
         }
+
+        // Live Auto-Freshness Polling when running under ecdat serve
+        let _lastObservedMtime = window.ECDAT_MTIME || null;
+        async function checkServerFreshness() {
+            if (!window.location.protocol.startsWith('http')) return;
+            const proj = window.ECDAT_ACTIVE_PROJECT || '__PROJECT_NAME__';
+            if (!proj || proj === '__PROJECT_NAME__') return;
+            try {
+                const resp = await fetch(`/api/project/${proj}/version`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (_lastObservedMtime && data.mtime > _lastObservedMtime) {
+                        _lastObservedMtime = data.mtime;
+                        showDashboardToast('Fresh scan data detected on disk. Auto-refreshing...', 'success');
+                        setTimeout(() => window.location.reload(), 900);
+                    } else if (!_lastObservedMtime) {
+                        _lastObservedMtime = data.mtime;
+                    }
+                }
+            } catch (err) {}
+        }
+        setInterval(checkServerFreshness, 8000);
+        window.addEventListener('focus', checkServerFreshness);
 
         function showDashboardToast(msg, type='info') {
             let toast = document.getElementById('ecdat-live-toast');

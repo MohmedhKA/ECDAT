@@ -535,25 +535,39 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         if not projects:
             return HTMLResponse(render_fleet_scorecard_html([]))
 
-        # Primary project: first project in list
         primary = projects[0]
-        if primary.get("report_path") and Path(primary["report_path"]).exists():
-            html_content = Path(primary["report_path"]).read_text(encoding="utf-8", errors="replace")
-            enriched_html = inject_fleet_navigation(html_content, primary["name"], projects)
+        proj_dir = Path(primary["directory"])
+        from ecdat.dashboard import hydrator
+        try:
+            dynamic_html = hydrator.render_dynamic_project_dashboard(proj_dir, primary["name"], projects)
+            enriched_html = inject_fleet_navigation(dynamic_html, primary["name"], projects)
             return HTMLResponse(enriched_html)
-        return RedirectResponse("/fleet")
+        except Exception:
+            if primary.get("report_path") and Path(primary["report_path"]).exists():
+                html_content = Path(primary["report_path"]).read_text(encoding="utf-8", errors="replace")
+                enriched_html = inject_fleet_navigation(html_content, primary["name"], projects)
+                return HTMLResponse(enriched_html)
+            return RedirectResponse("/fleet")
 
     async def project_handler(request):
         proj_name = request.path_params["name"]
         projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
         matching = [p for p in projects if p["name"] == proj_name]
 
-        if matching and matching[0].get("report_path") and Path(matching[0]["report_path"]).exists():
-            html_content = Path(matching[0]["report_path"]).read_text(encoding="utf-8", errors="replace")
-            enriched_html = inject_fleet_navigation(html_content, proj_name, projects)
-            return HTMLResponse(enriched_html)
+        if matching:
+            proj_dir = Path(matching[0]["directory"])
+            from ecdat.dashboard import hydrator
+            try:
+                dynamic_html = hydrator.render_dynamic_project_dashboard(proj_dir, proj_name, projects)
+                enriched_html = inject_fleet_navigation(dynamic_html, proj_name, projects)
+                return HTMLResponse(enriched_html)
+            except Exception:
+                if matching[0].get("report_path") and Path(matching[0]["report_path"]).exists():
+                    html_content = Path(matching[0]["report_path"]).read_text(encoding="utf-8", errors="replace")
+                    enriched_html = inject_fleet_navigation(html_content, proj_name, projects)
+                    return HTMLResponse(enriched_html)
 
-        return HTMLResponse(f"<h3>Project '{proj_name}' not found or has no report.html. <a href='/fleet'>Return to Fleet</a></h3>", status_code=404)
+        return HTMLResponse(f"<h3>Project '{proj_name}' not found. <a href='/fleet'>Return to Fleet</a></h3>", status_code=404)
 
     async def fleet_page_handler(request):
         projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
@@ -576,6 +590,54 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
             },
             "projects": projects
         })
+
+    async def api_project_data_handler(request):
+        proj_name = request.path_params["name"]
+        projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
+        matching = [p for p in projects if p["name"] == proj_name]
+        if not matching:
+            return JSONResponse({"status": "error", "error": f"Project '{proj_name}' not found."}, status_code=404)
+        from ecdat.dashboard.hydrator import load_project_data
+        data = load_project_data(Path(matching[0]["directory"]))
+        payload = {"status": "success", "project": proj_name, "project_name": proj_name, "data": data}
+        payload.update(data)
+        return JSONResponse(payload)
+
+    async def api_project_version_handler(request):
+        proj_name = request.path_params["name"]
+        projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
+        matching = [p for p in projects if p["name"] == proj_name]
+        if not matching:
+            return JSONResponse({"status": "error", "error": f"Project '{proj_name}' not found."}, status_code=404)
+        p = matching[0]
+        pdir = Path(p["directory"])
+        target_file = pdir / "enriched_cbom.json" if (pdir / "enriched_cbom.json").exists() else pdir
+        mtime = target_file.stat().st_mtime
+        return JSONResponse({
+            "status": "success",
+            "name": proj_name,
+            "project": proj_name,
+            "mtime": mtime,
+            "last_scanned": p.get("last_scanned", "Unknown"),
+            "asset_count": p.get("asset_count", 0),
+            "readiness_pct": p.get("readiness_pct", 100)
+        })
+
+    async def api_export_handler(request):
+        proj_name = request.path_params["name"]
+        projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
+        matching = [p for p in projects if p["name"] == proj_name]
+        if not matching:
+            return JSONResponse({"status": "error", "error": f"Project '{proj_name}' not found."}, status_code=404)
+        pdir = Path(matching[0]["directory"])
+        from ecdat.dashboard import hydrator
+        html_content = hydrator.render_dynamic_project_dashboard(pdir, proj_name, projects)
+        from starlette.responses import Response
+        return Response(
+            content=html_content,
+            media_type="text/html",
+            headers={"Content-Disposition": f'attachment; filename="{proj_name}_report.html"'}
+        )
 
     async def api_scan_handler(request):
         try:
@@ -619,6 +681,9 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         Route("/project/{name}", endpoint=project_handler, methods=["GET"]),
         Route("/fleet", endpoint=fleet_page_handler, methods=["GET"]),
         Route("/api/fleet", endpoint=api_fleet_handler, methods=["GET"]),
+        Route("/api/project/{name}/data", endpoint=api_project_data_handler, methods=["GET"]),
+        Route("/api/project/{name}/version", endpoint=api_project_version_handler, methods=["GET"]),
+        Route("/api/project/{name}/export", endpoint=api_export_handler, methods=["GET"]),
         Route("/api/scan", endpoint=api_scan_handler, methods=["POST"]),
     ]
 

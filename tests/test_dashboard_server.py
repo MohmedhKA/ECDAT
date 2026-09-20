@@ -166,11 +166,68 @@ def test_fleet_overview_scorecard_page(tmp_path):
     assert "proj_b" in resp_fleet.text
 
 
+
+def test_project_data_and_version_endpoints(tmp_path):
+    reports_root = tmp_path / "reports"
+    create_mock_report_dir(reports_root, "proj_live", asset_count=12)
+
+    app = create_fleet_app(reports_dir=reports_root)
+
+    # Version endpoint
+    resp_ver = call_asgi(app, "GET", "/api/project/proj_live/version")
+    assert resp_ver.status_code == 200
+    vdata = resp_ver.json()
+    assert vdata["name"] == "proj_live"
+    assert vdata["asset_count"] == 12
+    assert "mtime" in vdata
+    assert "last_scanned" in vdata
+    assert "readiness_pct" in vdata
+
+    # Data endpoint
+    resp_data = call_asgi(app, "GET", "/api/project/proj_live/data")
+    assert resp_data.status_code == 200
+    pdata = resp_data.json()
+    assert pdata["project_name"] == "proj_live"
+    assert "modules_status" in pdata
+    assert "enriched_cbom" in pdata
+    assert pdata["modules_status"]["cbom"] is True
+    assert pdata["modules_status"]["pareto"] is False  # not created in mock
+
+    # Nonexistent project
+    resp_404 = call_asgi(app, "GET", "/api/project/does_not_exist/version")
+    assert resp_404.status_code == 404
+
+
+def test_project_export_endpoint(tmp_path):
+    reports_root = tmp_path / "reports"
+    create_mock_report_dir(reports_root, "proj_export", asset_count=6)
+
+    app = create_fleet_app(reports_dir=reports_root)
+    resp = call_asgi(app, "GET", "/api/project/proj_export/export")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers.get("content-type", "")
+    assert "proj_export_report.html" in resp.headers.get("content-disposition", "")
+    assert "<!DOCTYPE html>" in resp.text
+
+
+def test_dynamic_hydration_with_module_status(tmp_path):
+    reports_root = tmp_path / "reports"
+    create_mock_report_dir(reports_root, "proj_hydrated", asset_count=4)
+
+    app = create_fleet_app(reports_dir=reports_root)
+    resp = call_asgi(app, "GET", "/project/proj_hydrated")
+    assert resp.status_code == 200
+    assert "ECDAT_MODULE_STATUS" in resp.text
+    assert "downloadStandaloneReport()" in resp.text
+    assert "checkServerFreshness()" in resp.text
+
+
 def test_zero_regex_compliance():
     from pathlib import Path
-    fpath = Path("ecdat/dashboard/server.py")
-    if fpath.exists():
-        content = fpath.read_text(encoding="utf-8")
-        assert "import re" not in content
-        assert "from re import" not in content
-        assert "re." not in content
+    for fname in ["server.py", "hydrator.py"]:
+        fpath = Path(f"ecdat/dashboard/{fname}")
+        if fpath.exists():
+            content = fpath.read_text(encoding="utf-8")
+            assert "import re" not in content, f"Zero-regex violated in {fname}"
+            assert "from re import" not in content, f"Zero-regex violated in {fname}"
+            assert "re." not in content, f"Zero-regex violated in {fname}"
