@@ -89,6 +89,7 @@ NIST_PRIMITIVE_SIZES = {
 # 4-Tier X-Inference Default Durations (Years)
 X_TIER_DEFAULT_YEARS = {
     "EPHEMERAL": 0.0,
+    "TRANSIENT": 0.0,
     "SHORT_TERM": 1.5,
     "OPERATIONAL": 5.0,
     "ARCHIVAL": 10.0,
@@ -115,7 +116,9 @@ INTENT_CLASS_WEIGHTS = {
     "OPERATIONAL_UTILITY": 0.0,           # ETags, cache dedup, in-memory hashes (0% quantum exposure)
     "INTEGRITY_CHECKSUM": 0.20,           # Short-lived builds, non-archival integrity checks
     "AUTHENTICATION_SIGNATURE": 0.90,     # Session authentication, JWTs, mTLS
+    "AUTHENTICATION_HANDSHAKE": 0.90,     # TLS certificate authentication
     "CONFIDENTIALITY_ENVELOPE": 1.0,      # Data-at-rest & data-in-transit encryption
+    "CONFIDENTIALITY_IN_TRANSIT": 1.0,    # In-transit TLS payload confidentiality
 }
 
 # Evidence State Descriptions

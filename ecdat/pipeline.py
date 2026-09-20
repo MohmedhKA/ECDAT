@@ -8,6 +8,7 @@ import os
 import sys
 import json
 import argparse
+import click
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Tuple, Any, Optional
@@ -33,10 +34,12 @@ from ecdat.mosca.engine import compute_mosca_score
 from ecdat.merkle.tree import MerkleTree, generate_asset_proof_package
 from ecdat.report import generate_ciso_report
 from ecdat.contagion.engine import analyze_contagion
+from ecdat.lineage.engine import analyze_crypto_lineage
 from ecdat.dashboard.generator import generate_html_dashboard, generate_html_report
 from ecdat.scanners.theia_bridge import run_theia_scan
 from ecdat.scanners.manifest_scanner import discover_manifest_crypto_dependencies
 from ecdat.scanners.source_scanner import discover_polyglot_crypto_assets
+from ecdat.scanners.config_scanner import scan_server_configs
 from ecdat.scanners.filters import should_scan_file
 from ecdat.schema_extractor import extract_schemas_lifespan
 from ecdat.exposure_scanner import scan_deployment_exposure
@@ -318,6 +321,22 @@ def run_ecdat_scan(
             assessments.append((fs_asset, score, rec))
             assets_for_merkle.append((fs_asset, score))
 
+    # 2d. Discover Server Configuration Cryptographic Directives (Nginx/Apache TLS)
+    config_assets = scan_server_configs(target_path)
+    if parsed_subdirs:
+        config_assets = [
+            c for c in config_assets
+            if any(sub in Path(c.file_path).parts for sub in parsed_subdirs)
+        ]
+    for c_asset in config_assets:
+        c_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+        _apply_schema_lifespan(c_asset, schema_lifespans)
+        _apply_deployment_exposure(c_asset, deployment_exposures)
+        score = compute_mosca_score(c_asset, current_year=CURRENT_YEAR)
+        rec = recommend_pqc_migration(c_asset, path_mtu=path_mtu)
+        assessments.append((c_asset, score, rec))
+        assets_for_merkle.append((c_asset, score))
+
     if not assets_for_merkle:
         # Fallback: create a default root if no assets found
         merkle_root_hex = "00" * 32
@@ -349,6 +368,16 @@ def run_ecdat_scan(
     graph_file = out_path / "contagion_graph.json"
     with open(graph_file, "w", encoding="utf-8") as f:
         json.dump(contagion_result.graph_json, f, indent=2)
+
+    # 4b2. Father Marko Tripartite Cryptographic Lineage Analysis & Graph Export
+    lineage_result = analyze_crypto_lineage(
+        file_paths=[str(f) for f in all_source_files],
+        crypto_assets=[a for a, _, _ in assessments],
+        target_dir=str(target_path),
+    )
+    lineage_graph_file = out_path / "lineage_graph.json"
+    with open(lineage_graph_file, "w", encoding="utf-8") as f:
+        json.dump(lineage_result.graph_json, f, indent=2)
 
     # 4c. Signed in-toto / SLSA DSSE Attestation Envelope Generation (Pillar 6)
     evidence_dist = {
@@ -519,6 +548,7 @@ def run_ecdat_scan(
         stochastic_summary=stochastic_summary,
         negative_proof=negative_proof_cert,
         budget_dev_weeks=budget_dev_weeks,
+        lineage_result=lineage_result,
     )
     report_file_html = out_path / "report.html"
     with open(report_file_html, "w", encoding="utf-8") as f:
@@ -537,6 +567,10 @@ def run_ecdat_scan(
         "buffer_hazards": len(all_buffer_hazards),
         "contagion_superspreaders": len(contagion_result.superspreaders),
         "contagion_graph_file": str(graph_file),
+        "lineage_graph_file": str(lineage_graph_file),
+        "lineage_ingress_count": lineage_result.ingress_count,
+        "lineage_nexus_count": lineage_result.nexus_count,
+        "lineage_egress_count": lineage_result.egress_count,
         "report_file_html": str(report_file_html),
         "output_directory": str(out_path),
         "cbom_file": str(cbom_file),
@@ -555,6 +589,94 @@ def run_ecdat_scan(
         "unknowns_count": len(unknowns_ledger),
         "unknowns_ledger": [u.model_dump() if hasattr(u, "model_dump") else u.dict() for u in unknowns_ledger],
     }
+
+
+def probe_live_tls_infrastructure(
+    endpoint: str,
+    timeout: float = 5.0,
+    output: Optional[str] = None,
+) -> List[CryptoAsset]:
+    """
+    Connects to live TLS endpoint, inspects active cryptographic parameters,
+    and returns a list of standardized CryptoAsset models.
+    """
+    from ecdat.network.tls_prober import LiveTLSProber, TLSProbeError
+
+    prober = LiveTLSProber()
+    try:
+        host, port = prober.parse_target(endpoint)
+    except ValueError as val_err:
+        print(f"[!] INVALID ENDPOINT: {val_err}", file=sys.stderr)
+        return []
+
+    print("=" * 104)
+    print("                      ECDAT Live External Infrastructure & TLS Prober")
+    print("=" * 104)
+    print(f"[*] Target Endpoint:   {endpoint}")
+    print(f"[*] Resolved Host:     {host}")
+    print(f"[*] Port:              {port}")
+    print(f"[*] Handshake Timeout: {timeout}s")
+    print("-" * 104)
+
+    try:
+        assets = prober.probe_endpoint(endpoint, timeout=timeout)
+    except TLSProbeError as err:
+        print(f"[!] PROBE FAILED: {err}", file=sys.stderr)
+        return []
+    except Exception as err:
+        print(f"[!] UNEXPECTED HANDSHAKE FAILURE: {err}", file=sys.stderr)
+        return []
+
+    tls_ver = assets[1].raw_properties.get("tls_version", "UNKNOWN") if len(assets) > 1 else "UNKNOWN"
+    cipher_suite = assets[2].raw_properties.get("cipher_suite", "UNKNOWN") if len(assets) > 2 else "UNKNOWN"
+
+    print(f"[+] TLS Protocol:      {tls_ver}")
+    print(f"[+] Cipher Suite:      {cipher_suite}")
+    print(f"[+] Discovered Live Assets: {len(assets)}")
+    print("-" * 104)
+    print(f"{'Role / Component':<24} | {'Algorithm':<22} | {'Key / Bits':<10} | {'Tier':<12} | {'Quantum Risk Status'}")
+    print("-" * 104)
+
+    for a in assets:
+        bits_str = f"{a.key_size} b" if a.key_size else "N/A"
+        q_risk = a.raw_properties.get("quantum_risk", "UNKNOWN")
+        pqc_stat = a.raw_properties.get("pqc_status", "")
+        status_str = f"{q_risk} ({pqc_stat})" if pqc_stat else q_risk
+        role = a.component_name.split(":")[0]
+        print(f"{role:<24} | {a.algorithm:<22} | {bits_str:<10} | {a.x_tier.value:<12} | {status_str}")
+
+    print("=" * 104)
+
+    if output:
+        out_path = Path(output)
+        if out_path.is_dir() or output.endswith("/") or output.endswith("\\"):
+            out_path.mkdir(parents=True, exist_ok=True)
+            target_json = out_path / "live_tls_assets.json"
+        else:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            target_json = out_path
+
+        export_data = [a.model_dump() if hasattr(a, "model_dump") else a.dict() for a in assets]
+        with open(target_json, "w", encoding="utf-8") as f:
+            json.dump(export_data, f, indent=2)
+        print(f"[+] Discovered live assets written to JSON: {target_json}")
+
+    return assets
+
+
+@click.group()
+def cli():
+    """ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI."""
+    pass
+
+
+@cli.command("probe")
+@click.argument("endpoint")
+@click.option("--timeout", default=5.0, help="Connection timeout in seconds")
+@click.option("--output", "-o", default=None, help="Output directory or JSON file")
+def probe_cmd(endpoint, timeout, output):
+    """Probe live TLS endpoint and evaluate Post-Quantum readiness."""
+    return probe_live_tls_infrastructure(endpoint=endpoint, timeout=timeout, output=output)
 
 
 def main() -> int:
@@ -578,9 +700,70 @@ def main() -> int:
     verify_parser.add_argument("--pubkey", required=True, help="Path to attestation_pubkey.pem file")
     verify_parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
+    dash_parser = subparsers.add_parser("dashboard", help="Serve and view an ECDAT cryptographic audit report (report.html)")
+    dash_parser.add_argument("--report", help="Path to report.html or output directory containing report.html")
+    dash_parser.add_argument("--port", type=int, default=8000, help="Port to serve report on (default: 8000)")
+    dash_parser.add_argument("--no-browser", action="store_true", help="Do not open web browser automatically")
+
+    probe_parser = subparsers.add_parser("probe", help="Probe remote TLS endpoint for live cryptographic posture")
+    probe_parser.add_argument("endpoint", help="Target URL or hostname to probe (e.g. https://example.com:443)")
+    probe_parser.add_argument("--timeout", type=float, default=5.0, help="Connection timeout in seconds")
+    probe_parser.add_argument("--output", "-o", default=None, help="Output directory or JSON file")
+
     args = parser.parse_args()
 
-    if args.command == "scan":
+    if args.command == "dashboard":
+        import http.server
+        import socketserver
+        import webbrowser
+
+        report_arg = args.report
+        report_path = None
+        if report_arg:
+            p = Path(report_arg).resolve()
+            report_path = p / "report.html" if p.is_dir() else p
+        else:
+            candidates = [
+                Path.cwd() / "report.html",
+                Path.cwd() / "output" / "report.html",
+                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "evoting_backend" / "report.html",
+                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "reports" / "cryptoapi_bench" / "report.html",
+                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "reports" / "cryben" / "report.html",
+            ]
+            for c in candidates:
+                if c.exists():
+                    report_path = c
+                    break
+
+        if not report_path or not report_path.exists():
+            print("[!] Error: report.html not found. Run 'ecdat scan' first or pass --report <path>.")
+            return 1
+
+        report_dir = str(report_path.parent)
+        filename = report_path.name
+        port = args.port
+        url = f"http://localhost:{port}/{filename}"
+
+        print(f"[*] Serving ECDAT Cryptographic Report: {report_path}")
+        print(f"[+] Local Viewer URL: {url}")
+
+        if not args.no_browser:
+            webbrowser.open(url)
+
+        class QuietHandler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *a, **kw):
+                super().__init__(*a, directory=report_dir, **kw)
+            def log_message(self, format, *a):
+                pass
+
+        print("[*] Press Ctrl+C to stop.")
+        try:
+            with socketserver.TCPServer(("", port), QuietHandler) as httpd:
+                httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\n[*] Server stopped.")
+            return 0
+    elif args.command == "scan":
         print(f"[*] Starting ECDAT cryptographic discovery on: {args.target}")
         result = run_ecdat_scan(
             args.target,
@@ -628,6 +811,9 @@ def main() -> int:
         else:
             print(f"[-] VERIFICATION FAILED: {msg}", file=sys.stderr)
             return 1
+    elif args.command == "probe":
+        assets = probe_live_tls_infrastructure(args.endpoint, timeout=args.timeout, output=args.output)
+        return 0 if assets else 1
     return 1
 
 if __name__ == "__main__":

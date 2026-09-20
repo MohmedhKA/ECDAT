@@ -13,12 +13,14 @@ class XTier(str, Enum):
     OPERATIONAL = "OPERATIONAL"   # ~3-7 years (standard relational DB, active records)
     ARCHIVAL = "ARCHIVAL"         # ~10+ years (backups, HIPAA/SOX archives)
     HUMAN_REVIEW = "HUMAN_REVIEW" # Ambiguous flow requiring auditor review
+    TRANSIENT = "TRANSIENT"       # Transient / in-flight network handshake
 
 class PrimitiveType(str, Enum):
     KEY_EXCHANGE = "KEY_EXCHANGE" # KEM, DH, ECDH
     SIGNATURE = "SIGNATURE"       # DSA, ECDSA, RSA-PSS
     ENCRYPTION = "ENCRYPTION"     # Symmetric/Asymmetric cipher
     HASH = "HASH"                 # Hash functions / MAC
+    SYMMETRIC_CIPHER = "SYMMETRIC_CIPHER" # Bulk encryption cipher
 
 class IntentClass(str, Enum):
     """
@@ -29,6 +31,8 @@ class IntentClass(str, Enum):
     INTEGRITY_CHECKSUM = "INTEGRITY_CHECKSUM"             # Build hashes, short-lived file checksums
     AUTHENTICATION_SIGNATURE = "AUTHENTICATION_SIGNATURE" # JWT signing, mTLS, identity proofs
     CONFIDENTIALITY_ENVELOPE = "CONFIDENTIALITY_ENVELOPE" # At-rest DB encryption, in-transit TLS payloads
+    AUTHENTICATION_HANDSHAKE = "AUTHENTICATION_HANDSHAKE" # TLS certificate authentication
+    CONFIDENTIALITY_IN_TRANSIT = "CONFIDENTIALITY_IN_TRANSIT" # In-transit TLS payload confidentiality
 
 class EvidenceLevel(str, Enum):
     """
@@ -124,6 +128,7 @@ class CryptoAsset(BaseModel):
     raw_properties: Dict[str, Any] = Field(default_factory=dict, description="Underlying CBOM attributes")
 
     # Master Plan Phase 1 Extensions
+    intent: Optional[str] = Field(None, description="Functional security intent string")
     intent_class: IntentClass = Field(IntentClass.CONFIDENTIALITY_ENVELOPE, description="Functional security intent")
     evidence_level: EvidenceLevel = Field(EvidenceLevel.E1_STATIC_ARTIFACT, description="E0-E5 evidence state")
     evidence_sources: List[str] = Field(default_factory=list, description="List of observation sources (AST, manifest, cert, etc.)")
@@ -131,6 +136,272 @@ class CryptoAsset(BaseModel):
     exposure_profile: ExposureProfile = Field(ExposureProfile.PUBLIC, description="Network adversarial exposure")
     p_hndl: float = Field(1.0, description="Harvest-Now-Decrypt-Later interception probability [0.0 - 1.0]")
     x_auto_source: str = Field("default", description="Provenance of data lifespan X (e.g. sql_schema, orm_ttl, default)")
+
+    @property
+    def is_pqc(self) -> bool:
+        alg = self.algorithm.upper()
+        return any(k in alg for k in [
+            "ML-DSA", "ML-KEM", "DILITHIUM", "KYBER", "SLH-DSA", "FALCON", "LWE", "SPHINCS", "POST-QUANTUM", "PQC", "LIBOQS"
+        ])
+
+    @property
+    def is_classically_broken(self) -> bool:
+        if self.is_pqc:
+            return False
+        alg = self.algorithm.upper()
+        broken_primitives = [
+            "DES", "3DES", "DESEDE", "RC4", "ARCFOUR", "RC2", "RC5", "BLOWFISH", "IDEA",
+            "MD5", "MD4", "MD2", "SHA-1", "SHA1", "HMAC-MD5", "HMAC-SHA1",
+            "ECB", "STATIC-IV", "PREDICTABLE-KEY", "STATIC-SALT", "PREDICTABLE-SEED",
+            "PBE-WEAK-ITERATION", "HARDCODED-PASSWORD", "PREDICTABLE-KEYSTORE",
+            "CLEARTEXT-HTTP", "DUMMY-CERT", "DUMMY-HOSTNAME", "IMPROPER-SSL", "UNTRUSTED-PRNG"
+        ]
+        if any(b in alg for b in broken_primitives):
+            return True
+        if self.key_size and self.key_size < 2048:
+            if any(k in alg for k in ["RSA", "DH"]) or (alg == "DSA" or ("DSA" in alg and "ECDSA" not in alg and "ML-DSA" not in alg)):
+                return True
+            if "ECDSA" in alg and self.key_size < 224:
+                return True
+        raw = getattr(self, "raw_properties", {}) or {}
+        return bool(raw.get("misuse_category") or raw.get("cwe"))
+
+    @property
+    def z_reg_deadline(self) -> int:
+        if self.is_classically_broken:
+            return 2026
+        if self.is_pqc:
+            return 2050
+        if self.primitive_type == PrimitiveType.SIGNATURE or "ECDSA" in self.algorithm.upper():
+            return 2031
+        if self.primitive_type == PrimitiveType.KEY_EXCHANGE or any(k in self.algorithm.upper() for k in ["RSA", "DH", "ECDH"]):
+            return 2030
+        return 2035
+
+    @property
+    def z_reg_phase(self) -> int:
+        if self.is_classically_broken:
+            return 0
+        if self.is_pqc:
+            return 0
+        if self.primitive_type == PrimitiveType.SIGNATURE or "ECDSA" in self.algorithm.upper():
+            return 4
+        if self.primitive_type == PrimitiveType.KEY_EXCHANGE or any(k in self.algorithm.upper() for k in ["RSA", "DH", "ECDH"]):
+            return 3
+        return 5
+
+    @property
+    def security_bits(self) -> int:
+        if self.is_pqc:
+            return 192
+        if self.key_size:
+            if "ECDSA" in self.algorithm.upper() or "EC" in self.algorithm.upper():
+                return self.curve_bits // 2 if hasattr(self, "curve_bits") else self.key_size // 2
+            return min(256, self.key_size // 16) if self.key_size >= 1024 else self.key_size
+        return 128
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return 0
+
+
+class PostQuantumAsset(CryptoAsset):
+    """
+    NIST FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA),
+    and lattice-based primitives (LWE).
+    Key sizes and signatures are measured strictly in BYTES.
+    """
+    nist_level: int = Field(3, description="NIST Post-Quantum Security Level (1 to 5)")
+    pubkey_bytes: int = Field(0, description="Public key length in BYTES")
+    sig_bytes: int = Field(0, description="Signature length in BYTES")
+    ciphertext_bytes: int = Field(0, description="KEM ciphertext length in BYTES")
+
+    @property
+    def is_pqc(self) -> bool:
+        return True
+
+    @property
+    def is_classically_broken(self) -> bool:
+        return False
+
+    @property
+    def z_reg_deadline(self) -> int:
+        return 2050
+
+    @property
+    def z_reg_phase(self) -> int:
+        return 0
+
+    @property
+    def security_bits(self) -> int:
+        level_map = {1: 128, 2: 128, 3: 192, 4: 192, 5: 256}
+        return level_map.get(self.nist_level, 128)
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return self.pubkey_bytes + self.sig_bytes + self.ciphertext_bytes
+
+
+class ClassicalAsymmetricAsset(CryptoAsset):
+    """
+    Classical modular arithmetic asymmetric cryptography:
+    RSA, finite-field Diffie-Hellman (DH), legacy FIPS 186 DSA.
+    Key size is measured strictly in BITS (modulus_bits).
+    """
+    modulus_bits: int = Field(2048, description="Modulus key length in BITS")
+
+    @property
+    def is_pqc(self) -> bool:
+        return False
+
+    @property
+    def is_classically_broken(self) -> bool:
+        return self.modulus_bits < 2048
+
+    @property
+    def z_reg_deadline(self) -> int:
+        if self.is_classically_broken:
+            return 2026
+        if self.primitive_type == PrimitiveType.SIGNATURE:
+            return 2031
+        return 2030
+
+    @property
+    def z_reg_phase(self) -> int:
+        if self.is_classically_broken:
+            return 0
+        return 4 if self.primitive_type == PrimitiveType.SIGNATURE else 3
+
+    @property
+    def security_bits(self) -> int:
+        if self.modulus_bits >= 15360:
+            return 256
+        if self.modulus_bits >= 7680:
+            return 192
+        if self.modulus_bits >= 3072:
+            return 128
+        if self.modulus_bits >= 2048:
+            return 112
+        return 80
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return (self.modulus_bits // 8) * 2
+
+
+class EllipticCurveAsset(CryptoAsset):
+    """
+    Elliptic Curve cryptography:
+    ECDSA, ECDH, Ed25519, Ed448, X25519, X448.
+    Key size is measured strictly in BITS (curve_bits).
+    """
+    curve_bits: int = Field(256, description="Elliptic curve order size in BITS")
+    curve_name: str = Field("", description="Named curve (e.g. secp256r1, ed25519)")
+
+    @property
+    def is_pqc(self) -> bool:
+        return False
+
+    @property
+    def is_classically_broken(self) -> bool:
+        return self.curve_bits < 224
+
+    @property
+    def z_reg_deadline(self) -> int:
+        if self.is_classically_broken:
+            return 2026
+        if self.primitive_type == PrimitiveType.SIGNATURE:
+            return 2031
+        return 2030
+
+    @property
+    def z_reg_phase(self) -> int:
+        if self.is_classically_broken:
+            return 0
+        return 4 if self.primitive_type == PrimitiveType.SIGNATURE else 3
+
+    @property
+    def security_bits(self) -> int:
+        return self.curve_bits // 2
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return (self.curve_bits // 8) * 2
+
+
+class SymmetricAsset(CryptoAsset):
+    """
+    Symmetric ciphers, hashes, MACs, and KDFs:
+    AES, ChaCha20, SHA-2, SHA-3, HMAC, Argon2, PBKDF2.
+    Key length is measured strictly in BITS (key_bits).
+    """
+    key_bits: int = Field(256, description="Symmetric key length in BITS")
+    cipher_mode: str = Field("GCM", description="Cipher mode (e.g. GCM, CBC, ECB)")
+
+    @property
+    def is_pqc(self) -> bool:
+        if self.primitive_type in (PrimitiveType.ENCRYPTION, PrimitiveType.KEY_EXCHANGE):
+            return self.key_bits >= 256
+        if self.primitive_type == PrimitiveType.HASH:
+            return self.key_bits >= 256
+        return False
+
+    @property
+    def is_classically_broken(self) -> bool:
+        if self.cipher_mode.upper() == "ECB":
+            return True
+        return self.key_bits < 112
+
+    @property
+    def z_reg_deadline(self) -> int:
+        if self.is_classically_broken:
+            return 2026
+        return 2050
+
+    @property
+    def z_reg_phase(self) -> int:
+        return 0
+
+    @property
+    def security_bits(self) -> int:
+        return self.key_bits
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return 0
+
+
+class UnknownOrOpaqueAsset(CryptoAsset):
+    """
+    Opaque, unparseable, or third-party binary cryptographic invocations.
+    Sent to Unknowns Ledger for honest boundary isolation.
+    """
+    reason: str = Field("Unrecognized cryptographic primitive", description="Triage reason")
+
+    @property
+    def is_pqc(self) -> bool:
+        return False
+
+    @property
+    def is_classically_broken(self) -> bool:
+        return False
+
+    @property
+    def z_reg_deadline(self) -> int:
+        return 2026
+
+    @property
+    def z_reg_phase(self) -> int:
+        return 0
+
+    @property
+    def security_bits(self) -> int:
+        return 0
+
+    @property
+    def network_flight_bytes(self) -> int:
+        return 0
+
 
 class MoscaScore(BaseModel):
     asset_id: str
