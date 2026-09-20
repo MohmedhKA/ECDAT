@@ -17,6 +17,9 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.scripts]
+ecdat = "ecdat.pipeline:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
