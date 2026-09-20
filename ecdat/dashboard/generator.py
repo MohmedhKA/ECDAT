@@ -33,8 +33,10 @@ from ecdat.contagion.engine import ContagionGraphResult
 from ecdat.optimizer.pareto import optimize_pareto_portfolio
 from ecdat.mosca.stochastic import simulate_estate_stochastic_mosca
 from ecdat.attestation.negative_proof import generate_negative_proof_certificate
+from ecdat.lineage.models import LineageGraphResult
 
 TEMPLATE_PATH = Path(__file__).parent / "template.html"
+LOGO_B64_PATH = Path(__file__).parent / "assets" / "logo_b64.txt"
 
 def _load_html_template() -> str:
     """Loads the standalone HTML5 dashboard template from disk."""
@@ -59,6 +61,7 @@ def generate_html_dashboard(
     stochastic_summary: Optional[Dict[str, Any]] = None,
     negative_proof: Optional[NegativeProofCertificate] = None,
     budget_dev_weeks: float = 10.0,
+    lineage_result: Optional[LineageGraphResult] = None,
 ) -> str:
     """
     Generates a single, self-contained, publication-grade HTML5 report ('report.html').
@@ -71,6 +74,7 @@ def generate_html_dashboard(
     high_count = sum(1 for _, s, _ in assessments if s.risk_level == "HIGH")
     medium_count = sum(1 for _, s, _ in assessments if s.risk_level == "MEDIUM")
     low_count = sum(1 for _, s, _ in assessments if s.risk_level == "LOW")
+    manual_review_count = sum(1 for _, s, _ in assessments if s.risk_level == "MANUAL_REVIEW_REQUIRED")
     superspreader_count = len(contagion_result.superspreaders)
 
     penalty = (critical_count * 12) + (high_count * 6) + (len(buffer_hazards) * 8)
@@ -193,11 +197,14 @@ def generate_html_dashboard(
     stochastic_json_str = json.dumps(stochastic_summary)
     negative_proof_json_str = json.dumps(negative_proof.model_dump() if hasattr(negative_proof, "model_dump") else negative_proof.dict())
     path_mtu_json_str = json.dumps(path_mtu.model_dump() if path_mtu and hasattr(path_mtu, "model_dump") else (path_mtu.dict() if path_mtu else {}))
+    lineage_dict = lineage_result.graph_json if lineage_result else {"nodes": [], "links": [], "stats": {"ingress": 0, "nexus": 0, "egress": 0, "edges": 0}}
+    lineage_json_str = json.dumps(lineage_dict)
 
     report_html = (
         template_str
         .replace("__ASSETS_JSON__", assets_json_str)
         .replace("__GRAPH_JSON__", graph_json_str)
+        .replace("__LINEAGE_JSON__", lineage_json_str)
         .replace("__HAZARDS_JSON__", hazards_json_str)
         .replace("__PROOFS_JSON__", proof_packages_json_str)
         .replace("__DEPS_JSON__", deps_json_str)
@@ -216,12 +223,17 @@ def generate_html_dashboard(
         .replace("__HIGH_COUNT__", str(high_count))
         .replace("__MEDIUM_COUNT__", str(medium_count))
         .replace("__LOW_COUNT__", str(low_count))
+        .replace("__MANUAL_REVIEW_COUNT__", str(manual_review_count))
         .replace("__SUPERSPREADER_COUNT__", str(superspreader_count))
+        .replace("__LINEAGE_INGRESS_COUNT__", str(lineage_result.ingress_count if lineage_result else 0))
+        .replace("__LINEAGE_NEXUS_COUNT__", str(lineage_result.nexus_count if lineage_result else 0))
+        .replace("__LINEAGE_EGRESS_COUNT__", str(lineage_result.egress_count if lineage_result else 0))
         .replace("__HAZARDS_COUNT__", str(len(buffer_hazards)))
         .replace("__DEPS_COUNT__", str(len(deps_data)))
         .replace("__UNKNOWNS_COUNT__", str(len(unknowns_data)))
         .replace("__READINESS_SCORE__", str(readiness_score))
         .replace("__CISO_MD__", ciso_md_escaped)
+        .replace("__ECDAT_LOGO_B64__", LOGO_B64_PATH.read_text(encoding="utf-8").strip() if LOGO_B64_PATH.exists() else "")
     )
 
     return report_html

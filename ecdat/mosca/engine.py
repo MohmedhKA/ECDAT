@@ -14,8 +14,10 @@ from ecdat.constants import (
 )
 from ecdat.models import CryptoAsset, MoscaScore, PrimitiveType, XTier, IntentClass
 
-def is_post_quantum(alg: str) -> bool:
-    alg_upper = alg.upper()
+def is_post_quantum(alg_or_asset) -> bool:
+    if hasattr(alg_or_asset, "is_pqc"):
+        return alg_or_asset.is_pqc
+    alg_upper = str(alg_or_asset).upper()
     return any(k in alg_upper for k in [
         "ML-DSA", "ML-KEM", "DILITHIUM", "KYBER", "SLH-DSA", "FALCON", "LWE", "SPHINCS", "POST-QUANTUM", "PQC", "LIBOQS"
     ])
@@ -24,60 +26,60 @@ def is_classically_broken_or_misuse(asset: CryptoAsset) -> bool:
     """
     Detects deprecated or disallowed classical cryptography and security misuses
     per NIST SP 800-131A Rev 2, OMB M-26-15, and CWE (CWE-327, CWE-326, CWE-321, CWE-330).
+    Uses dynamic polymorphism directly from the asset model.
     """
-    alg = asset.algorithm.upper()
+    alg = getattr(asset, "algorithm", "") or ""
+    if alg.upper() == "DYNAMIC_UNRESOLVED" or getattr(asset, "x_tier", None) == XTier.HUMAN_REVIEW or getattr(asset, "risk_level", None) == "MANUAL_REVIEW_REQUIRED":
+        return False
 
-    broken_primitives = [
-        "DES", "3DES", "DESEDE", "RC4", "ARCFOUR", "RC2", "RC5", "BLOWFISH", "IDEA",
-        "MD5", "MD4", "MD2", "SHA-1", "SHA1", "HMAC-MD5", "HMAC-SHA1",
-        "ECB", "STATIC-IV", "PREDICTABLE-KEY", "STATIC-SALT", "PREDICTABLE-SEED",
-        "PBE-WEAK-ITERATION", "HARDCODED-PASSWORD", "PREDICTABLE-KEYSTORE",
-        "CLEARTEXT-HTTP", "DUMMY-CERT", "DUMMY-HOSTNAME", "IMPROPER-SSL", "UNTRUSTED-PRNG"
-    ]
-    if any(b in alg for b in broken_primitives):
+    raw = getattr(asset, "raw_properties", {}) or {}
+    if raw.get("ecdat:risk_level") == "MANUAL_REVIEW_REQUIRED" or raw.get("ecdat:human_review_required"):
+        return False
+
+    if asset.is_classically_broken:
         return True
 
-    # Deprecated asymmetric key sizes (< 2048-bit RSA/DH/DSA)
-    if asset.key_size and asset.key_size < 2048:
-        if any(k in alg for k in ["RSA", "DH", "DSA"]):
-            return True
-
     # Check explicit misuse properties or CWE tags
-    raw = getattr(asset, "raw_properties", {}) or {}
     if raw.get("misuse_category") or raw.get("cwe"):
         return True
 
     return False
 
-def is_safe_quantum_or_symmetric(alg: str) -> bool:
-    alg_upper = alg.upper()
-    return is_post_quantum(alg) or any(k in alg_upper for k in [
+def is_safe_quantum_or_symmetric(alg_or_asset) -> bool:
+    if hasattr(alg_or_asset, "is_pqc"):
+        if alg_or_asset.is_pqc:
+            return True
+    alg_str = getattr(alg_or_asset, "algorithm", str(alg_or_asset)).upper()
+    return is_post_quantum(alg_str) or any(k in alg_str for k in [
         "AES-256", "SECRET-TOKEN", "CHACHA20", "SHA-256", "SHA-384", "SHA-512", "SHA256", "SHA3", "BLAKE", "BLAKE2", "BLAKE3", "RISTRETTO", "PEDERSEN",
         "SECURE-PRNG", "CSPRNG", "PBKDF2", "HOSTNAME-VERIFIER", "TLS-HOSTNAME-VERIFIER", "SECURE-RANDOM"
     ])
 
 def evaluate_regulatory_z(asset: CryptoAsset) -> tuple[int, int]:
     """
-    Determines Z_regulatory (year and OMB M-26-15 phase) based on primitive type.
+    Determines Z_regulatory (year and OMB M-26-15 phase) using dynamic polymorphism.
     - Classically Broken / Misuses: Already disallowed (2026, immediate critical)
+    - Dynamic Unresolved / Human Review: Pending review state (2030, Phase 3)
+    - PQC & Grover-Safe Symmetric Standards: Non-expiring (2050+)
     - Phase 3 (2030): Key Establishment (KEM, DH, ECDH, RSA key exchange)
     - Phase 4 (2031): Digital Signatures (RSA signatures, ECDSA, DSA)
     - Phase 5 (2035): Full Classical Disallowance
-    - PQC & Grover-Safe Symmetric Standards: Non-expiring (2050+)
     """
+    raw = getattr(asset, "raw_properties", {}) or {}
+    alg = getattr(asset, "algorithm", "") or ""
+    if (
+        alg.upper() == "DYNAMIC_UNRESOLVED"
+        or getattr(asset, "x_tier", None) == XTier.HUMAN_REVIEW
+        or getattr(asset, "risk_level", None) == "MANUAL_REVIEW_REQUIRED"
+        or raw.get("ecdat:risk_level") == "MANUAL_REVIEW_REQUIRED"
+        or raw.get("ecdat:human_review_required")
+    ):
+        return 2030, 0
     if is_classically_broken_or_misuse(asset):
         return 2026, 0
-    if is_safe_quantum_or_symmetric(asset.algorithm):
+    if is_safe_quantum_or_symmetric(asset):
         return 2050, 0
-    if asset.primitive_type == PrimitiveType.KEY_EXCHANGE:
-        return OMB_M2615_SCHEDULE["PHASE_3"]["year"], 3
-    elif asset.primitive_type == PrimitiveType.SIGNATURE:
-        return OMB_M2615_SCHEDULE["PHASE_4"]["year"], 4
-    else:
-        alg = asset.algorithm.upper()
-        if "RSA" in alg or "DH" in alg or "ECDH" in alg:
-            return OMB_M2615_SCHEDULE["PHASE_3"]["year"], 3
-        return OMB_M2615_SCHEDULE["PHASE_5"]["year"], 5
+    return asset.z_reg_deadline, asset.z_reg_phase
 
 def compute_mosca_score(
     asset: CryptoAsset,
@@ -128,9 +130,19 @@ def compute_mosca_score(
     r_q = overdue_years * p_hndl * (1.0 - agility_discount) * intent_weight
 
     # Risk level categorization
-    if is_classically_broken_or_misuse(asset):
+    raw = getattr(asset, "raw_properties", {}) or {}
+    is_human_review = (
+        asset.algorithm.upper() == "DYNAMIC_UNRESOLVED"
+        or (getattr(asset, "x_tier", None) == XTier.HUMAN_REVIEW and override_x_years is None)
+        or getattr(asset, "risk_level", None) == "MANUAL_REVIEW_REQUIRED"
+        or raw.get("ecdat:risk_level") == "MANUAL_REVIEW_REQUIRED"
+        or raw.get("ecdat:human_review_required")
+    )
+    if is_human_review:
+        risk_level = "MANUAL_REVIEW_REQUIRED"
+    elif is_classically_broken_or_misuse(asset):
         risk_level = "CRITICAL"
-    elif is_safe_quantum_or_symmetric(asset.algorithm) or intent_weight == 0.0 or p_hndl == 0.0:
+    elif is_safe_quantum_or_symmetric(asset) or intent_weight == 0.0 or p_hndl == 0.0:
         risk_level = "LOW"
     elif y_max <= 1.0:
         risk_level = "CRITICAL"
@@ -141,8 +153,18 @@ def compute_mosca_score(
     else:
         risk_level = "LOW"
 
+    # Ensure safe / LOW risk assets and MANUAL_REVIEW_REQUIRED never display a negative Y_max migration budget
+    if risk_level in ("LOW", "MANUAL_REVIEW_REQUIRED"):
+        y_max = max(0.0, y_max)
+        deadline_year = round(current_year + y_max, 2)
+
     # Actionable planning notes for CISO
-    if intent_val == "OPERATIONAL_UTILITY":
+    if is_human_review:
+        planning_note = (
+            "DYNAMIC INVOCATION QUARANTINE: Cryptographic primitive is dynamically resolved or passed as a variable at runtime. "
+            "Static AST cannot verify algorithm safety. Quarantined for manual auditor code review."
+        )
+    elif intent_val == "OPERATIONAL_UTILITY":
         planning_note = (
             "OPERATIONAL UTILITY: Used for non-sensitive operational caching/deduplication (ETag/cache key). "
             "Quantum exposure risk is 0.0; alert suppressed per DSIS policy."

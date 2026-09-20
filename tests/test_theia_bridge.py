@@ -66,3 +66,49 @@ def test_run_theia_scan_live_on_certs():
 def test_run_theia_scan_missing_dir():
     assets = run_theia_scan("/nonexistent/directory/path/12345")
     assert assets == []
+
+def test_theia_skips_env_and_tokens():
+    mock_components = [
+        {
+            "name": ".env_key",
+            "evidence": {"occurrences": [{"location": ".env"}]},
+            "cryptoProperties": {
+                "assetType": "related-crypto-material",
+                "relatedCryptoMaterialProperties": {
+                    "type": "generic-api-key",
+                    "size": 256,
+                    "format": "RAW",
+                },
+            },
+        },
+        {
+            "name": "SECRET_TOKEN",
+            "evidence": {"occurrences": [{"location": "config/.env.local"}]},
+            "cryptoProperties": {
+                "assetType": "related-crypto-material",
+                "relatedCryptoMaterialProperties": {
+                    "type": "token",
+                    "size": 256,
+                    "format": "RAW",
+                },
+            },
+        },
+        {
+            "name": "RSA-2048",
+            "evidence": {"occurrences": [{"location": "certs/server.key"}]},
+            "cryptoProperties": {
+                "assetType": "related-crypto-material",
+                "relatedCryptoMaterialProperties": {
+                    "type": "private-key",
+                    "size": 2048,
+                    "format": "PEM",
+                },
+            },
+        },
+    ]
+
+    assets = parse_theia_components(mock_components)
+    # Only the genuine RSA-2048 private key should be admitted
+    assert len(assets) == 1
+    assert assets[0].algorithm == "RSA-2048"
+

@@ -60,24 +60,83 @@ def extract_module_dependencies(file_path: str) -> List[str]:
         except Exception:
             pass
     elif suffix in {".js", ".mjs", ".cjs", ".ts", ".tsx"}:
-        import re
-        for m in re.finditer(r"(?:import\s+(?:[\w*\s{},]*\s+from\s+)?|require\s*\(\s*)['\"]([^'\"]+)['\"]", content):
-            raw_path = m.group(1)
-            stem = Path(raw_path).stem
-            imported_modules.append(stem)
-            if "/" in raw_path and not raw_path.startswith("."):
-                pkg = raw_path.split("/")[0] if not raw_path.startswith("@") else "/".join(raw_path.split("/")[:2])
-                imported_modules.append(pkg)
+        from pygments.lexers import JavascriptLexer
+        from pygments.token import Token
+        tokens = list(JavascriptLexer().get_tokens(content))
+        idx = 0
+        n_tok = len(tokens)
+        while idx < n_tok:
+            ttype, val = tokens[idx]
+            if val == "import":
+                for j in range(idx + 1, min(n_tok, idx + 25)):
+                    if tokens[j][0] in Token.Literal.String:
+                        raw_path = tokens[j][1].strip("'\"")
+                        stem = Path(raw_path).stem
+                        imported_modules.append(stem)
+                        if "/" in raw_path and not raw_path.startswith("."):
+                            pkg = raw_path.split("/")[0] if not raw_path.startswith("@") else "/".join(raw_path.split("/")[:2])
+                            imported_modules.append(pkg)
+                        idx = j
+                        break
+                    if tokens[j][1] == ";":
+                        break
+            elif val == "require" and idx + 2 < n_tok:
+                if tokens[idx + 1][1] == "(":
+                    for j in range(idx + 2, min(n_tok, idx + 6)):
+                        if tokens[j][0] in Token.Literal.String:
+                            raw_path = tokens[j][1].strip("'\"")
+                            stem = Path(raw_path).stem
+                            imported_modules.append(stem)
+                            if "/" in raw_path and not raw_path.startswith("."):
+                                pkg = raw_path.split("/")[0] if not raw_path.startswith("@") else "/".join(raw_path.split("/")[:2])
+                                imported_modules.append(pkg)
+                            idx = j
+                            break
+            idx += 1
     elif suffix == ".go":
-        import re
-        for m in re.finditer(r"['\"]([^'\"]+)['\"]", content):
-            raw_path = m.group(1)
-            imported_modules.append(Path(raw_path).stem)
+        from pygments.lexers import GoLexer
+        from pygments.token import Token
+        tokens = list(GoLexer().get_tokens(content))
+        in_import = False
+        in_import_group = False
+        idx = 0
+        n_tok = len(tokens)
+        while idx < n_tok:
+            ttype, val = tokens[idx]
+            if val == "import":
+                if idx + 1 < n_tok and tokens[idx + 1][1] == "(":
+                    in_import_group = True
+                    idx += 2
+                    continue
+                else:
+                    in_import = True
+            if in_import_group:
+                if val == ")":
+                    in_import_group = False
+                elif ttype in Token.Literal.String:
+                    imported_modules.append(Path(val.strip("'\"")).stem)
+            elif in_import:
+                if ttype in Token.Literal.String:
+                    imported_modules.append(Path(val.strip("'\"")).stem)
+                    in_import = False
+                elif val in ("\n", ";"):
+                    in_import = False
+            idx += 1
     elif suffix == ".rs":
-        import re
-        for m in re.finditer(r"use\s+([a-zA-Z0-9_:]+);", content):
-            first_part = m.group(1).split("::")[0]
-            imported_modules.append(first_part)
+        from pygments.lexers import RustLexer
+        tokens = list(RustLexer().get_tokens(content))
+        idx = 0
+        n_tok = len(tokens)
+        while idx < n_tok:
+            ttype, val = tokens[idx]
+            if val == "use" and idx + 1 < n_tok:
+                for j in range(idx + 1, min(n_tok, idx + 10)):
+                    if tokens[j][1].isidentifier():
+                        imported_modules.append(tokens[j][1])
+                        break
+                    if tokens[j][1] == ";":
+                        break
+            idx += 1
 
     return imported_modules
 

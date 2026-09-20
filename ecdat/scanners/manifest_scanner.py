@@ -11,45 +11,10 @@ or Symmetric/Hash, providing SBOM visibility without polluting first-party AST c
 """
 
 import json
-import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel
-
-KNOWN_CRYPTO_LIBRARIES: Dict[str, Dict[str, str]] = {
-    # Post-Quantum Cryptography (PQC)
-    "@noble/post-quantum": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "NIST FIPS 203/204/205 ML-KEM & ML-DSA"},
-    "liboqs": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "Open Quantum Safe C/C++ library"},
-    "pqcrypto": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "Rust/Python post-quantum bindings"},
-    "oqs": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "Open Quantum Safe wrappers"},
-    "crystals-dilithium": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "NIST ML-DSA reference implementation"},
-    "crystals-kyber": {"category": "POST_QUANTUM", "readiness": "MIGRATED_PQC", "desc": "NIST ML-KEM reference implementation"},
-    
-    # Classical Asymmetric (Vulnerable to Shor's algorithm - HNDL Risk)
-    "node-forge": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "RSA/ECC classical cipher suite (HNDL risk)"},
-    "elliptic": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Classical ECC curves (secp256k1, P-256)"},
-    "rsa": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Classical RSA implementation"},
-    "curve25519-dalek": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "X25519/Ed25519 curve operations (requires ML-KEM hybrid)"},
-    "ed25519-dalek": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Ed25519 signature scheme (requires ML-DSA hybrid)"},
-    "cryptography": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Python OpenSSL bindings (classical public key primitives)"},
-    "pycryptodome": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Python cryptography library (RSA, DSA, ECC)"},
-    "pyopenssl": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "Python OpenSSL wrapper"},
-    "paramiko": {"category": "CLASSICAL_ASYMMETRIC", "readiness": "VULNERABLE_CLASSICAL", "desc": "SSH client/server with classical RSA/ECDSA handshakes"},
-    
-    # Blockchain / Enterprise Frameworks
-    "github.com/hyperledger/fabric-contract-api-go": {"category": "BLOCKCHAIN_CORE", "readiness": "CLASSICAL_HYBRID", "desc": "Hyperledger Fabric chaincode SDK (PDC & state operations)"},
-    "github.com/hyperledger/fabric-gateway": {"category": "BLOCKCHAIN_CORE", "readiness": "CLASSICAL_HYBRID", "desc": "Fabric client gateway with gRPC TLS"},
-    "ethers": {"category": "BLOCKCHAIN_CORE", "readiness": "VULNERABLE_CLASSICAL", "desc": "Ethereum Web3 client with secp256k1 ECDSA"},
-    "web3": {"category": "BLOCKCHAIN_CORE", "readiness": "VULNERABLE_CLASSICAL", "desc": "Ethereum Web3 RPC framework"},
-    
-    # Symmetric / Hash / Tokens (Quantum Agility Safe under Grover's)
-    "crypto-js": {"category": "SYMMETRIC_OR_HASH", "readiness": "SAFE_SYMMETRIC", "desc": "AES, SHA-2/3, HMAC symmetric algorithms"},
-    "sha2": {"category": "SYMMETRIC_OR_HASH", "readiness": "SAFE_SYMMETRIC", "desc": "SHA-256 / SHA-512 cryptographic hash functions"},
-    "aes": {"category": "SYMMETRIC_OR_HASH", "readiness": "SAFE_SYMMETRIC", "desc": "AES symmetric block cipher (AES-256 quantum-safe)"},
-    "jsonwebtoken": {"category": "SYMMETRIC_OR_HASH", "readiness": "DEPENDS_ON_ALG", "desc": "JWT auth (HMAC-SHA256 safe; RS256 vulnerable)"},
-    "bcrypt": {"category": "SYMMETRIC_OR_HASH", "readiness": "SAFE_SYMMETRIC", "desc": "Password hashing function"},
-    "argon2": {"category": "SYMMETRIC_OR_HASH", "readiness": "SAFE_SYMMETRIC", "desc": "Memory-hard password hashing"},
-}
+from ecdat.rules.signature_db import get_signature_db
 
 EXCLUDED_DIR_NAMES = {
     "node_modules", "venv", ".venv", "env", "site-packages",
@@ -90,6 +55,23 @@ def _generate_dependency_recommendation(info: Dict[str, str], ecosystem: str = "
     else:
         return "Audit primitive usage: ensure parameters meet post-quantum and Grover security thresholds"
 
+def _lookup_package_rule(pkg_name: str, ecosystem: str) -> Optional[Tuple[str, Dict[str, str]]]:
+    """Resolves package info using SQLite signature DB."""
+    try:
+        db = get_signature_db()
+        rule = db.lookup_package(ecosystem, pkg_name)
+        if rule:
+            info = {
+                "category": rule["category"],
+                "readiness": rule["pqc_readiness"],
+                "desc": rule["description"],
+                "rec": rule["recommendation"]
+            }
+            return pkg_name, info
+    except Exception:
+        pass
+    return None
+
 def scan_package_json(fpath: Path, root_path: Path) -> List[DependencyCryptoPackage]:
     results = []
     try:
@@ -97,15 +79,10 @@ def scan_package_json(fpath: Path, root_path: Path) -> List[DependencyCryptoPack
             data = json.load(f)
         deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
         for name, ver in deps.items():
-            name_clean = name.lower()
-            match = None
-            for k, info in KNOWN_CRYPTO_LIBRARIES.items():
-                if k.lower() == name_clean or k.lower() in name_clean:
-                    match = (k, info)
-                    break
+            match = _lookup_package_rule(name, "npm")
             if match:
                 k, info = match
-                rec = _generate_dependency_recommendation(info, ecosystem="npm")
+                rec = info.get("rec") or _generate_dependency_recommendation(info, ecosystem="npm")
                 results.append(DependencyCryptoPackage(
                     package_name=name,
                     ecosystem="npm",
@@ -134,20 +111,19 @@ def scan_cargo_toml(fpath: Path, root_path: Path) -> List[DependencyCryptoPackag
                 continue
             if in_deps and "=" in line:
                 pkg_name = line.split("=")[0].strip()
-                ver_match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', line)
-                if ver_match:
-                    pkg_ver = ver_match.group(1)
+                pkg_ver = "latest"
+                val_part = line.split("=", 1)[1].strip()
+                if "version" in val_part:
+                    for sub in val_part.strip("{} ").split(","):
+                        if "version" in sub and "=" in sub:
+                            pkg_ver = sub.split("=")[1].strip().strip('"\' ')
+                            break
                 else:
-                    pkg_ver = line.split("=", 1)[1].strip().strip('"').strip("'").strip("{} ")
-                name_clean = pkg_name.lower()
-                match = None
-                for k, info in KNOWN_CRYPTO_LIBRARIES.items():
-                    if k.lower() == name_clean or k.lower() in name_clean:
-                        match = (k, info)
-                        break
+                    pkg_ver = val_part.strip('"\' ')
+                match = _lookup_package_rule(pkg_name, "cargo")
                 if match:
                     k, info = match
-                    rec = _generate_dependency_recommendation(info, ecosystem="cargo")
+                    rec = info.get("rec") or _generate_dependency_recommendation(info, ecosystem="cargo")
                     results.append(DependencyCryptoPackage(
                         package_name=pkg_name,
                         ecosystem="cargo",
@@ -175,15 +151,10 @@ def scan_go_mod(fpath: Path, root_path: Path) -> List[DependencyCryptoPackage]:
             if len(parts) >= 2:
                 mod_name = parts[0]
                 mod_ver = parts[1]
-                mod_clean = mod_name.lower()
-                match = None
-                for k, info in KNOWN_CRYPTO_LIBRARIES.items():
-                    if k.lower() in mod_clean:
-                        match = (k, info)
-                        break
+                match = _lookup_package_rule(mod_name, "go")
                 if match:
                     k, info = match
-                    rec = _generate_dependency_recommendation(info, ecosystem="go")
+                    rec = info.get("rec") or _generate_dependency_recommendation(info, ecosystem="go")
                     results.append(DependencyCryptoPackage(
                         package_name=mod_name,
                         ecosystem="go",
@@ -206,29 +177,32 @@ def scan_requirements_txt(fpath: Path, root_path: Path) -> List[DependencyCrypto
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                match = re.match(r"^([a-zA-Z0-9_\-\.]+)(?:[=<>~!]+(.*))?", line)
+                # Split off environment markers or inline comments
+                line = line.split(";")[0].split("#")[0].strip()
+                if not line:
+                    continue
+                pkg_name = line
+                pkg_ver = "latest"
+                for sep in ("==", ">=", "<=", "~=", "!=", ">", "<"):
+                    if sep in line:
+                        parts = line.split(sep, 1)
+                        pkg_name = parts[0].strip()
+                        pkg_ver = parts[1].strip()
+                        break
+                match = _lookup_package_rule(pkg_name, "pypi")
                 if match:
-                    pkg_name = match.group(1)
-                    pkg_ver = match.group(2) or "latest"
-                    pkg_clean = pkg_name.lower()
-                    m = None
-                    for k, info in KNOWN_CRYPTO_LIBRARIES.items():
-                        if k.lower() == pkg_clean:
-                            m = (k, info)
-                            break
-                    if m:
-                        k, info = m
-                        rec = _generate_dependency_recommendation(info, ecosystem="pypi")
-                        results.append(DependencyCryptoPackage(
-                            package_name=pkg_name,
-                            ecosystem="pypi",
-                            version=pkg_ver,
-                            manifest_path=str(fpath.relative_to(root_path)),
-                            category=info["category"],
-                            pqc_readiness=info["readiness"],
-                            description=info["desc"],
-                            recommendation=rec,
-                        ))
+                    k, info = match
+                    rec = info.get("rec") or _generate_dependency_recommendation(info, ecosystem="pypi")
+                    results.append(DependencyCryptoPackage(
+                        package_name=pkg_name,
+                        ecosystem="pypi",
+                        version=pkg_ver,
+                        manifest_path=str(fpath.relative_to(root_path)),
+                        category=info["category"],
+                        pqc_readiness=info["readiness"],
+                        description=info["desc"],
+                        recommendation=rec,
+                    ))
     except Exception:
         pass
     return results

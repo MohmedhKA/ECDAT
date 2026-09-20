@@ -168,7 +168,7 @@ def inject_fleet_navigation(html_content: str, current_project: str, all_project
         <div class="flex items-center bg-slate-900/95 border border-cyan-500/40 rounded-lg px-2.5 py-1 text-xs font-mono shadow-sm">
             <span class="text-cyan-400 font-bold flex items-center gap-1.5 mr-2">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                Fleet Project:
+                Fleet:
             </span>
             <select id="fleet-project-select" onchange="window.location.href='/project/' + this.value" class="bg-slate-950 border border-slate-700 text-cyan-200 rounded px-2 py-0.5 text-xs font-mono focus:border-cyan-400 focus:outline-none cursor-pointer">
                 {options_str}
@@ -178,6 +178,10 @@ def inject_fleet_navigation(html_content: str, current_project: str, all_project
             <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
             <span>Fleet View</span>
         </a>
+        <button id="btn-scan-now" onclick="triggerCurrentProjectScan()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 transition shadow-md shadow-cyan-900/30 ring-1 ring-cyan-400/50" title="Trigger immediate re-scan of this codebase">
+            <svg class="w-3.5 h-3.5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>Scan Now</span>
+        </button>
         <button onclick="openScanModal()" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white px-2.5 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition shadow-sm" title="Scan a new codebase">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span>+ Scan Target</span>
@@ -250,8 +254,19 @@ def inject_fleet_navigation(html_content: str, current_project: str, all_project
     </script>
     """
 
-    # Inject into the top right of the executive header
-    if "<!-- Header Quick Actions & Merkle Root Chip -->" in html_content:
+    # Inject into the executive header toolbar
+    if "<!-- FLEET_NAVIGATION_SLOT_START -->" in html_content and "<!-- FLEET_NAVIGATION_SLOT_END -->" in html_content:
+        s_idx = html_content.find("<!-- FLEET_NAVIGATION_SLOT_START -->")
+        e_tag = "<!-- FLEET_NAVIGATION_SLOT_END -->"
+        e_idx = html_content.find(e_tag) + len(e_tag)
+        html_content = html_content[:s_idx] + fleet_widget + html_content[e_idx:]
+    elif "<!-- FLEET_NAVIGATION_SLOT -->" in html_content:
+        html_content = html_content.replace(
+            "<!-- FLEET_NAVIGATION_SLOT -->",
+            fleet_widget,
+            1
+        )
+    elif "<!-- Header Quick Actions & Merkle Root Chip -->" in html_content:
         html_content = html_content.replace(
             "<!-- Header Quick Actions & Merkle Root Chip -->",
             fleet_widget + "\n<!-- Header Quick Actions & Merkle Root Chip -->",
@@ -261,6 +276,11 @@ def inject_fleet_navigation(html_content: str, current_project: str, all_project
         # Fallback: place before closing header
         idx = html_content.find("</header>")
         html_content = html_content[:idx] + fleet_widget + html_content[idx:]
+
+    # Also ensure logo placeholder is populated if present
+    logo_file = Path(__file__).parent / "assets" / "logo_b64.txt"
+    if "__ECDAT_LOGO_B64__" in html_content and logo_file.exists():
+        html_content = html_content.replace("__ECDAT_LOGO_B64__", logo_file.read_text(encoding="utf-8").strip())
 
     # Inject modal before closing body
     if "</body>" in html_content:
@@ -282,6 +302,9 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
     total_critical = sum(p["critical_count"] for p in projects)
     total_high = sum(p["high_count"] for p in projects)
     overall_readiness = max(0, round(((total_assets - (total_critical + total_high)) / max(1, total_assets)) * 100))
+
+    logo_file = Path(__file__).parent / "assets" / "logo_b64.txt"
+    logo_b64 = logo_file.read_text(encoding="utf-8").strip() if logo_file.exists() else ""
 
     # Build Project Table Rows
     rows_html = []
@@ -328,6 +351,7 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECDAT | Organization Fleet Cryptographic Posture Scorecard</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,{logo_b64}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -343,9 +367,7 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
     <header class="border-b border-slate-800/80 bg-slate-950/90 sticky top-0 z-40 backdrop-blur-md">
         <div class="max-w-[1720px] mx-auto px-4 sm:px-8 xl:px-12 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center space-x-3.5">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyan-600 via-blue-700 to-indigo-800 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-cyan-900/40 ring-1 ring-white/20">
-                    E
-                </div>
+                <img src="data:image/png;base64,{logo_b64}" class="w-10 h-10 rounded-xl object-cover shadow-lg shadow-cyan-500/30 border border-cyan-400/40 ring-1 ring-white/10 flex-shrink-0" alt="ECDAT Logo" />
                 <div>
                     <div class="flex items-center gap-2.5">
                         <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
@@ -561,11 +583,22 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
             target_path = body.get("target", "").strip()
             custom_name = body.get("name", "").strip() or Path(target_path).name or "scan_output"
 
+            projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
+            matching = [p for p in projects if p["name"] == target_path or p["name"] == custom_name]
+
+            # If target_path is not an existing filesystem path, check if it matches a known project
+            if (not target_path or not Path(target_path).exists()) and matching:
+                target_path = matching[0]["directory"]
+                custom_name = matching[0]["name"]
+
             if not target_path or not Path(target_path).exists():
                 return JSONResponse({"status": "error", "error": f"Target path '{target_path}' does not exist."}, status_code=400)
 
-            # Define output directory in scans/
-            out_dir = app_base_dir / "scans" / custom_name
+            # If existing project with an established report directory, refresh in-place
+            if matching and matching[0].get("report_path"):
+                out_dir = Path(matching[0]["report_path"]).parent
+            else:
+                out_dir = app_base_dir / "scans" / custom_name
             out_dir.mkdir(parents=True, exist_ok=True)
 
             # Run pipeline asynchronously using standard pipeline logic

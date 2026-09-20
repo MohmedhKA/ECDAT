@@ -260,22 +260,24 @@ def parse_theia_components(
                 fingerprint = hashlib.sha256(rel_path.encode()).hexdigest()
 
             cert_files.add(rel_path)
-            asset_id = f"THEIA-CERT-{len(discovered_assets) + 1:03d}"
-            asset = CryptoAsset(
-                asset_id=asset_id,
+            from ecdat.scanners.factory import CryptoAssetFactory
+            asset = CryptoAssetFactory.create_asset(
+                asset_prefix="THEIA-CERT",
+                index=len(discovered_assets) + 1,
                 component_name=f"x509_cert:{Path(rel_path).stem}",
                 algorithm=alg_name,
                 key_size=key_size,
                 primitive_type=prim,
                 file_path=rel_path,
                 line_number=1,
-                x_tier=XTier.OPERATIONAL,
-                x_confidence="HIGH",
-                has_crypto_shredding=False,
-                intent_class=IntentClass.AUTHENTICATION_SIGNATURE,
+                tier=XTier.OPERATIONAL,
+                has_shredding=False,
                 evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
-                evidence_sources=["theia_bridge:x509_filesystem"],
-                raw_properties={
+                evidence_source="theia_bridge:x509_filesystem",
+                matched_code=f"Subject: {subject}",
+                language="asn1",
+                description=f"X.509 Certificate ({alg_name})",
+                extra_properties={
                     "source": "cbomkit-theia",
                     "assetType": "certificate",
                     "subject": subject,
@@ -293,6 +295,17 @@ def parse_theia_components(
             mat_props = crypto_props.get("relatedCryptoMaterialProperties", {})
             mat_type = mat_props.get("type", "")
             key_size = mat_props.get("size", 2048) or 2048
+
+            # Skip environment files, API keys, tokens, and non-cryptographic secrets — these belong in Father Marko Lineage / Secrets ledger, not CBOM cryptographic assets
+            if (
+                rel_path.endswith(".env")
+                or Path(rel_path).name.startswith(".env")
+                or ".env" in rel_path.lower()
+                or ".env" in comp_name.lower()
+                or "generic-api-key" in comp_name.lower()
+                or mat_type in ("token", "generic-api-key")
+            ):
+                continue
 
             # Avoid duplicate public-key asset for a file already emitted or cataloged as a certificate
             if mat_type == "public-key":
@@ -362,32 +375,29 @@ def parse_theia_components(
                 prim = PrimitiveType.SIGNATURE
                 key_size = 256
                 tier = XTier.OPERATIONAL
-            elif rel_path.endswith(".env") or "generic-api-key" in comp_name.lower() or "secret" in comp_name.lower():
-                alg_name = "SECRET-TOKEN"
-                prim = PrimitiveType.ENCRYPTION
-                key_size = 256
-                tier = XTier.OPERATIONAL
             else:
                 alg_name = comp_name
                 prim = PrimitiveType.ENCRYPTION
                 tier = XTier.ARCHIVAL if mat_type == "private-key" else XTier.OPERATIONAL
 
-            asset_id = f"THEIA-KEY-{len(discovered_assets) + 1:03d}"
-            asset = CryptoAsset(
-                asset_id=asset_id,
+            from ecdat.scanners.factory import CryptoAssetFactory
+            asset = CryptoAssetFactory.create_asset(
+                asset_prefix="THEIA-KEY",
+                index=len(discovered_assets) + 1,
                 component_name=f"keyfile:{Path(rel_path).stem}_{mat_type}",
                 algorithm=alg_name,
                 key_size=key_size,
                 primitive_type=prim,
                 file_path=rel_path,
                 line_number=1,
-                x_tier=tier,
-                x_confidence="HIGH",
-                has_crypto_shredding=False,
-                intent_class=IntentClass.AUTHENTICATION_SIGNATURE if prim == PrimitiveType.SIGNATURE else IntentClass.CONFIDENTIALITY_ENVELOPE,
+                tier=tier,
+                has_shredding=False,
                 evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
-                evidence_sources=["theia_bridge:key_filesystem"],
-                raw_properties={
+                evidence_source="theia_bridge:key_filesystem",
+                matched_code=f"Key: {alg_name} ({mat_type})",
+                language="asn1",
+                description=f"Keyfile {alg_name} ({mat_type})",
+                extra_properties={
                     "source": "cbomkit-theia",
                     "assetType": "related-crypto-material",
                     "keyType": mat_type,

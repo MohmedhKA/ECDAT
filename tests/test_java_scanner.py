@@ -78,3 +78,67 @@ public class BenchmarkCryptoSample {
     kpg_asset = next(a for a in assets if a.algorithm == "RSA-2048" and a.primitive_type == PrimitiveType.SIGNATURE)
     assert kpg_asset.algorithm == "RSA-2048"
     assert kpg_asset.key_size == 2048
+
+def test_scan_java_dynamic_unresolved_quarantine(tmp_path):
+    java_code = """
+package test.crypto;
+import java.security.MessageDigest;
+import javax.crypto.Cipher;
+
+public class DynamicObfuscationTest {
+    public void testDynamicCalls() throws Exception {
+        // Dynamic string noise replacement
+        MessageDigest md = MessageDigest.getInstance("M~D5".replace("~", ""));
+
+        // Dynamic chained manipulation
+        Cipher c = Cipher.getInstance("D#ES".replace("#", ""));
+    }
+}
+"""
+    f = tmp_path / "DynamicObfuscationTest.java"
+    f.write_text(java_code, encoding="utf-8")
+
+    assets = scan_java_file(f, tmp_path)
+    assert len(assets) == 2
+
+    for a in assets:
+        assert a.algorithm == "DYNAMIC_UNRESOLVED"
+        assert a.x_tier == XTier.HUMAN_REVIEW
+        assert a.evidence_level == EvidenceLevel.E0_UNCONFIRMED
+        assert a.raw_properties["ecdat:risk_level"] == "MANUAL_REVIEW_REQUIRED"
+        assert a.raw_properties["ecdat:human_review_required"] is True
+        assert "Dynamic crypto invocation cannot be statically verified" in a.raw_properties["ecdat:auditor_note"]
+
+def test_scan_java_fqcn_and_ssl_context(tmp_path):
+    java_code = """
+package test.crypto;
+
+public class FQCNAndSSLTest {
+    public void testFQCN() throws Exception {
+        byte[] salt = {80, 45, 56};
+        // Fully-qualified PBEKeySpec with weak iteration count (50 <= 1000)
+        new javax.crypto.spec.PBEKeySpec("pass".toCharArray(), salt, 50);
+
+        // Fully-qualified static IvParameterSpec
+        String staticIV = "12345678";
+        new javax.crypto.spec.IvParameterSpec(staticIV.getBytes(), 0, 8);
+
+        // Fully-qualified deprecated SSLContext
+        javax.net.ssl.SSLContext.getInstance("SSLv3");
+
+        // Modern TLSv1.3 SSLContext
+        javax.net.ssl.SSLContext.getInstance("TLSv1.3");
+    }
+}
+"""
+    f = tmp_path / "FQCNAndSSLTest.java"
+    f.write_text(java_code, encoding="utf-8")
+
+    assets = scan_java_file(f, tmp_path)
+    algs = [a.algorithm for a in assets]
+
+    assert "PBE-WEAK-ITERATION" in algs
+    assert "STATIC-IV" in algs
+    assert "IMPROPER-SSL:SSLV3" in algs
+    assert "TLSv1.3" in algs
+

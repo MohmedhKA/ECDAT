@@ -110,3 +110,52 @@ def test_custom_override_x():
     # 2030 - 2026 = 4.0; 4.0 - 2.0 = 2.0
     assert score.y_max_years == 2.0
     assert score.risk_level == "HIGH"
+
+def test_safe_quantum_and_symmetric_mosca():
+    aes_asset = CryptoAsset(
+        asset_id="asset-aes",
+        component_name="vault-storage",
+        algorithm="AES-256",
+        primitive_type=PrimitiveType.ENCRYPTION,
+        file_path="src/storage/vault.py",
+        x_tier=XTier.ARCHIVAL,
+    )
+    score_aes = compute_mosca_score(aes_asset, current_year=2026)
+    assert score_aes.z_regulatory_year == 2050
+    assert score_aes.risk_level == "LOW"
+    assert score_aes.y_max_years >= 0.0
+
+    pqc_asset = CryptoAsset(
+        asset_id="asset-mldsa",
+        component_name="ledger-pqc",
+        algorithm="ML-DSA-65",
+        primitive_type=PrimitiveType.SIGNATURE,
+        file_path="src/pqc/anchor.py",
+        x_tier=XTier.OPERATIONAL,
+    )
+    score_pqc = compute_mosca_score(pqc_asset, current_year=2026)
+    assert score_pqc.z_regulatory_year == 2050
+    assert score_pqc.risk_level == "LOW"
+    assert score_pqc.y_max_years >= 0.0
+
+def test_dynamic_unresolved_quarantine():
+    dyn_asset = CryptoAsset(
+        asset_id="asset-dynamic",
+        component_name="Cipher:dynamic_unresolved",
+        algorithm="DYNAMIC_UNRESOLVED",
+        primitive_type=PrimitiveType.ENCRYPTION,
+        file_path="src/crypto/DynamicTest.java",
+        x_tier=XTier.HUMAN_REVIEW,
+        risk_level="MANUAL_REVIEW_REQUIRED",
+        raw_properties={
+            "ecdat:human_review_required": True,
+            "ecdat:risk_level": "MANUAL_REVIEW_REQUIRED",
+        }
+    )
+    score_dyn = compute_mosca_score(dyn_asset, current_year=2026)
+    assert score_dyn.risk_level == "MANUAL_REVIEW_REQUIRED"
+    assert score_dyn.z_regulatory_year == 2030
+    assert score_dyn.y_max_years >= 0.0
+    assert "DYNAMIC INVOCATION QUARANTINE" in score_dyn.planning_note
+
+

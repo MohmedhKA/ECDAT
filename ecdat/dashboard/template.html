@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ECDAT — Cryptographic Discovery & Attestation Report</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,__ECDAT_LOGO_B64__">
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- D3.js v7 (CDN) -->
@@ -325,61 +326,70 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
     <!-- Top Defense-Grade Executive Bar -->
-    <header class="border-b border-slate-800/80 bg-slate-950/90 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-[1720px] mx-auto px-4 sm:px-8 xl:px-12 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center space-x-3.5">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyan-600 via-blue-700 to-indigo-800 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-cyan-900/40 ring-1 ring-white/20">
-                    E
-                </div>
-                <div>
-                    <div class="flex items-center gap-2.5">
-                        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+    <header class="border-b border-slate-800/80 bg-slate-950/95 sticky top-0 z-40 backdrop-blur-md">
+        <div class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+            <!-- Left Branding & Target -->
+            <div class="flex items-center space-x-3.5 min-w-0 flex-shrink-0">
+                <img src="data:image/png;base64,__ECDAT_LOGO_B64__" class="w-10 h-10 rounded-xl object-cover shadow-lg shadow-cyan-500/30 border border-cyan-400/40 ring-1 ring-white/10 flex-shrink-0" alt="ECDAT Logo" />
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent flex items-center gap-1.5">
                             ECDAT
-                            <span class="text-xs text-slate-400 font-normal">| Cryptographic Discovery & Attestation Report</span>
+                            <span class="text-[11px] text-slate-400 font-normal font-mono hidden sm:inline">| Post-Quantum Governance Platform</span>
                         </h1>
-                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/70 font-mono">
+                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/70 font-mono">
                             FIPS 203/204/205
                         </span>
-                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded bg-slate-900 text-slate-300 border border-slate-700 font-mono">
+                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-900 text-slate-300 border border-slate-700 font-mono">
                             OMB M-26-15
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
-                        <span>Target: <strong class="font-mono text-slate-200">__PROJECT_NAME__</strong></span>
-                        <span>&bull;</span>
-                        <span class="font-mono text-emerald-400/90">Theorem: $Y_{\max} = (Z_{\text{reg}} - 2026) - X_{\text{eff}}$</span>
+                    <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                        <span>Target: <strong class="font-mono text-cyan-300">__PROJECT_NAME__</strong></span>
+                        <span class="text-slate-600">&bull;</span>
+                        <span class="font-mono text-emerald-400/90">Theorem: $X_{\text{eff}} + Y > Z_{\text{reg}}$ &bull; $Y_{\max} = \max(0, (Z_{\text{reg}} - 2026) - X_{\text{eff}})$</span>
                     </p>
                 </div>
             </div>
 
+            <!-- Fleet Navigation & Scan Now Toolbar Slot -->
+            <!-- FLEET_NAVIGATION_SLOT_START -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <button id="btn-scan-now" onclick="triggerCurrentProjectScan()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition shadow-md shadow-cyan-900/30 ring-1 ring-cyan-400/50" title="Trigger immediate cryptographic scan of this target">
+                    <svg class="w-3.5 h-3.5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span>Scan Now</span>
+                </button>
+            </div>
+            <!-- FLEET_NAVIGATION_SLOT_END -->
+
             <!-- Header Quick Actions & Merkle Root Chip -->
-            <div class="flex items-center flex-wrap gap-2.5">
+            <div class="flex items-center flex-wrap gap-2 justify-end flex-shrink-0">
                 <!-- Committed Root Chip -->
-                <div class="flex items-center bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-mono shadow-inner">
-                    <span class="text-slate-400 mr-2 flex items-center">
+                <div class="flex items-center bg-slate-900/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs font-mono shadow-inner">
+                    <span class="text-slate-400 mr-1.5 flex items-center">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block mr-1.5 animate-pulse"></span>
-                        Merkle Root:
+                        Merkle:
                     </span>
                     <span class="text-emerald-300 font-semibold cursor-pointer select-all" onclick="copyRootHex()" title="Click to copy full 32-byte hex">
                         0x__MERKLE_ROOT_SHORT__
                     </span>
-                    <button onclick="copyRootHex()" class="ml-2 text-slate-400 hover:text-white p-0.5 rounded transition" title="Copy 32-Byte Merkle Root">
+                    <button onclick="copyRootHex()" class="ml-1.5 text-slate-400 hover:text-white p-0.5 rounded transition" title="Copy 32-Byte Merkle Root">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                     </button>
                 </div>
 
                 <!-- Export Actions -->
-                <button onclick="exportCbomJson()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    CBOM JSON
+                <button onclick="exportCbomJson()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm" title="Download CycloneDX 1.6 Cryptographic BOM">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>CBOM</span>
                 </button>
-                                <button onclick="exportDsseEnvelope()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm">
+                <button onclick="exportDsseEnvelope()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm" title="Download Signed in-toto DSSE Attestation">
                     <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    DSSE Attestation
+                    <span>DSSE</span>
                 </button>
-                <button onclick="exportCisoReportMd()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm">
-                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    CISO Briefing (.md)
+                <button onclick="exportCisoReportMd()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition shadow-sm" title="Download Executive CISO Markdown Briefing">
+                    <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>CISO (.md)</span>
                 </button>
             </div>
         </div>
@@ -387,7 +397,7 @@
 
     <!-- Executive Health Scorecard (Stat Grid with Precise Mathematical Notation) -->
     <section class="max-w-[1720px] mx-auto px-4 sm:px-8 xl:px-12 pt-5 w-full">
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
             <!-- 1. Total Assets -->
             <div onclick="switchTab('cbom'); clearCbomFilter();" class="glass-card-interactive rounded-xl p-3.5 cursor-pointer">
                 <div class="flex items-center justify-between">
@@ -427,7 +437,20 @@
                 <div class="mt-1 text-[11px] text-amber-300/70 font-mono truncate">Migration Deadline</div>
             </div>
 
-            <!-- 4. R0 Superspreaders (LaTeX: R_0 >= 2) -->
+            <!-- 4. Manual Review ($E_0$ Dynamic Quarantine) -->
+            <div onclick="switchTab('cbom'); setCbomRiskFilter('MANUAL_REVIEW_REQUIRED');" class="glass-card-interactive rounded-xl p-3.5 border-purple-900/50 bg-purple-950/20 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <p class="text-[11px] font-bold text-purple-400 uppercase tracking-wider">Manual Review</p>
+                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                </div>
+                <div class="mt-2 flex items-baseline">
+                    <span class="text-2xl font-black text-purple-300 font-mono">__MANUAL_REVIEW_COUNT__</span>
+                    <span class="ml-1.5 text-xs text-purple-300 font-medium">$E_0$ Dynamic</span>
+                </div>
+                <div class="mt-1 text-[11px] text-purple-300/70 font-mono truncate">Human Triage Queue</div>
+            </div>
+
+            <!-- 5. R0 Superspreaders (LaTeX: R_0 >= 2) -->
             <div onclick="switchTab('contagion');" class="glass-card-interactive rounded-xl p-3.5 border-purple-900/50 bg-purple-950/20 cursor-pointer">
                 <div class="flex items-center justify-between">
                     <p class="text-[11px] font-bold text-purple-400 uppercase tracking-wider">Superspreaders</p>
@@ -476,6 +499,11 @@
             <button onclick="switchTab('contagion')" id="tab-btn-contagion" class="tab-btn tab-active pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
                 <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.59 13.51l6.83 3.98m-.01-10.98l-6.82 3.98"/></svg>
                 <span>Cryptographic Contagion Graph ($R_0$)</span>
+            </button>
+            <button onclick="switchTab('lineage')" id="tab-btn-lineage" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Father Marko Lineage</span>
+                <span class="bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded text-[10px] font-mono border border-cyan-800/60">Provenance</span>
             </button>
             <button onclick="switchTab('mosca')" id="tab-btn-mosca" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
                 <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/></svg>
@@ -596,7 +624,143 @@
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>Show Legend</span>
                 </button>
+
+                <!-- Micro Variable Flow Drawer Toggle Button (Sketched by User) -->
+                <button id="var-flow-toggle-btn" onclick="toggleVariableFlowDrawer()" class="absolute top-4 right-4 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-cyan-300 hover:text-white border border-cyan-500/40 shadow-xl backdrop-blur-md transition group font-mono text-xs cursor-pointer" title="Toggle Micro Variable Data Flow Drawer">
+                    <svg class="w-4 h-4 text-cyan-400 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                    <span class="font-bold">Micro Variable Flow</span>
+                    <span id="var-flow-badge-count" class="px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-[10px] text-cyan-300 font-bold">0 Flows</span>
+                </button>
+
+                <!-- Micro Variable Flow Drawer (Slide-out from right) -->
+                <div id="variable-flow-drawer" class="absolute top-0 right-0 bottom-0 w-[880px] max-w-[96vw] bg-slate-950/95 backdrop-blur-2xl border-l border-cyan-500/30 shadow-2xl z-30 transform translate-x-full transition-transform duration-300 flex flex-col overflow-hidden">
+                    <!-- Drawer Header -->
+                    <div class="p-4 border-b border-slate-800/80 bg-slate-900/60 flex items-start justify-between gap-3 flex-shrink-0">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <h4 class="text-sm font-bold text-white font-mono flex items-center gap-1.5">
+                                    <span>Micro Data-Level Contagion</span>
+                                </h4>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/80 font-bold">Variable Flow</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1 font-mono">
+                                Ingress &bull; Parameters &rarr; Cryptographic Nexus &rarr; Persistence Sinks
+                            </p>
+                        </div>
+                        <button onclick="toggleVariableFlowDrawer(false)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer" title="Close Drawer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Module Filter Bar -->
+                    <div class="px-4 py-2.5 bg-slate-900/40 border-b border-slate-800/60 flex items-center justify-between gap-2 flex-shrink-0">
+                        <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+                            <span>Filter Module:</span>
+                            <select id="var-flow-module-select" onchange="filterVariableFlowByModule(this.value)" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-cyan-300 font-mono focus:border-cyan-500 focus:outline-none max-w-[280px]">
+                                <option value="ALL">All Modules</option>
+                            </select>
+                        </div>
+                        <span id="var-flow-filtered-count" class="text-[11px] font-mono text-slate-400"></span>
+                    </div>
+
+                    <!-- Drawer Content List -->
+                    <div id="variable-flow-list" class="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar">
+                        <!-- Populated by renderVariableFlowDrawer() -->
+                    </div>
+                </div>
+
                 <svg id="contagion-svg" class="w-full h-[600px] bg-[#080c16] rounded-xl cursor-grab active:cursor-grabbing"></svg>
+            </div>
+        </div>
+
+        <!-- ================= TAB: FATHER MARKO LINEAGE ================= -->
+        <div id="tab-pane-lineage" class="hidden space-y-4">
+
+            <!-- Tab Info Banner -->
+            <div class="p-4 rounded-xl glass-panel border border-cyan-500/30 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-cyan-950/30 flex items-start gap-3.5 shadow-lg">
+                <div class="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div class="flex-grow text-xs space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-cyan-200 uppercase tracking-wider text-[11px] font-mono">Father Marko &bull; Cryptographic Provenance &amp; Lineage Engine</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/80 font-bold">Zero-Regex Contract Architecture</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-[11px]">
+                        Distinguishes closed-world constant expressions (folded deterministically into the CBOM) from open-world runtime ingress (<code class="text-cyan-300">.env</code>, configs, databases). Maps parameter bindings directly to AST cryptographic call-sites and down to persistence storage sinks.
+                    </p>
+                    <div class="pt-1 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-slate-400">
+                        <span>&bull; <strong class="text-cyan-300">External Ingress Hubs:</strong> Runtime configuration sources (<code class="text-cyan-400">process.env</code>, YAML, DB lookups).</span>
+                        <span>&bull; <strong class="text-indigo-300">Consuming Spokes:</strong> Consuming source files and exact AST call-site invocations.</span>
+                        <span>&bull; <strong class="text-emerald-300">Closed-World Defense:</strong> Verified static constant folding isolated from external ingress.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5">
+                <div class="glass-card rounded-xl p-3 border-cyan-900/40 bg-slate-900/60">
+                    <div class="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">External Ingress Hubs</div>
+                    <div class="text-2xl font-bold text-cyan-300 font-mono mt-1">__LINEAGE_INGRESS_COUNT__</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Environment, YAML/JSON, and DB lookups</div>
+                </div>
+                <div class="glass-card rounded-xl p-3 border-indigo-900/40 bg-slate-900/60">
+                    <div class="text-[10px] font-mono text-indigo-400 uppercase tracking-wider">Consuming Spokes</div>
+                    <div class="text-2xl font-bold text-indigo-300 font-mono mt-1">__LINEAGE_NEXUS_COUNT__</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Application files consuming ingress keys</div>
+                </div>
+                <div class="glass-card rounded-xl p-3 border-emerald-900/40 bg-slate-900/60">
+                    <div class="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Persistence Egress Sinks</div>
+                    <div class="text-2xl font-bold text-emerald-300 font-mono mt-1">__LINEAGE_EGRESS_COUNT__</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Redis queues, caches, ledgers, &amp; databases</div>
+                </div>
+                <div class="glass-card rounded-xl p-3 border-purple-900/40 bg-slate-900/60">
+                    <div class="text-[10px] font-mono text-purple-400 uppercase tracking-wider">CBOM Constant-Folded</div>
+                    <div class="text-2xl font-bold text-purple-300 font-mono mt-1">Closed-World</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">.replace() &amp; string tricks routed to CBOM</div>
+                </div>
+            </div>
+
+            <!-- Toolbar & Filter Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl glass-panel border border-slate-800 bg-slate-900/80">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono text-slate-400 uppercase tracking-wider">Filter Ingress:</span>
+                    <button onclick="lineageManager.filterType('ALL')" id="lineage-btn-all" class="px-2.5 py-1 rounded-lg text-xs font-mono bg-cyan-950 text-cyan-300 border border-cyan-700/80 hover:bg-cyan-900 transition">ALL</button>
+                    <button onclick="lineageManager.filterType('ENV')" id="lineage-btn-env" class="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">.ENV ONLY</button>
+                    <button onclick="lineageManager.filterType('CONFIG')" id="lineage-btn-config" class="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">CONFIG ONLY</button>
+                    <button onclick="lineageManager.filterType('DATABASE')" id="lineage-btn-db" class="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition">DB / STORAGE</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="lineage-search-input" oninput="lineageManager.search(this.value)" placeholder="Search parameter, file, or sink..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 font-mono focus:border-cyan-500 focus:outline-none w-56">
+                    <button onclick="lineageManager.zoomIn()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Zoom In">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                    <button onclick="lineageManager.zoomOut()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Zoom Out">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                    </button>
+                    <button onclick="lineageManager.resetZoom()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 border border-slate-700">Reset</button>
+                </div>
+            </div>
+
+            <!-- Visualization Canvas with Relative Floating Inspector -->
+            <div class="relative w-full rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-[#060913]">
+                <!-- Column Headers overlay -->
+                <div id="lineage-col-headers" class="absolute top-3 left-0 right-0 px-12 flex justify-between pointer-events-none z-10 text-[11px] font-mono font-bold tracking-wider">
+                    <span class="text-cyan-400 bg-slate-900/80 px-3 py-1 rounded-lg border border-cyan-900/60 shadow">&larr; EXTERNAL INGRESS HUBS (.ENV / CONFIG / DB)</span>
+                    <span class="text-indigo-400 bg-slate-900/80 px-3 py-1 rounded-lg border border-indigo-900/60 shadow">CONSUMING SPOKES (FILES &amp; CALL-SITES) &rarr;</span>
+                </div>
+
+                <!-- Floating Node Details Inspector -->
+                <div id="lineage-inspector-card" class="hidden absolute bottom-4 left-4 z-20 max-w-sm w-full p-4 rounded-xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 shadow-2xl text-xs space-y-2 font-mono">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span id="lineage-inspector-title" class="font-bold text-cyan-300 truncate">Node Inspector</span>
+                        <button onclick="document.getElementById('lineage-inspector-card').classList.add('hidden')" class="text-slate-400 hover:text-rose-400">&times;</button>
+                    </div>
+                    <div id="lineage-inspector-body" class="space-y-1.5 text-slate-300 text-[11px]"></div>
+                </div>
+
+                <svg id="lineage-svg" class="w-full h-[620px] bg-[#070b14] rounded-xl cursor-grab active:cursor-grabbing"></svg>
             </div>
         </div>
 
@@ -853,6 +1017,9 @@
                     </button>
                     <button onclick="filterCbomTable('LOW')" id="filter-btn-LOW" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-emerald-300 transition">
                         LOW (__LOW_COUNT__)
+                    </button>
+                    <button onclick="filterCbomTable('MANUAL_REVIEW_REQUIRED')" id="filter-btn-MANUAL_REVIEW_REQUIRED" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-purple-300 transition">
+                        MANUAL REVIEW (__MANUAL_REVIEW_COUNT__)
                     </button>
                     <button onclick="toggleSuppressOperational()" id="btn-suppress-op" class="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-400 border border-slate-800 hover:text-emerald-300 flex items-center gap-1.5 transition ml-1">
                         <svg class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
@@ -1323,7 +1490,7 @@
             <div class="p-4 rounded-xl bg-slate-900/90 border border-emerald-900/50 font-mono space-y-2">
                 <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Mosca Risk Formulation Proof</span>
                 <div class="text-slate-300 text-xs py-1">
-                    $$Y_{\max} = (Z_{\text{reg}} - 2026) - X_{\text{eff}}$$
+                    $$Y_{\max} = \max\left(0, (Z_{\text{reg}} - 2026) - X_{\text{eff}}\right)$$
                 </div>
                 <div id="drawer-mosca-calc" class="text-xs text-rose-300 bg-black/40 p-2.5 rounded border border-slate-800">
                 </div>
@@ -1362,6 +1529,7 @@
     <script>
         const ASSETS_DATA = __ASSETS_JSON__;
         const GRAPH_DATA = __GRAPH_JSON__;
+        const LINEAGE_DATA = __LINEAGE_JSON__;
         const HAZARDS_DATA = __HAZARDS_JSON__;
         const PROOFS_DATA = __PROOFS_JSON__;
         const DEPS_DATA = __DEPS_JSON__;
@@ -1418,7 +1586,7 @@
         }
 
         function switchTab(tabId) {
-            const tabs = ['contagion', 'mosca', 'pareto', 'cbom', 'buffer', 'supplychain', 'proof', 'unknowns', 'ciso'];
+            const tabs = ['contagion', 'lineage', 'mosca', 'pareto', 'cbom', 'buffer', 'supplychain', 'proof', 'unknowns', 'ciso'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
                 const pane = document.getElementById(`tab-pane-${t}`);
@@ -1432,6 +1600,7 @@
                     }
                 }
             });
+            if (tabId === 'lineage') initLineageGraph();
             if (tabId === 'mosca') renderGanttChart();
             if (tabId === 'supplychain') renderSupplyChainTable();
             if (tabId === 'unknowns') renderUnknownsTable();
@@ -1491,19 +1660,24 @@
             document.getElementById('drawer-hybrid-target').innerText = asset.recommended_hybrid || 'Hybrid Pairing';
             document.getElementById('drawer-guidance').innerText = asset.guidance || 'Deploy NIST FIPS 203/204 standardized replacement.';
 
-            const calcTerm = (asset.z_reg_year - 2026) - asset.x_years;
+            const diffTerm = (asset.z_reg_year - 2026) - asset.x_years;
             document.getElementById('drawer-mosca-calc').innerHTML = `
-                $$Y_{\\max} = (${asset.z_reg_year} - 2026) - ${asset.x_years} = ${calcTerm} \\implies \\mathbf{${asset.y_max_years}\\text{ years budget remaining}}$$
+                $$Y_{\\max} = \\max\\left(0, (${asset.z_reg_year} - 2026) - ${asset.x_years}\\right) = \\max(0, ${diffTerm}) = \\mathbf{${asset.y_max_years}\\text{ years budget remaining}}$$
             `;
 
             const pill = document.getElementById('drawer-risk-pill');
-            pill.innerText = `${asset.risk_level} RISK (Ymax: ${asset.y_max_years}y)`;
-            pill.className = `text-xs px-3 py-1 rounded-full font-mono font-bold border ${
-                asset.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
-                asset.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-300 border-amber-800' :
-                asset.risk_level === 'MEDIUM' ? 'bg-yellow-950 text-yellow-300 border-yellow-800' :
-                'bg-emerald-950 text-emerald-300 border-emerald-800'
-            }`;
+            if (asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
+                pill.innerText = 'MANUAL REVIEW REQUIRED';
+                pill.className = 'text-xs px-3 py-1 rounded-full font-mono font-bold border bg-purple-950 text-purple-300 border-purple-800';
+            } else {
+                pill.innerText = `${asset.risk_level} RISK (Ymax: ${asset.y_max_years}y)`;
+                pill.className = `text-xs px-3 py-1 rounded-full font-mono font-bold border ${
+                    asset.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
+                    asset.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-300 border-amber-800' :
+                    asset.risk_level === 'MEDIUM' ? 'bg-yellow-950 text-yellow-300 border-yellow-800' :
+                    'bg-emerald-950 text-emerald-300 border-emerald-800'
+                }`;
+            }
 
             const backdrop = document.getElementById('asset-drawer-backdrop');
             const drawer = document.getElementById('asset-drawer');
@@ -1567,6 +1741,8 @@
 
                 const riskBadge = a.intent_class === 'OPERATIONAL_UTILITY'
                     ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-400 border border-slate-700 whitespace-nowrap">$R_Q = 0.0$ SUPPRESSED</span>`
+                    : a.risk_level === 'MANUAL_REVIEW_REQUIRED'
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-950/80 text-purple-300 border border-purple-800 whitespace-nowrap"><svg class="w-3 h-3 inline mr-1 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>MANUAL REVIEW</span>`
                     : a.risk_level === 'CRITICAL'
                     ? `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-950/80 text-red-300 border border-red-800 whitespace-nowrap">$Y_{\max} = ${a.y_max_years}\text{y}$ CRITICAL</span>`
                     : a.risk_level === 'HIGH'
@@ -1669,7 +1845,7 @@
 
         function filterCbomTable(severity) {
             activeCbomFilter = severity;
-            ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].forEach(lvl => {
+            ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'MANUAL_REVIEW_REQUIRED'].forEach(lvl => {
                 const btn = document.getElementById(`filter-btn-${lvl}`);
                 if (btn) {
                     if (lvl === severity) {
@@ -1719,7 +1895,21 @@
             if (!container) return;
             container.innerHTML = '';
 
-            const sorted = [...ASSETS_DATA].sort((a, b) => a.y_max_years - b.y_max_years);
+            const severityWeight = {
+                "CRITICAL": 0,
+                "HIGH": 1,
+                "MEDIUM": 2,
+                "LOW": 3,
+                "MANUAL_REVIEW_REQUIRED": 4
+            };
+            const sorted = [...ASSETS_DATA].sort((a, b) => {
+                const sevA = severityWeight[a.risk_level] ?? 5;
+                const sevB = severityWeight[b.risk_level] ?? 5;
+                if (sevA !== sevB) {
+                    return sevA - sevB;
+                }
+                return a.y_max_years - b.y_max_years;
+            });
             const totalYearsSpan = 14;
 
             sorted.forEach(a => {
@@ -1742,7 +1932,7 @@
                         </div>
                         <div class="flex items-center gap-3 flex-shrink-0">
                             <span class="text-slate-300">$X_{\\text{eff}} = ${a.x_years}\\text{y}$</span>
-                            <span class="font-bold ${a.risk_level === 'CRITICAL' ? 'text-rose-400' : a.risk_level === 'HIGH' ? 'text-amber-400' : 'text-emerald-400'}">
+                            <span class="font-bold ${a.risk_level === 'CRITICAL' ? 'text-rose-400' : a.risk_level === 'HIGH' ? 'text-amber-400' : a.risk_level === 'MEDIUM' ? 'text-yellow-400' : 'text-emerald-400'}">
                                 $Y_{\\max} = ${a.y_max_years}\\text{y}$ (${a.risk_level})
                             </span>
                         </div>
@@ -1751,7 +1941,7 @@
                         <div class="h-full bg-cyan-700/70 border-r border-cyan-400/50 flex items-center justify-center text-[10px] font-bold text-white" style="width: ${Math.max(4, xPercent)}%;">
                             ${xYears}y
                         </div>
-                        <div class="h-full ${a.risk_level === 'CRITICAL' ? 'bg-red-800/80' : a.risk_level === 'HIGH' ? 'bg-amber-800/80' : 'bg-emerald-800/80'} border-r border-white/20 flex items-center justify-center text-[10px] font-bold text-white" style="width: ${Math.max(4, yMaxPercent)}%;">
+                        <div class="h-full ${a.risk_level === 'CRITICAL' ? 'bg-red-800/80' : a.risk_level === 'HIGH' ? 'bg-amber-800/80' : a.risk_level === 'MEDIUM' ? 'bg-yellow-800/80' : 'bg-emerald-800/80'} border-r border-white/20 flex items-center justify-center text-[10px] font-bold text-white" style="width: ${Math.max(4, yMaxPercent)}%;">
                             ${yMax}y budget
                         </div>
                         <div class="absolute left-[28.5%] top-0 bottom-0 w-[1px] bg-amber-400/60" title="2030 OMB M-26-15"></div>
@@ -2269,7 +2459,14 @@
                     .attr("transform", d => `translate(${d.x},${d.y})`)
                     .style("cursor", "pointer")
                     .on("click", (e, d) => {
-                        if (d.asset_id) openAssetDrawer(d.asset_id);
+                        const varFlow = (typeof LINEAGE_DATA !== 'undefined' && LINEAGE_DATA && LINEAGE_DATA.variable_flow) ? LINEAGE_DATA.variable_flow : null;
+                        const hasFlows = varFlow && varFlow.flows && varFlow.flows.some(f => f.module && (f.module.includes(d.id) || d.id.includes(f.module.split('/').pop().replace(/\.[^/.]+$/, ""))));
+                        if (hasFlows) {
+                            toggleVariableFlowDrawer(true);
+                            filterVariableFlowByModule(d.id);
+                        } else if (d.asset_id) {
+                            openAssetDrawer(d.asset_id);
+                        }
                     })
                     .on("mouseenter", (e, d) => this.highlightNeighbors(d))
                     .on("mouseleave", () => this.clearHighlights());
@@ -2413,27 +2610,41 @@
                 const downstream = this.downstreamMap.get(targetNode.id) || new Set();
 
                 if (this.nodeElements) {
-                    this.nodeElements.transition().duration(120)
-                        .style("opacity", n => neighbors.has(n.id) ? 1.0 : 0.08);
+                    this.nodeElements.transition().duration(140)
+                        .style("opacity", n => neighbors.has(n.id) ? 1.0 : 0.08)
+                        .attr("transform", n => {
+                            const scale = (n.id === targetNode.id) ? 1.22 : (neighbors.has(n.id) ? 1.10 : 1.0);
+                            return `translate(${n.x},${n.y}) scale(${scale})`;
+                        });
+
+                    this.nodeElements.selectAll("circle:not(.radar-pulse)")
+                        .attr("stroke", n => {
+                            if (n.id === targetNode.id) return "#ffffff";
+                            if (upstream.has(n.id)) return "#38bdf8";
+                            if (downstream.has(n.id)) return "#00f5a0";
+                            return "rgba(255, 255, 255, 0.45)";
+                        })
+                        .attr("stroke-width", n => neighbors.has(n.id) ? 3.0 : 1.5);
                 }
+
                 if (this.linkElements) {
-                    this.linkElements.transition().duration(120)
+                    this.linkElements.transition().duration(140)
                         .style("opacity", l => {
                             const s = typeof l.source === 'object' ? l.source.id : l.source;
                             const t = typeof l.target === 'object' ? l.target.id : l.target;
-                            return (s === targetNode.id || t === targetNode.id) ? 1.0 : 0.04;
+                            return (s === targetNode.id || t === targetNode.id) ? 1.0 : 0.03;
                         })
                         .attr("stroke", l => {
                             const s = typeof l.source === 'object' ? l.source.id : l.source;
                             const t = typeof l.target === 'object' ? l.target.id : l.target;
                             if (s === targetNode.id) return "#00f5a0"; // Downstream infection flow (emerald)
                             if (t === targetNode.id) return "#38bdf8"; // Upstream dependency flow (sky)
-                            return "rgba(255, 255, 255, 0.06)";
+                            return "rgba(255, 255, 255, 0.03)";
                         })
                         .attr("stroke-width", l => {
                             const s = typeof l.source === 'object' ? l.source.id : l.source;
                             const t = typeof l.target === 'object' ? l.target.id : l.target;
-                            return (s === targetNode.id || t === targetNode.id) ? 2.8 : 1.0;
+                            return (s === targetNode.id || t === targetNode.id) ? 3.5 : 1.0;
                         });
                 }
 
@@ -2463,7 +2674,7 @@
                                 .attr("font-weight", "600")
                                 .text(self.formatLabel(d, true));
                         } else {
-                            elem.style("opacity", 0.05);
+                            elem.style("opacity", 0.04);
                         }
                     });
                 }
@@ -2471,11 +2682,21 @@
 
             clearHighlights() {
                 if (this.nodeElements) {
-                    this.nodeElements.transition().duration(150).style("opacity", 1.0);
+                    this.nodeElements.transition().duration(160)
+                        .style("opacity", 1.0)
+                        .attr("transform", d => `translate(${d.x},${d.y}) scale(1.0)`);
+
+                    this.nodeElements.selectAll("circle:not(.radar-pulse)")
+                        .attr("stroke", d => {
+                            if (d.is_superspreader) return "#fca5a5";
+                            if (d.is_pqc_anchor) return "#6ee7b7";
+                            return "rgba(255, 255, 255, 0.45)";
+                        })
+                        .attr("stroke-width", d => d.is_superspreader ? 2.5 : 1.5);
                 }
                 if (this.linkElements) {
-                    this.linkElements.transition().duration(150)
-                        .style("opacity", 0.7)
+                    this.linkElements.transition().duration(160)
+                        .style("opacity", 0.75)
                         .attr("stroke", d => {
                             const s = d.source;
                             if (s && s.is_superspreader) return "rgba(244, 63, 94, 0.45)";
@@ -2496,6 +2717,15 @@
                         .attr("font-weight", d => (d.is_superspreader || d.is_pqc_anchor) ? "bold" : "normal")
                         .text(d => self.formatLabel(d, false));
                     this.applyLabelMode();
+                }
+            }
+
+            highlightNodeByModule(modulePath) {
+                if (!modulePath || !this.nodes) return;
+                const modName = modulePath.split('/').pop().replace(/\.[^/.]+$/, "");
+                const matched = this.nodes.find(n => n.id === modulePath || n.id.includes(modName) || modulePath.includes(n.id));
+                if (matched) {
+                    this.highlightNeighbors(matched);
                 }
             }
 
@@ -2653,6 +2883,609 @@
 
         function filterGraphNodes(query) {
             graphManager.filterNodes(query);
+        }
+
+        // ==========================================================
+        // FATHER MARKO CRYPTOGRAPHIC LINEAGE MANAGEMENT ENGINE
+        // Stratified Tripartite Layout: Ingress (0) -> Nexus (1) -> Egress (2)
+        // ==========================================================
+        class LineageGraphEngine {
+            constructor() {
+                this.svg = null;
+                this.svgGroup = null;
+                this.zoom = null;
+                this.width = 1100;
+                this.height = 620;
+                this.activeFilter = 'ALL';
+                this.searchQuery = '';
+                this.initialized = false;
+            }
+
+            init() {
+                this.svg = d3.select("#lineage-svg");
+                if (!this.svg.node()) return;
+                const container = document.getElementById('lineage-svg');
+                this.width = (container && container.clientWidth) ? container.clientWidth : 1100;
+                this.height = 620;
+
+                this.svg.selectAll("*").remove();
+
+                const defs = this.svg.append("defs");
+
+                // Arrowhead marker for edges
+                defs.append("marker")
+                    .attr("id", "arrow-lineage")
+                    .attr("viewBox", "0 0 10 10")
+                    .attr("refX", 8)
+                    .attr("refY", 5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto-start-reverse")
+                    .append("path")
+                    .attr("d", "M 0 1 L 10 5 L 0 9 z")
+                    .attr("fill", "#38bdf8");
+
+                this.zoom = d3.zoom()
+                    .scaleExtent([0.3, 3.0])
+                    .on("zoom", (e) => {
+                        if (this.svgGroup) {
+                            this.svgGroup.attr("transform", e.transform);
+                        }
+                    });
+                this.svg.call(this.zoom);
+
+                this.svgGroup = this.svg.append("g");
+                this.render();
+                this.initialized = true;
+            }
+
+            render() {
+                if (!this.svgGroup) return;
+                this.svgGroup.selectAll("*").remove();
+
+                const data = (typeof LINEAGE_DATA !== 'undefined' && LINEAGE_DATA) ? LINEAGE_DATA : null;
+                const fm = (data && data.father_marko) ? data.father_marko : null;
+                const hasIngress = fm ? fm.has_ingress : (data && data.nodes && data.nodes.some(n => n.layer === 'INGRESS'));
+
+                const colHeaders = document.getElementById('lineage-col-headers');
+
+                // Zero-State: If no external ingress, show clean defense certification card
+                if (!hasIngress || (fm && fm.hubs.length === 0)) {
+                    if (colHeaders) colHeaders.classList.add('hidden');
+
+                    const centerG = this.svgGroup.append("g")
+                        .attr("transform", `translate(${this.width / 2}, ${this.height / 2})`);
+
+                    centerG.append("circle")
+                        .attr("r", 46)
+                        .attr("fill", "rgba(16, 185, 129, 0.08)")
+                        .attr("stroke", "rgba(16, 185, 129, 0.4)")
+                        .attr("stroke-width", 2);
+
+                    centerG.append("text")
+                        .attr("y", -6)
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "28px")
+                        .text("🛡️");
+
+                    centerG.append("text")
+                        .attr("y", 68)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#f8fafc")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "15px")
+                        .attr("font-weight", "bold")
+                        .text("Full Closed-World Static Implementation");
+
+                    centerG.append("text")
+                        .attr("y", 96)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#38bdf8")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "12px")
+                        .text("Zero dynamic runtime ingress (.env, config, database) detected.");
+
+                    centerG.append("text")
+                        .attr("y", 120)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#64748b")
+                        .attr("font-family", "JetBrains Mono, monospace")
+                        .attr("font-size", "11px")
+                        .text("All cryptographic primitives in this codebase are statically hardcoded and immutably bounded.");
+                    return;
+                }
+
+                if (colHeaders) colHeaders.classList.remove('hidden');
+
+                let hubs = (fm && fm.hubs) ? fm.hubs.map(h => ({ ...h })) : [];
+                let spokes = (fm && fm.spokes) ? fm.spokes.map(s => ({ ...s })) : [];
+                let edges = (fm && fm.edges) ? fm.edges.map(e => ({ ...e })) : [];
+
+                // Filter by type if active
+                if (this.activeFilter !== 'ALL') {
+                    hubs = hubs.filter(h => h.source_type === this.activeFilter);
+                    const activeHubIds = new Set(hubs.map(h => h.id));
+                    edges = edges.filter(e => activeHubIds.has(e.source));
+                    const activeSpokeIds = new Set(edges.map(e => e.target));
+                    spokes = spokes.filter(s => activeSpokeIds.has(s.id));
+                }
+
+                if (hubs.length === 0) {
+                    this.svgGroup.append("text")
+                        .attr("x", this.width / 2)
+                        .attr("y", this.height / 2)
+                        .attr("text-anchor", "middle")
+                        .attr("fill", "#64748b")
+                        .attr("font-family", "monospace")
+                        .attr("font-size", "13px")
+                        .text(`No external ingress matching filter: ${this.activeFilter}`);
+                    return;
+                }
+
+                // Layout coordinates: Hubs on left (x=240), Spokes on right (x=width-240)
+                const hubX = 240;
+                const spokeX = this.width - 240;
+
+                const hubSpacing = Math.min(80, (this.height - 140) / Math.max(1, hubs.length));
+                const hubStartY = (this.height - (hubs.length - 1) * hubSpacing) / 2;
+                hubs.forEach((h, i) => {
+                    h.x = hubX;
+                    h.y = hubStartY + i * hubSpacing;
+                });
+
+                const spokeSpacing = Math.min(65, (this.height - 140) / Math.max(1, spokes.length));
+                const spokeStartY = (this.height - (spokes.length - 1) * spokeSpacing) / 2;
+                spokes.forEach((s, i) => {
+                    s.x = spokeX;
+                    s.y = spokeStartY + i * spokeSpacing;
+                });
+
+                const hubMap = new Map(hubs.map(h => [h.id, h]));
+                const spokeMap = new Map(spokes.map(s => [s.id, s]));
+
+                // Render Edges
+                const linkGroup = this.svgGroup.append("g").attr("class", "lineage-links");
+                const edgeElements = linkGroup.selectAll("path")
+                    .data(edges)
+                    .enter().append("path")
+                    .attr("d", d => {
+                        const h = hubMap.get(d.source);
+                        const s = spokeMap.get(d.target);
+                        if (!h || !s) return "";
+                        const dx = s.x - h.x;
+                        return `M ${h.x + 90} ${h.y} C ${h.x + dx * 0.45} ${h.y}, ${s.x - dx * 0.45} ${s.y}, ${s.x - 90} ${s.y}`;
+                    })
+                    .attr("fill", "none")
+                    .attr("stroke", "#0284c7")
+                    .attr("stroke-width", 2.0)
+                    .attr("stroke-opacity", 0.75)
+                    .attr("marker-end", "url(#arrow-lineage)");
+
+                // Render Spokes (Right column)
+                const spokeGroup = this.svgGroup.append("g").attr("class", "lineage-spokes");
+                const spokeElements = spokeGroup.selectAll("g")
+                    .data(spokes)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${d.x}, ${d.y})`)
+                    .attr("class", "cursor-pointer")
+                    .on("click", (e, d) => this.showInspector(d))
+                    .on("mouseenter", (e, targetSpoke) => {
+                        const connectedEdges = edges.filter(ed => ed.target === targetSpoke.id);
+                        const connectedHubIds = new Set(connectedEdges.map(ed => ed.source));
+                        spokeElements.style("opacity", s => s.id === targetSpoke.id ? 1.0 : 0.12);
+                        spokeElements.filter(s => s.id === targetSpoke.id)
+                            .select("rect")
+                            .attr("stroke", "#c084fc")
+                            .attr("stroke-width", 2.5);
+
+                        hubElements.style("opacity", h => connectedHubIds.has(h.id) ? 1.0 : 0.12);
+                        hubElements.filter(h => connectedHubIds.has(h.id))
+                            .select("rect")
+                            .attr("stroke", "#38bdf8")
+                            .attr("stroke-width", 2.5);
+
+                        edgeElements.style("opacity", ed => ed.target === targetSpoke.id ? 1.0 : 0.03)
+                            .attr("stroke-width", ed => ed.target === targetSpoke.id ? 3.5 : 1.5)
+                            .attr("stroke", ed => ed.target === targetSpoke.id ? "#c084fc" : "#0284c7");
+                    })
+                    .on("mouseleave", () => {
+                        spokeElements.style("opacity", 1.0)
+                            .select("rect")
+                            .attr("stroke", "#818cf8")
+                            .attr("stroke-width", 1.5);
+
+                        hubElements.style("opacity", 1.0)
+                            .select("rect")
+                            .attr("stroke", "#38bdf8")
+                            .attr("stroke-width", 1.5);
+
+                        edgeElements.style("opacity", 0.75)
+                            .attr("stroke-width", 2.0)
+                            .attr("stroke", "#0284c7");
+                    });
+
+                spokeElements.append("rect")
+                    .attr("x", -90)
+                    .attr("y", -22)
+                    .attr("width", 180)
+                    .attr("height", 44)
+                    .attr("rx", 10)
+                    .attr("fill", "#1e1b4b")
+                    .attr("stroke", "#818cf8")
+                    .attr("stroke-width", 1.5);
+
+                spokeElements.append("circle")
+                    .attr("cx", -76)
+                    .attr("cy", 0)
+                    .attr("r", 4)
+                    .attr("fill", "#818cf8");
+
+                spokeElements.append("text")
+                    .attr("x", -66)
+                    .attr("y", -3)
+                    .attr("fill", "#f8fafc")
+                    .attr("font-size", "10.5px")
+                    .attr("font-family", "JetBrains Mono, monospace")
+                    .attr("font-weight", "bold")
+                    .text(d => d.label.length > 20 ? d.label.substring(0, 18) + '…' : d.label);
+
+                spokeElements.append("text")
+                    .attr("x", -66)
+                    .attr("y", 11)
+                    .attr("fill", "#94a3b8")
+                    .attr("font-size", "9px")
+                    .attr("font-family", "JetBrains Mono, monospace")
+                    .text(d => (d.call || 'AST Call').length > 22 ? (d.call || 'AST Call').substring(0, 20) + '…' : (d.call || 'AST Call'));
+
+                // Render Hubs (Left column)
+                const hubGroup = this.svgGroup.append("g").attr("class", "lineage-hubs");
+                const hubElements = hubGroup.selectAll("g")
+                    .data(hubs)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${d.x}, ${d.y})`)
+                    .attr("class", "cursor-pointer")
+                    .on("click", (e, d) => this.showInspector(d))
+                    .on("mouseenter", (e, targetHub) => {
+                        const connectedSpokeIds = new Set(edges.filter(ed => ed.source === targetHub.id).map(ed => ed.target));
+                        hubElements.style("opacity", h => h.id === targetHub.id ? 1.0 : 0.12);
+                        spokeElements.style("opacity", s => connectedSpokeIds.has(s.id) ? 1.0 : 0.12);
+                        edgeElements.style("opacity", ed => ed.source === targetHub.id ? 1.0 : 0.03)
+                            .attr("stroke-width", ed => ed.source === targetHub.id ? 3.2 : 1.5)
+                            .attr("stroke", ed => ed.source === targetHub.id ? "#38bdf8" : "#0284c7");
+                    })
+                    .on("mouseleave", () => {
+                        hubElements.style("opacity", 1.0);
+                        spokeElements.style("opacity", 1.0);
+                        edgeElements.style("opacity", 0.75).attr("stroke-width", 2.0).attr("stroke", "#0284c7");
+                    });
+
+                hubElements.append("rect")
+                    .attr("x", -90)
+                    .attr("y", -22)
+                    .attr("width", 180)
+                    .attr("height", 44)
+                    .attr("rx", 10)
+                    .attr("fill", "#082f49")
+                    .attr("stroke", "#38bdf8")
+                    .attr("stroke-width", 1.5);
+
+                hubElements.append("circle")
+                    .attr("cx", -76)
+                    .attr("cy", 0)
+                    .attr("r", 5)
+                    .attr("fill", "#38bdf8");
+
+                hubElements.append("text")
+                    .attr("x", -66)
+                    .attr("y", -3)
+                    .attr("fill", "#f8fafc")
+                    .attr("font-size", "10.5px")
+                    .attr("font-family", "JetBrains Mono, monospace")
+                    .attr("font-weight", "bold")
+                    .text(d => d.label.length > 20 ? d.label.substring(0, 18) + '…' : d.label);
+
+                hubElements.append("text")
+                    .attr("x", -66)
+                    .attr("y", 11)
+                    .attr("fill", "#38bdf8")
+                    .attr("font-size", "9px")
+                    .attr("font-family", "JetBrains Mono, monospace")
+                    .text(d => `${d.badge} • ${d.consumer_count || 1} consumers`);
+            }
+
+            showInspector(node) {
+                const card = document.getElementById('lineage-inspector-card');
+                const title = document.getElementById('lineage-inspector-title');
+                const body = document.getElementById('lineage-inspector-body');
+                if (!card || !title || !body) return;
+
+                card.classList.remove('hidden');
+                title.textContent = node.label || node.id;
+
+                let html = `<div><strong class="text-slate-400">Node ID:</strong> <span class="text-cyan-300 font-mono text-[10px] break-all">${node.id || node.node_id}</span></div>`;
+                if (node.source_type) {
+                    html += `<div><strong class="text-slate-400">Source Type:</strong> <span class="px-1.5 py-0.5 rounded text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800">${node.source_type}</span></div>`;
+                }
+                if (node.key) {
+                    html += `<div><strong class="text-slate-400">Key Name:</strong> <span class="text-cyan-200 font-mono">${node.key}</span></div>`;
+                }
+                if (node.fallback) {
+                    html += `<div><strong class="text-slate-400">Fallback:</strong> <span class="text-slate-300 font-mono">${node.fallback}</span></div>`;
+                }
+                if (node.file_path) {
+                    html += `<div><strong class="text-slate-400">File:</strong> <span class="text-slate-200 font-mono">${node.file_path}</span></div>`;
+                }
+                if (node.line_number) {
+                    html += `<div><strong class="text-slate-400">Line:</strong> <span class="text-slate-200 font-mono">L${node.line_number}</span></div>`;
+                }
+                if (node.call) {
+                    html += `<div><strong class="text-slate-400">AST Invocations:</strong> <span class="text-indigo-300 font-mono">${node.call}</span></div>`;
+                }
+                if (node.consumer_count !== undefined) {
+                    html += `<div><strong class="text-slate-400">Consumer Spokes:</strong> <span class="text-emerald-300 font-mono">${node.consumer_count} files</span></div>`;
+                }
+                body.innerHTML = html;
+            }
+
+            filterType(type) {
+                this.activeFilter = type;
+                ['all', 'env', 'config', 'db'].forEach(t => {
+                    const b = document.getElementById(`lineage-btn-${t}`);
+                    if (b) {
+                        const isMatch = (t === 'all' && type === 'ALL') || (t === 'env' && type === 'ENV') || (t === 'config' && type === 'CONFIG') || (t === 'db' && type === 'DATABASE');
+                        if (isMatch) {
+                            b.className = "px-2.5 py-1 rounded-lg text-xs font-mono bg-cyan-950 text-cyan-300 border border-cyan-700/80 hover:bg-cyan-900 transition";
+                        } else {
+                            b.className = "px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition";
+                        }
+                    }
+                });
+                this.render();
+            }
+
+            search(query) {
+                this.searchQuery = (query || "").toLowerCase().trim();
+                if (!this.svgGroup) return;
+                this.svgGroup.selectAll(".lineage-hubs > g, .lineage-spokes > g").each((d, i, nodes) => {
+                    const el = d3.select(nodes[i]);
+                    const text = el.text().toLowerCase();
+                    el.style("opacity", !this.searchQuery || text.includes(this.searchQuery) ? 1.0 : 0.15);
+                });
+            }
+
+            zoomIn() {
+                if (this.svg && this.zoom) this.svg.transition().duration(250).call(this.zoom.scaleBy, 1.3);
+            }
+
+            zoomOut() {
+                if (this.svg && this.zoom) this.svg.transition().duration(250).call(this.zoom.scaleBy, 0.77);
+            }
+
+            resetZoom() {
+                if (this.svg && this.zoom) this.svg.transition().duration(250).call(this.zoom.transform, d3.zoomIdentity);
+            }
+        }
+
+        const lineageManager = new LineageGraphEngine();
+
+        function initLineageGraph() {
+            lineageManager.init();
+        }
+
+        // ================= MICRO VARIABLE DATA-LEVEL CONTAGION DRAWER =================
+        let varFlowDrawerOpen = false;
+        let activeVarFlowModule = 'ALL';
+
+        function toggleVariableFlowDrawer(forceState) {
+            const drawer = document.getElementById('variable-flow-drawer');
+            const toggleBtn = document.getElementById('var-flow-toggle-btn');
+            if (!drawer) return;
+
+            if (forceState !== undefined) {
+                varFlowDrawerOpen = forceState;
+            } else {
+                varFlowDrawerOpen = !varFlowDrawerOpen;
+            }
+
+            if (varFlowDrawerOpen) {
+                drawer.classList.remove('translate-x-full');
+                drawer.classList.add('translate-x-0');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = `
+                        <svg class="w-4 h-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                        <span class="font-bold">Close Drawer</span>
+                    `;
+                }
+                renderVariableFlowDrawer(activeVarFlowModule);
+            } else {
+                drawer.classList.remove('translate-x-0');
+                drawer.classList.add('translate-x-full');
+                if (toggleBtn) {
+                    const count = (typeof LINEAGE_DATA !== 'undefined' && LINEAGE_DATA && LINEAGE_DATA.variable_flow && LINEAGE_DATA.variable_flow.flows) ? LINEAGE_DATA.variable_flow.flows.length : 0;
+                    toggleBtn.innerHTML = `
+                        <svg class="w-4 h-4 text-cyan-400 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                        <span class="font-bold">Micro Variable Flow</span>
+                        <span id="var-flow-badge-count" class="px-1.5 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-500/40 text-[10px] text-cyan-300 font-bold">${count} Flows</span>
+                    `;
+                }
+            }
+        }
+
+        function renderVariableFlowDrawer(filterModule = 'ALL') {
+            activeVarFlowModule = filterModule;
+            const container = document.getElementById('variable-flow-list');
+            const select = document.getElementById('var-flow-module-select');
+            const countBadge = document.getElementById('var-flow-badge-count');
+            const filteredCount = document.getElementById('var-flow-filtered-count');
+            if (!container) return;
+
+            const varFlow = (typeof LINEAGE_DATA !== 'undefined' && LINEAGE_DATA && LINEAGE_DATA.variable_flow) ? LINEAGE_DATA.variable_flow : null;
+            const allFlows = (varFlow && varFlow.flows) ? varFlow.flows : [];
+
+            if (countBadge) countBadge.textContent = `${allFlows.length} Flows`;
+
+            // Populate select if needed
+            if (select && select.options.length <= 1) {
+                const modules = (varFlow && varFlow.modules) ? varFlow.modules : [];
+                modules.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    const shortName = m.split('/').pop();
+                    opt.textContent = shortName;
+                    select.appendChild(opt);
+                });
+            }
+            if (select) select.value = filterModule;
+
+            const filtered = (filterModule === 'ALL') ? allFlows : allFlows.filter(f => f.module && (f.module === filterModule || f.module.includes(filterModule) || filterModule.includes(f.module)));
+
+            if (filteredCount) {
+                filteredCount.textContent = `Showing ${filtered.length} of ${allFlows.length} flows`;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-3 mt-12">
+                        <div class="w-12 h-12 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <h4 class="text-sm font-bold text-slate-200 font-mono">Zero Dynamic Variable Contagion</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+                            All cryptographic invocations in this module operate on closed-world statically bound literals. Zero unverified runtime variables or unconfined storage sinks detected.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((flow, idx) => {
+                const inp = flow.input;
+                const nex = flow.nexus;
+                const sinks = flow.sinks || [];
+
+                const inputBadge = inp ? (inp.badge || inp.source_type) : 'STATIC';
+                const inputBadgeColor = inp ? (inp.source_type === 'ENV' ? 'bg-cyan-950 text-cyan-300 border-cyan-800' : (inp.source_type === 'CONFIG' ? 'bg-amber-950 text-amber-300 border-amber-800' : 'bg-purple-950 text-purple-300 border-purple-800')) : 'bg-slate-800 text-slate-400 border-slate-700';
+                const inputLabel = inp ? inp.label : 'Hardcoded Constant';
+                const inputSub = inp && inp.fallback ? `default: "${inp.fallback}"` : (inp ? inp.source_type : 'Closed-World AST');
+
+                const sinkBadge = sinks.length > 0 ? (sinks[0].source_type || 'EGRESS') : 'VOLATILE';
+                const sinkColor = sinks.length > 0 ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-slate-800 text-slate-400 border-slate-700';
+                const sinkLabel = sinks.length > 0 ? sinks[0].label : 'In-Memory / Volatile Only';
+                const sinkSub = sinks.length > 0 ? (sinks[0].storage || sinks[0].retention || '') : 'Zero persistence exposure';
+
+                const modName = flow.module ? flow.module.split('/').pop() : 'AST';
+
+                html += `
+                    <div class="variable-flow-card group relative p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/60 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-200 cursor-pointer"
+                         data-module="${flow.module || ''}"
+                         onmouseenter="highlightFlowRow(this, '${flow.module || ''}')"
+                         onmouseleave="clearFlowRowHighlight()">
+                        
+                        <div class="flex items-center justify-between text-[10px] font-mono pb-2 mb-2 border-b border-slate-800/80">
+                            <span class="flex items-center gap-1.5 text-slate-300 truncate max-w-[360px]">
+                                <svg class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                <span class="font-bold text-cyan-200">${flow.module || 'Unknown'}</span>
+                            </span>
+                            <span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-bold">L${nex.line || '?'}</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1.15fr_auto_1fr] gap-2.5 items-center">
+                            <!-- Column 1: Input -->
+                            <div class="p-3 rounded-lg bg-slate-950/90 border border-cyan-900/40 space-y-1.5 flow-subcard transition-all hover:border-cyan-500/60 min-w-0">
+                                <div class="flex items-center justify-between text-[9px] font-mono">
+                                    <span class="px-1.5 py-0.5 rounded font-bold border ${inputBadgeColor}">${inputBadge}</span>
+                                    <span class="text-slate-500 text-[8px] uppercase font-bold tracking-wider">Input</span>
+                                </div>
+                                <div class="font-mono text-xs text-cyan-300 font-bold truncate" title="${inputLabel}">
+                                    ${inputLabel}
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-mono truncate" title="${inputSub}">
+                                    ${inputSub}
+                                </div>
+                            </div>
+
+                            <!-- Flow Arrow 1 -->
+                            <div class="hidden md:flex justify-center items-center text-cyan-400/80 px-1 group-hover:text-cyan-300 group-hover:scale-110 transition-all shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </div>
+
+                            <!-- Column 2: Crypto Invocation -->
+                            <div class="p-3 rounded-lg bg-slate-950/90 border border-indigo-900/40 space-y-1.5 flow-subcard transition-all hover:border-indigo-500/60 min-w-0">
+                                <div class="flex items-center justify-between text-[9px] font-mono">
+                                    <span class="px-1.5 py-0.5 rounded font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 text-[9px]">CRYPTO CALL</span>
+                                    <span class="text-slate-500 text-[8px] uppercase font-bold tracking-wider">Nexus</span>
+                                </div>
+                                <div class="font-mono text-xs text-indigo-300 font-bold truncate" title="${nex.call || nex.label}">
+                                    ${nex.call || nex.label}
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-mono truncate" title="${modName}:L${nex.line || '?'}">
+                                    ${modName}:L${nex.line || '?'}
+                                </div>
+                            </div>
+
+                            <!-- Flow Arrow 2 -->
+                            <div class="hidden md:flex justify-center items-center text-emerald-400/80 px-1 group-hover:text-emerald-300 group-hover:scale-110 transition-all shrink-0">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </div>
+
+                            <!-- Column 3: Persistence Sink -->
+                            <div class="p-3 rounded-lg bg-slate-950/90 border border-emerald-900/40 space-y-1.5 flow-subcard transition-all hover:border-emerald-500/60 min-w-0">
+                                <div class="flex items-center justify-between text-[9px] font-mono">
+                                    <span class="px-1.5 py-0.5 rounded font-bold border ${sinkColor}">${sinkBadge}</span>
+                                    <span class="text-slate-500 text-[8px] uppercase font-bold tracking-wider">Persistence</span>
+                                </div>
+                                <div class="font-mono text-xs text-emerald-300 font-bold truncate" title="${sinkLabel}">
+                                    ${sinkLabel}
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-mono truncate" title="${sinkSub}">
+                                    ${sinkSub}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterVariableFlowByModule(moduleName) {
+            renderVariableFlowDrawer(moduleName);
+        }
+
+        function highlightFlowRow(cardElem, moduleName) {
+            const allCards = document.querySelectorAll('.variable-flow-card');
+            allCards.forEach(c => {
+                if (c === cardElem) {
+                    c.style.opacity = '1.0';
+                    c.style.transform = 'translateY(-2px) scale(1.02)';
+                    c.style.boxShadow = '0 10px 25px -5px rgba(6, 182, 212, 0.35)';
+                    c.style.borderColor = '#38bdf8';
+                } else {
+                    c.style.opacity = '0.35';
+                    c.style.transform = 'none';
+                    c.style.boxShadow = 'none';
+                }
+            });
+
+            if (window.graphManager && moduleName) {
+                window.graphManager.highlightNodeByModule(moduleName);
+            }
+        }
+
+        function clearFlowRowHighlight() {
+            const allCards = document.querySelectorAll('.variable-flow-card');
+            allCards.forEach(c => {
+                c.style.opacity = '1.0';
+                c.style.transform = 'none';
+                c.style.boxShadow = 'none';
+                c.style.borderColor = '';
+            });
+
+            if (window.graphManager) {
+                window.graphManager.clearHighlights();
+            }
         }
 
         function renderCisoMarkdown() {
@@ -2889,15 +3722,60 @@
             if (mtuElem) mtuElem.innerText = `${mtu} B`;
         }
 
-        function renderNegativeProofCard() {
-            if (!NEGATIVE_PROOF_DATA) return;
-            const certId = NEGATIVE_PROOF_DATA.certificate_id || NEGATIVE_PROOF_DATA.proof_id || 'CERT-NEG-PQC-001';
-            const certElem = document.getElementById('neg-proof-id');
-            if (certElem) certElem.innerText = certId;
+        async function triggerCurrentProjectScan() {
+            const btn = document.getElementById('btn-scan-now');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<svg class="w-3.5 h-3.5 text-slate-950 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg><span>Scanning...</span>`;
+            }
+            
+            showDashboardToast('Triggering immediate cryptographic discovery scan...', 'info');
+            
+            const selectEl = document.getElementById('fleet-project-select');
+            const currentProj = selectEl ? selectEl.value : '__PROJECT_NAME__';
+            
+            try {
+                const resp = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: currentProj, target: currentProj })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    showDashboardToast('Scan complete! Reloading dashboard...', 'success');
+                    setTimeout(() => { window.location.reload(); }, 900);
+                } else {
+                    showDashboardToast('Scan error: ' + (data.error || 'Check server logs'), 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                }
+            } catch (err) {
+                showDashboardToast('Standalone viewer mode. To re-scan from CLI: ecdat scan --target <dir>', 'warning');
+                if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+            }
+        }
+
+        function showDashboardToast(msg, type='info') {
+            let toast = document.getElementById('ecdat-live-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'ecdat-live-toast';
+                document.body.appendChild(toast);
+            }
+            let bgClass = 'bg-cyan-950/95 border-cyan-500/80 text-cyan-200 shadow-cyan-900/40';
+            if (type === 'success') bgClass = 'bg-emerald-950/95 border-emerald-500/80 text-emerald-200 shadow-emerald-900/40';
+            if (type === 'error') bgClass = 'bg-rose-950/95 border-rose-500/80 text-rose-200 shadow-rose-900/40';
+            if (type === 'warning') bgClass = 'bg-amber-950/95 border-amber-500/80 text-amber-200 shadow-amber-900/40';
+            
+            toast.className = `fixed top-16 right-6 z-50 px-4 py-2.5 rounded-xl text-xs font-mono font-bold shadow-2xl transition-all duration-300 transform translate-y-0 backdrop-blur-md border ${bgClass}`;
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { if (toast) toast.style.display = 'none'; }, 4500);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             try { initContagionGraph(); } catch (e) { console.error("Error in graph:", e); }
+            try { renderVariableFlowDrawer('ALL'); } catch (e) {}
             try { initProofSelector(); } catch (e) { console.error("Error in proof selector:", e); }
             try { initHazardsTable(); } catch (e) { console.error("Error in hazards table:", e); }
             try { renderSupplyChainTable(); } catch (e) { console.error("Error in supply chain:", e); }

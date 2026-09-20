@@ -40,6 +40,7 @@ def generate_ciso_report(
     high_count = sum(1 for _, score, _ in assessments if score.risk_level == "HIGH")
     medium_count = sum(1 for _, score, _ in assessments if score.risk_level == "MEDIUM")
     low_count = sum(1 for _, score, _ in assessments if score.risk_level == "LOW")
+    manual_review_count = sum(1 for _, score, _ in assessments if score.risk_level == "MANUAL_REVIEW_REQUIRED")
 
     tier_counts = {
         tier: sum(1 for asset, _, _ in assessments if asset.x_tier == tier)
@@ -78,6 +79,7 @@ def generate_ciso_report(
         f"| **Total Cryptographic Assets** | `{total_assets}` | Discovered across source code & infrastructure |",
         f"| **Critical Risk ($Y_{{max}} \\le 1.0\\text{{y}}$)** | `{critical_count}` | Immediate migration queue (HNDL window open / past deadline) |",
         f"| **High Risk ($1.0 < Y_{{max}} \\le 2.5\\text{{y}}$)** | `{high_count}` | Must be scheduled in current 2-year planning budget |",
+        f"| **Manual Review Required ($E_0$)** | `{manual_review_count}` | Dynamic unresolvable cryptographic calls quarantined for auditor triage |",
         f"| **Medium / Low Risk** | `{medium_count + low_count}` | Safe operational window ($> 2.5\\text{{y}}$ buffer) |",
         f"| **Operational Utility Suppressed** | `{op_util_count}` | False-positives eliminated (ETags/Caches: $R_Q = 0.0$) |",
         f"| **Buffer Overflow Hazards** | `{len(buffer_hazards)}` | Fixed-size memory allocations incompatible with PQC |",
