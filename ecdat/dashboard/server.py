@@ -126,10 +126,25 @@ def find_scanned_projects(reports_dir: Optional[Path] = None, base_dir: Optional
                 if asset_count > 0:
                     vulnerable = critical_count + high_count
                     readiness_pct = max(0, round(((asset_count - vulnerable) / asset_count) * 100))
+                # Check for fleet metadata or ecdat:targetDir
+                target_dir = ""
+                meta_file = abs_pdir / "fleet_metadata.json"
+                if meta_file.exists():
+                    try:
+                        mdata = json.loads(meta_file.read_text(encoding="utf-8", errors="replace"))
+                        target_dir = mdata.get("target_dir", "")
+                    except Exception:
+                        pass
+
+                from ecdat.dashboard import fleet
+                reg_info = fleet.get_fleet_target(proj_name, reports_dir=reports_dir, base_dir=base_dir)
+                if not target_dir and reg_info:
+                    target_dir = reg_info.get("target_dir", "")
 
                 projects.append({
                     "name": proj_name,
                     "directory": str(abs_pdir),
+                    "target_dir": target_dir,
                     "report_path": str(report_file) if report_file.exists() else None,
                     "has_report": report_file.exists(),
                     "asset_count": asset_count,
@@ -316,12 +331,16 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
         pct = p["readiness_pct"]
         bar_color = "bg-emerald-400" if pct >= 70 else ("bg-yellow-400" if pct >= 40 else "bg-rose-400")
 
+        target_display = p.get("target_dir") or "Not configured"
+        target_span = f'<span class="text-slate-300 font-mono text-[11px] truncate block max-w-[280px]" title="{target_display}">{target_display}</span>' if p.get("target_dir") else '<span class="text-slate-500 font-mono text-[11px] italic">Not configured</span>'
+
         rows_html.append(f"""
         <tr class="hover:bg-slate-900/60 transition border-b border-slate-800/60">
             <td class="py-3.5 px-4 font-bold text-white font-mono flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
                 <span>{p["name"]}</span>
             </td>
+            <td class="py-3.5 px-4">{target_span}</td>
             <td class="py-3.5 px-4 font-mono text-cyan-300 font-bold text-sm">{p["asset_count"]}</td>
             <td class="py-3.5 px-4">{crit_badge}</td>
             <td class="py-3.5 px-4">{high_badge}</td>
@@ -443,6 +462,7 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
                     <thead class="bg-slate-950/90 border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                         <tr>
                             <th class="py-3 px-4">Project Name</th>
+                            <th class="py-3 px-4">Source Codebase Target</th>
                             <th class="py-3 px-4">Assets</th>
                             <th class="py-3 px-4">Critical Risks</th>
                             <th class="py-3 px-4">High Risks</th>
@@ -642,51 +662,92 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
     async def api_scan_handler(request):
         try:
             body = await request.json()
-            target_path = body.get("target", "").strip()
-            custom_name = body.get("name", "").strip() or Path(target_path).name or "scan_output"
+            raw_target = body.get("target", "").strip()
+            custom_name = body.get("name", "").strip()
+
+            from ecdat.dashboard import fleet
+            reg_target = fleet.get_fleet_target(raw_target, reports_dir=reports_dir, base_dir=app_base_dir) if raw_target else None
+            if not reg_target and custom_name:
+                reg_target = fleet.get_fleet_target(custom_name, reports_dir=reports_dir, base_dir=app_base_dir)
+
+            target_path = raw_target
+            if reg_target:
+                project_name = reg_target.get("name") or custom_name or raw_target
+                actual_target_dir = reg_target.get("target_dir", "")
+                custom_name = project_name
+                if not Path(target_path).exists() or target_path == project_name:
+                    target_path = actual_target_dir
+
+            if not custom_name:
+                custom_name = Path(target_path).name or "scan_output"
 
             projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
-            matching = [p for p in projects if p["name"] == target_path or p["name"] == custom_name]
+            matching = [p for p in projects if p["name"] == custom_name]
 
-            # If target_path is not an existing filesystem path, check if it matches a known project
-            if (not target_path or not Path(target_path).exists()) and matching:
-                target_path = matching[0]["directory"]
-                custom_name = matching[0]["name"]
+            if matching and matching[0].get("report_path"):
+                out_dir = Path(matching[0]["report_path"]).parent
+            elif reg_target and reg_target.get("output_dir") and Path(reg_target["output_dir"]).parent.exists():
+                out_dir = Path(reg_target["output_dir"])
+            else:
+                out_dir = app_base_dir / "scans" / custom_name
+            out_dir.mkdir(parents=True, exist_ok=True)
 
             # Check if target is a live TLS/HTTPS endpoint
             is_url_or_tls = target_path.startswith("http://") or target_path.startswith("https://") or (":" in target_path and not Path(target_path).exists())
             if is_url_or_tls:
                 from ecdat.pipeline import probe_live_tls_infrastructure
                 assets = probe_live_tls_infrastructure(endpoint=target_path, output=str(out_dir))
+                fleet.register_fleet_target(
+                    name=custom_name,
+                    target_dir=target_path,
+                    output_dir=str(out_dir),
+                    asset_count=len(assets) if assets else 0,
+                    reports_dir=reports_dir,
+                    base_dir=app_base_dir,
+                )
                 return JSONResponse({
                     "status": "success",
                     "project": custom_name,
+                    "target_dir": target_path,
                     "output_dir": str(out_dir),
                     "total_assets": len(assets) if assets else 0
                 })
 
-            if not Path(target_path).exists():
-                return JSONResponse({"status": "error", "error": f"Target path '{target_path}' does not exist on disk."}, status_code=400)
+            if not target_path or not Path(target_path).exists():
+                return JSONResponse({
+                    "status": "error",
+                    "needs_target": True,
+                    "error": f"Target codebase path '{target_path}' does not exist on disk. Please configure the source directory in the scan modal."
+                }, status_code=400)
 
-            # If existing project with an established report directory, refresh in-place
-            if matching and matching[0].get("report_path"):
-                out_dir = Path(matching[0]["report_path"]).parent
-            else:
-                out_dir = app_base_dir / "scans" / custom_name
-            out_dir.mkdir(parents=True, exist_ok=True)
-
-            # Run pipeline asynchronously using standard pipeline logic
+            # Run pipeline on the ACTUAL source target directory!
             from ecdat.pipeline import run_pipeline
             res = run_pipeline(target_dir=target_path, output_dir=str(out_dir))
+
+            total_assets = len(res.assets) if hasattr(res, "assets") else 0
+            fleet.register_fleet_target(
+                name=custom_name,
+                target_dir=target_path,
+                output_dir=str(out_dir),
+                asset_count=total_assets,
+                reports_dir=reports_dir,
+                base_dir=app_base_dir,
+            )
 
             return JSONResponse({
                 "status": "success",
                 "project": custom_name,
+                "target_dir": target_path,
                 "output_dir": str(out_dir),
-                "total_assets": len(res.assets) if hasattr(res, "assets") else 0
+                "total_assets": total_assets
             })
         except Exception as e:
             return JSONResponse({"status": "error", "error": str(e)}, status_code=500)
+
+    async def api_fleet_targets_handler(request):
+        from ecdat.dashboard import fleet
+        reg = fleet.load_fleet_registry(reports_dir=reports_dir, base_dir=app_base_dir)
+        return JSONResponse({"status": "success", "targets": reg.get("projects", {})})
 
     async def api_remediation_preview_handler(request):
         try:
@@ -771,6 +832,7 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         Route("/project/{name}", endpoint=project_handler, methods=["GET"]),
         Route("/fleet", endpoint=fleet_page_handler, methods=["GET"]),
         Route("/api/fleet", endpoint=api_fleet_handler, methods=["GET"]),
+        Route("/api/fleet/targets", endpoint=api_fleet_targets_handler, methods=["GET"]),
         Route("/api/project/{name}/data", endpoint=api_project_data_handler, methods=["GET"]),
         Route("/api/project/{name}/version", endpoint=api_project_version_handler, methods=["GET"]),
         Route("/api/project/{name}/export", endpoint=api_export_handler, methods=["GET"]),

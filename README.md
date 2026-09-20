@@ -22,17 +22,17 @@ ECDAT solves this by combining **polyglot static analysis** with **context-aware
                                              │
       ┌──────────────────────┬───────────────┴──────────────┬──────────────────────┐
       ▼                      ▼                              ▼                      ▼
-[ Autonomous X ]      [ Mosca Y_max ]               [ R0 Contagion ]       [ MTU Prober ]
-Schema & ORM DDL      Regulatory Runway             Epidemiological        Path MTU & DF
-Infers shelf-life     Phase 3/4/5 Milestones        DAG & Immunization     Packet Drop Risk
+[ Autonomous X ]      [ Mosca Y_max ]               [ R0 Contagion ]       [ MTU & TLS Prober ]
+Schema & ORM DDL      Regulatory Runway             Epidemiological        Path MTU, Handshake
+Infers shelf-life     Phase 3/4/5 Milestones        DAG & Immunization     & Live Cipher Suites
       │                      │                              │                      │
       └──────────────────────┴───────────────┬──────────────┴──────────────────────┘
                                              │
-                             ┌───────────────┴──────────────┐
-                             ▼                              ▼
-                    [ Pareto Knapsack ]           [ SLSA / DSSE Proof ]
-                    Risk vs Effort Frontier       Merkle CBOM & Boundary
-                    Multi-Objective Solver        Unknowns Negative Ledger
+      ┌──────────────────────┬───────────────┴──────────────┬──────────────────────┐
+      ▼                      ▼                              ▼                      ▼
+[ Fleet Registry ]    [ Pareto Knapsack ]           [ SLSA / DSSE Proof ]  [ 1-Click Remediation ]
+Multi-Target Mon.     Risk vs Effort Frontier       Merkle CBOM & Boundary AST Unified Diff &
+fleet_registry.json   Multi-Objective Solver        Unknowns Negative Led. Rollback Journal
 ```
 
 ### 1. Autonomous Data Lifespan ($X$) Inference
@@ -61,18 +61,31 @@ Software components and cryptographic providers are modeled as an epidemiologica
 * **Cryptographic Superspreaders ($R_0 \ge 2$):** Pinpoints critical shared libraries and CAs where one flaw cascades across the microservice mesh.
 * **PQC Immunization Anchors:** Detects when an upstream module is upgraded to PQC (ML-DSA / ML-KEM), calculating how that single upgrade mathematically protects its entire downstream branch.
 
-### 4. Active Transport Path MTU & PQC Fragmentation Prober
-Post-quantum signatures are massive compared to classical algorithms (NIST FIPS 204 **ML-DSA-65 introduces a 51.7x size expansion** over ECDSA P-256, pushing handshake certificates past 5.2 KB). 
-ECDAT sends active probe packets with the Don't-Fragment (DF) bit set along network paths to classify routes (`STANDARD` 1500 B, `FLEXIBLE`, `CONSTRAINED` <1280 B) and identify legacy firewalls/middleboxes that drop fragmented packets before code deployment.
+### 4. Active Transport Path MTU & Live TLS Infrastructure Prober
+* **Transport MTU & Fragmentation:** Post-quantum signatures are massive compared to classical algorithms (NIST FIPS 204 **ML-DSA-65 introduces a 51.7x size expansion** over ECDSA P-256, pushing handshake certificates past 5.2 KB). ECDAT sends active probe packets with the Don't-Fragment (DF) bit set along network paths to classify routes (`STANDARD` 1500 B, `FLEXIBLE`, `CONSTRAINED` <1280 B) and identify middleboxes dropping fragmented packets.
+* **Live TLS Prober:** Actively inspects running endpoints, certificates, TLS protocol versions, and negotiated cipher suites to discover live infrastructure cryptography without source code access.
 
-### 5. Pareto Multi-Objective Migration Portfolio Optimizer
+### 5. Multi-Project Fleet Registry & Dual-Mode Dashboard
+* **Persistent Fleet Registry (`fleet_registry.json` & `fleet_metadata.json`):** Tracks monitored codebases across repositories and microservices. Preserves target source directories, report outputs, and scan histories across server restarts.
+* **Dual-Mode UI Architecture:**
+  1. **Dynamic Real-Time Server (`ecdat serve`):** Live WebSocket/polling hydration, multi-project fleet selector, on-demand re-scanning, and interactive 1-click patching.
+  2. **Standalone Air-Gapped Mode (`report.html`):** Self-contained, zero-dependency HTML bundle for air-gapped auditor compliance and offline review.
+
+### 6. 1-Click Code Remediation Engine with Rollback Journal
+Automates safe migration of classical cryptographic vulnerabilities (e.g., CBC $\to$ AES-256-GCM, MD5/SHA-1 $\to$ SHA-256):
+* **AST Syntax-Preserving Refactoring:** Rewrites AST nodes while preserving formatting, comments, and project style.
+* **Cryptographic Parameter Impact Analysis:** Alerts developers to required key/nonce buffer adjustments (e.g., expanding keys to 32 bytes for AES-256, 12-byte GCM nonces, or hybrid PQC shims).
+* **Cryptographic Rollback Journal (`remediation_journal.json`):** Records full before/after diffs with cryptographic SHA-256 checksums, enabling zero-loss `ecdat undo` and `ecdat redo` operations.
+* **Target Protection Guards:** Hardened policies prevent automated modification of mission-critical or protected projects.
+
+### 7. Pareto Multi-Objective Migration Portfolio Optimizer
 Solves the resource-constrained knapsack problem across three competing dimensions:
 1. **Risk Reduction:** Elimination of $Y_{\max}$ deficits and Harvest Now, Decrypt Later (HNDL) exposure.
 2. **Developer Effort (in developer-weeks):** Discounted by our Crypto-Agility Maturity Score (CAMS) across rigid, configurable, and provider abstractions.
 3. **Contagion Leverage:** Downstream $R_0$ elimination.
-Generates the **Pareto Efficient Frontier**, allowing a CISO to specify an engineering budget (e.g., 4 developer-weeks) and receive the mathematically optimal migration sequence.
+Generates the **Pareto Efficient Frontier**, allowing engineering leads to specify a developer budget (e.g., 10 dev-weeks) and receive the mathematically optimal migration order.
 
-### 6. Signed Attestation & Negative Proof Ledger
+### 8. Signed Attestation & Negative Proof Ledger
 In accordance with White House **OMB M-23-02** transparency directives:
 * Commits the Cryptographic Bill of Materials (CBOM) to a SHA-256 Merkle root sealed inside an **in-toto / SLSA DSSE** envelope.
 * Emits a **Boundary Unknowns Ledger (Negative Proof)** documenting uninspected binary blobs, opaque third-party libraries, and excluded paths for auditor defensibility.
@@ -88,38 +101,98 @@ In accordance with White House **OMB M-23-02** transparency directives:
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/ECDAT.git
+git clone https://github.com/MohmedhKA/ECDAT.git
 cd ECDAT
 
 # Create and activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install package dependencies
+# Install package dependencies in editable mode
 pip install -e .
 ```
 
 ---
 
-## Quickstart & CLI Usage
+## Complete CLI Command Reference
 
-Run a full cryptographic discovery and transition scan against any repository or application directory:
+ECDAT provides a unified CLI tool suite via `ecdat`:
 
+### 1. Codebase Cryptographic Discovery (`scan`)
+Run a comprehensive cryptographic scan across source code, manifests, and containers:
 ```bash
-# Basic scan
-python -m ecdat.pipeline scan --target /path/to/project --output scan_output
+# Basic scan of a local project
+ecdat scan --target /path/to/project --output scans/my_project
 
-# Advanced scan with developer budget and target network route
-python -m ecdat.pipeline scan \
+# Advanced scan with developer sprint budget, MTU probing, and subdirectories
+ecdat scan \
   --target /path/to/project \
   --subdirs src,backend,contracts \
-  --output scan_output \
+  --output scans/my_project \
   --budget 10.0 \
-  --route-target api.internal.enterprise:443
+  --probe-host api.internal.enterprise:443 \
+  --stochastic-runs 5000
 ```
 
-### Generated Artifacts
-Every pipeline scan produces a comprehensive set of machine-readable and executive artifacts:
+### 2. Multi-Project Fleet Dashboard (`serve`)
+Launch the dynamic multi-project management dashboard and fleet scorecard:
+```bash
+# Start fleet server on default http://127.0.0.1:8080
+ecdat serve
+
+# Custom port and custom reports directory
+ecdat serve --port 9000 --reports-dir /path/to/all/reports
+```
+* **Fleet Scorecard URL:** `http://127.0.0.1:8080/fleet`
+* **Single Project View:** `http://127.0.0.1:8080/project/<project_name>`
+
+### 3. CI/CD Cryptographic Quality Gate (`gate`)
+Enforce cryptographic compliance in CI/CD pipelines (GitHub Actions, GitLab CI, Jenkins):
+```bash
+# Fail CI build if any CRITICAL quantum or cryptographic violations are found
+ecdat gate --target /path/to/project --fail-on CRITICAL
+
+# Output SARIF 2.1.0 for GitHub Code Scanning Security tab
+ecdat gate --target /path/to/project --fail-on HIGH --sarif scans/ecdat.sarif
+```
+
+### 4. 1-Click Automated Code Remediation (`remediate`, `undo`, `redo`)
+Safely remediate insecure cryptographic patterns directly in source code:
+```bash
+# Preview changes without modifying files (Dry-Run)
+ecdat remediate --target /path/to/code.js --rule REPLACE_CBC_GCM --dry-run
+
+# Apply remediation patch and record in rollback journal
+ecdat remediate --target /path/to/code.js --rule REPLACE_CBC_GCM
+
+# Revert the last applied remediation transaction
+ecdat undo
+
+# Reapply the last reverted transaction
+ecdat redo
+```
+
+### 5. Live TLS Infrastructure Probing (`probe`)
+Inspect live network endpoints and web services without source code access:
+```bash
+ecdat probe https://api.internal.enterprise:443 --output scans/tls_audit.json
+```
+
+### 6. Merkle Attestation Verification (`verify-attestation`)
+Cryptographically verify an in-toto / SLSA DSSE attestation envelope against a trusted public key:
+```bash
+ecdat verify-attestation \
+  --envelope scans/my_project/attestation.dsse.json \
+  --pubkey scans/my_project/attestation_pubkey.pem \
+  --root scans/my_project/cbom_root.hex
+```
+
+---
+
+## Generated Scan Artifacts
+
+Every pipeline execution produces an enterprise-grade set of machine-readable and executive artifacts:
+
 | Artifact | Description | Format |
 |:---|:---|:---:|
 | `ciso_migration_report.md` | Executive transition summary, critical timelines, and migration priorities | Markdown |
@@ -127,23 +200,25 @@ Every pipeline scan produces a comprehensive set of machine-readable and executi
 | `report.html` | Interactive dashboard featuring D3 force-directed contagion graph and Pareto slider | HTML / D3.js |
 | `attestation.dsse.json` | Signed SLSA supply-chain attestation binding the scan to a Merkle root | In-toto / DSSE |
 | `negative_proof.json` | Boundary Unknowns Ledger detailing uninspected surfaces per OMB M-23-02 | JSON |
+| `sarif_report.sarif` | Static analysis report for GitHub Security / SonarQube ingestion | SARIF 2.1.0 |
+| `fleet_metadata.json` | Persistent target mapping connecting report output to original codebase source | JSON |
 
 ---
 
 ## Empirical Benchmark Validation
 
-ECDAT has been evaluated against the Virginia Tech **CryptoAPI-Bench** (Afrose et al., IEEE SecDev 2019), the standard academic ground truth for cryptographic misuse detection:
+ECDAT has been evaluated against Virginia Tech **CryptoAPI-Bench** (Afrose et al., IEEE SecDev 2019), the academic gold standard for cryptographic misuse detection:
 
 * **Scope:** All 181 distinct test cases covering 8 complexity dimensions (basic, interprocedural, field-sensitive, path-sensitive, object-sensitive).
 * **Cryptographic Assets Evaluated:** 296 assets extracted directly by the pipeline.
-* **Results:**
+* **Benchmark Performance:**
   * **True Positives (TP):** 145 (Accurately flagged broken ciphers, weak keys, predictable seeds, insecure IVs).
   * **True Negatives (TN):** 37 (Correctly validated secure primitives, AES-GCM, CSPRNGs, compliant HTTPS).
   * **False Positives (FP):** 0
   * **False Negatives (FN):** 0
   * **Precision:** 100.00% | **Recall:** 100.00% | **Specificity:** 100.00% | **F1-Score:** 100.00%
 
-To execute the benchmark harness locally:
+To execute the benchmark evaluation:
 ```bash
 python scripts/evaluate_cryptoapi_bench.py
 ```
@@ -152,26 +227,27 @@ python scripts/evaluate_cryptoapi_bench.py
 
 ## Running Automated Tests
 
-ECDAT maintains a strict, regression-tested test suite:
+ECDAT maintains a comprehensive, zero-regression test suite covering 164 test cases:
 
 ```bash
-# Run all unit and integration tests
+# Run the complete test suite
 pytest
 
-# Run with verbose output and coverage
-pytest -v --durations=10
+# Run with verbose output
+pytest -v
 ```
 
 ---
 
 ## Standards & Regulatory Compliance
 
-* **NIST PQC Standards:** FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
-* **Federal Mandates:** OMB M-26-15, OMB M-23-02, NIST IR 8547, NIST SP 800-131A Rev 2.
-* **Attestation Standards:** CycloneDX v1.6 CBOM, SLSA Provenance v1.0, In-toto DSSE.
+* **NIST Post-Quantum Standards:** FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
+* **Federal Directives:** OMB M-26-15, OMB M-23-02, NIST IR 8547, NIST SP 800-131A Rev 2.
+* **Attestation & Supply Chain:** CycloneDX v1.6 CBOM, SLSA Provenance v1.0, In-toto DSSE, SARIF 2.1.0.
 
 ---
 
 ## License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+

@@ -526,6 +526,7 @@ def run_ecdat_scan(
                 {"name": "ecdat:routeProfile", "value": path_mtu.route_profile.value},
                 {"name": "ecdat:effectiveMtu", "value": str(path_mtu.effective_mtu)},
                 {"name": "ecdat:dsseSigned", "value": "true"},
+                {"name": "ecdat:targetDir", "value": str(target_path.resolve())},
             ],
         },
         "components": cbom_components,
@@ -536,7 +537,31 @@ def run_ecdat_scan(
     with open(cbom_file, "w", encoding="utf-8") as f:
         json.dump(enriched_cbom, f, indent=2)
 
-    # 6b. Generate OASIS SARIF 2.1.0 Static Analysis Report
+    # 6b. Export Persistent Fleet Project Metadata
+    fleet_meta_file = out_path / "fleet_metadata.json"
+    fleet_meta = {
+        "name": target_path.name,
+        "target_dir": str(target_path.resolve()),
+        "output_dir": str(out_path.resolve()),
+        "last_scanned": datetime.now(timezone.utc).isoformat(),
+        "total_assets": len(assessments),
+        "merkle_root": merkle_root_hex
+    }
+    with open(fleet_meta_file, "w", encoding="utf-8") as f:
+        json.dump(fleet_meta, f, indent=2)
+
+    try:
+        from ecdat.dashboard.fleet import register_fleet_target
+        register_fleet_target(
+            name=target_path.name,
+            target_dir=str(target_path.resolve()),
+            output_dir=str(out_path.resolve()),
+            asset_count=len(assessments)
+        )
+    except Exception:
+        pass
+
+    # 6c. Generate OASIS SARIF 2.1.0 Static Analysis Report
     sarif_file = out_path / "cbom.sarif.json"
     discovered_assets = [a for a, _, _ in assessments]
     export_sarif_file(discovered_assets, sarif_file)

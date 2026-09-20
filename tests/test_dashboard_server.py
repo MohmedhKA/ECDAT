@@ -272,12 +272,24 @@ def test_api_remediation_preview_and_protection(tmp_path):
     assert "PROTECTED REPOSITORY" in resp_guard.json()["error"]
 
 
+def test_fleet_targets_endpoint(tmp_path):
+    reports_root = tmp_path / "reports"
+    app = create_fleet_app(reports_dir=reports_root)
+    response = call_asgi(app, "GET", "/api/fleet/targets")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "targets" in data
+    assert "evoting_backend" in data["targets"]
+
+
 def test_zero_regex_compliance():
     from pathlib import Path
-    for fname in ["server.py", "hydrator.py"]:
+    for fname in ["server.py", "hydrator.py", "fleet.py"]:
         fpath = Path(f"ecdat/dashboard/{fname}")
         if fpath.exists():
             content = fpath.read_text(encoding="utf-8")
             assert "import re" not in content, f"Zero-regex violated in {fname}"
             assert "from re import" not in content, f"Zero-regex violated in {fname}"
             assert "re." not in content, f"Zero-regex violated in {fname}"
+
