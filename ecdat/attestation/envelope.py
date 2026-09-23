@@ -13,10 +13,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 
-from cryptography.hazmat.primitives.asymmetric import ed25519
+from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
 from cryptography.hazmat.primitives import serialization
 
 DSSE_PAYLOAD_TYPE = "application/vnd.in-toto+json"
+DEFAULT_KEY_DIR = Path(".ecdat/keys")
 
 def compute_dsse_pae(payload_type: str, payload_bytes: bytes) -> bytes:
     """
@@ -41,8 +42,21 @@ def generate_signing_keypair() -> Tuple[ed25519.Ed25519PrivateKey, ed25519.Ed255
     public_key = private_key.public_key()
     return private_key, public_key
 
+def generate_mldsa_signing_keypair() -> Tuple[mldsa.MLDSA65PrivateKey, mldsa.MLDSA65PublicKey]:
+    """Generates a fresh NIST FIPS 204 ML-DSA-65 post-quantum signing keypair."""
+    private_key = mldsa.MLDSA65PrivateKey.generate()
+    public_key = private_key.public_key()
+    return private_key, public_key
+
 def export_public_key_pem(public_key: ed25519.Ed25519PublicKey) -> str:
     """Exports an Ed25519 public key in PEM format."""
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    ).decode("utf-8")
+
+def export_mldsa_public_key_pem(public_key: mldsa.MLDSA65PublicKey) -> str:
+    """Exports an ML-DSA-65 public key in PEM format."""
     return public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -55,6 +69,68 @@ def export_private_key_pem(private_key: ed25519.Ed25519PrivateKey) -> str:
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption(),
     ).decode("utf-8")
+
+def export_mldsa_private_key_pem(private_key: mldsa.MLDSA65PrivateKey) -> str:
+    """Exports an ML-DSA-65 private key in PEM format."""
+    return private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode("utf-8")
+
+def get_or_create_signing_keys(
+    key_dir: Optional[Path] = None,
+) -> Tuple[
+    ed25519.Ed25519PrivateKey,
+    ed25519.Ed25519PublicKey,
+    mldsa.MLDSA65PrivateKey,
+    mldsa.MLDSA65PublicKey,
+]:
+    """
+    Retrieves or generates persistent signing keypairs in the designated key directory.
+    Stores private keys with restricted 0o600 permissions.
+    """
+    target_dir = Path(key_dir or os.environ.get("ECDAT_KEY_DIR", DEFAULT_KEY_DIR))
+    target_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+
+    ed_key_file = target_dir / "trust_root_ed25519.key"
+    ed_pub_file = target_dir / "trust_root_ed25519.pub"
+    mldsa_key_file = target_dir / "trust_root_mldsa65.key"
+    mldsa_pub_file = target_dir / "trust_root_mldsa65.pub"
+
+    # Ed25519 Key
+    if ed_key_file.exists():
+        ed_priv = serialization.load_pem_private_key(
+            ed_key_file.read_bytes(), password=None
+        )
+        if not isinstance(ed_priv, ed25519.Ed25519PrivateKey):
+            raise TypeError(f"Key in {ed_key_file} is not an Ed25519PrivateKey")
+        ed_pub = ed_priv.public_key()
+    else:
+        ed_priv, ed_pub = generate_signing_keypair()
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        with open(os.open(ed_key_file, flags, 0o600), "w", encoding="utf-8") as f:
+            f.write(export_private_key_pem(ed_priv))
+        with open(ed_pub_file, "w", encoding="utf-8") as f:
+            f.write(export_public_key_pem(ed_pub))
+
+    # ML-DSA-65 Key
+    if mldsa_key_file.exists():
+        mldsa_priv = serialization.load_pem_private_key(
+            mldsa_key_file.read_bytes(), password=None
+        )
+        if not isinstance(mldsa_priv, mldsa.MLDSA65PrivateKey):
+            raise TypeError(f"Key in {mldsa_key_file} is not an MLDSA65PrivateKey")
+        mldsa_pub = mldsa_priv.public_key()
+    else:
+        mldsa_priv, mldsa_pub = generate_mldsa_signing_keypair()
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        with open(os.open(mldsa_key_file, flags, 0o600), "w", encoding="utf-8") as f:
+            f.write(export_mldsa_private_key_pem(mldsa_priv))
+        with open(mldsa_pub_file, "w", encoding="utf-8") as f:
+            f.write(export_mldsa_public_key_pem(mldsa_pub))
+
+    return ed_priv, ed_pub, mldsa_priv, mldsa_pub
 
 def build_intoto_statement(
     project_name: str,
@@ -141,15 +217,27 @@ def build_intoto_statement(
 def create_signed_dsse_envelope(
     statement: Dict[str, Any],
     private_key: Optional[ed25519.Ed25519PrivateKey] = None,
+    mldsa_private_key: Optional[mldsa.MLDSA65PrivateKey] = None,
+    key_dir: Optional[Path] = None,
 ) -> Tuple[Dict[str, Any], ed25519.Ed25519PublicKey, str]:
     """
-    Wraps statement in DSSE envelope and signs over PAE with Ed25519.
-    Returns (envelope_dict, public_key, public_key_pem).
+    Wraps statement in DSSE envelope and signs over PAE with both Ed25519 and
+    genuine NIST FIPS 204 ML-DSA-65 post-quantum digital signatures.
+    Returns (envelope_dict, ed25519_public_key, ed25519_public_key_pem).
     """
-    if private_key is None:
-        private_key, public_key = generate_signing_keypair()
+    if private_key is None or mldsa_private_key is None:
+        ed_priv, ed_pub, ml_priv, ml_pub = get_or_create_signing_keys(key_dir=key_dir)
+        if private_key is None:
+            private_key, public_key = ed_priv, ed_pub
+        else:
+            public_key = private_key.public_key()
+        if mldsa_private_key is None:
+            mldsa_private_key, mldsa_public_key = ml_priv, ml_pub
+        else:
+            mldsa_public_key = mldsa_private_key.public_key()
     else:
         public_key = private_key.public_key()
+        mldsa_public_key = mldsa_private_key.public_key()
 
     # Canonical statement JSON serialization
     statement_json = json.dumps(statement, sort_keys=True, separators=(",", ":"))
@@ -159,40 +247,38 @@ def create_signed_dsse_envelope(
     # Compute DSSE Pre-Authentication Encoding (PAE)
     pae_bytes = compute_dsse_pae(DSSE_PAYLOAD_TYPE, payload_bytes)
 
-    # Sign PAE with Ed25519
+    # 1. Sign PAE with Ed25519
     signature_bytes = private_key.sign(pae_bytes)
     sig_b64 = base64.b64encode(signature_bytes).decode("utf-8")
 
-    # Key ID: SHA-256 fingerprint of public key bytes
     pub_bytes = public_key.public_bytes(
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
     )
-    key_id = f"ed25519:{hashlib.sha256(pub_bytes).hexdigest()[:16]}"
+    ed25519_key_id = f"ed25519:{hashlib.sha256(pub_bytes).hexdigest()[:16]}"
 
-    # Hybrid post-quantum signature block (ML-DSA-65 simulated assurance block)
-    mldsa_simulated_sig = base64.b64encode(
-        hashlib.sha512(pae_bytes + b"::ML-DSA-65-PQC-ANCHOR").digest()
-    ).decode("utf-8")
+    # 2. Sign PAE with genuine NIST FIPS 204 ML-DSA-65
+    mldsa_sig = mldsa_private_key.sign(pae_bytes)
+    mldsa_sig_b64 = base64.b64encode(mldsa_sig).decode("utf-8")
+    mldsa_pub_raw = mldsa_public_key.public_bytes_raw()
+    mldsa_key_id = f"mldsa65:{hashlib.sha256(mldsa_pub_raw).hexdigest()[:16]}"
 
     envelope = {
         "payloadType": DSSE_PAYLOAD_TYPE,
         "payload": payload_b64,
         "signatures": [
             {
-                "keyid": key_id,
+                "keyid": ed25519_key_id,
                 "sig": sig_b64,
+                "scheme": "ed25519",
             },
             {
-                "keyid": f"mldsa65:{clean_pubkey_hash(pub_bytes)}",
-                "sig": mldsa_simulated_sig,
-                "scheme": "ML-DSA-65-Hybrid-Draft",
-            }
+                "keyid": mldsa_key_id,
+                "sig": mldsa_sig_b64,
+                "scheme": "ML-DSA-65",
+            },
         ],
     }
 
     pubkey_pem = export_public_key_pem(public_key)
     return envelope, public_key, pubkey_pem
-
-def clean_pubkey_hash(pub_bytes: bytes) -> str:
-    return hashlib.sha256(pub_bytes + b":mldsa").hexdigest()[:16]

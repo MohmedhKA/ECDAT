@@ -20,6 +20,7 @@ class PythonASTVisitor(ast.NodeVisitor):
         self.db = db
         self.assets: List[CryptoAsset] = []
         self.seen_keys: Set[str] = set()
+        self._current_assign_targets: List[str] = []
 
     def _get_call_name(self, node: ast.AST) -> str:
         if isinstance(node, ast.Name):
@@ -29,6 +30,11 @@ class PythonASTVisitor(ast.NodeVisitor):
         elif isinstance(node, ast.Call):
             return self._get_call_name(node.func)
         return ""
+
+    def visit_Assign(self, node: ast.Assign):
+        self._current_assign_targets = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        self.generic_visit(node)
+        self._current_assign_targets = []
 
     def visit_Call(self, node: ast.Call):
         call_name = self._get_call_name(node.func)
@@ -101,6 +107,34 @@ class PythonASTVisitor(ast.NodeVisitor):
             cwe = "CWE-326"
             desc = f"Python asymmetric key generation {alg}"
 
+        # 5. Generic cipher / crypto engine method calls (e.g. cipher.encrypt, cipher.sign, signer.sign)
+        elif any(call_name.endswith(f".{m}") for m in ("encrypt", "decrypt", "sign", "verify", "seal", "open")):
+            method = call_name.rsplit(".", 1)[-1]
+            if method in {"encrypt", "decrypt", "seal", "open"}:
+                prim_type = PrimitiveType.ENCRYPTION
+                alg = "AES-256-GCM"
+                desc = f"Python {call_name} cipher encryption invocation"
+            elif method in {"sign", "verify"}:
+                prim_type = PrimitiveType.SIGNATURE
+                alg = "ECDSA-P256"
+                desc = f"Python {call_name} digital signature invocation"
+
+        # 6. PyCryptodome / Fernet constructors
+        elif any(call_name.startswith(pfx) for pfx in ("AES.", "DES.", "TripleDES.", "Blowfish.", "PKCS1_OAEP.", "PKCS1_v1_5.", "Fernet")):
+            sub_alg = call_name.split(".")[0].upper()
+            if sub_alg in {"DES", "TRIPLEDES", "BLOWFISH"}:
+                alg = "3DES" if sub_alg == "TRIPLEDES" else sub_alg
+                prim_type = PrimitiveType.ENCRYPTION
+                risk = "HIGH"
+                cwe = "CWE-327"
+            elif "PKCS1" in sub_alg:
+                alg = "RSA-2048"
+                prim_type = PrimitiveType.ENCRYPTION if "OAEP" in sub_alg else PrimitiveType.SIGNATURE
+            else:
+                alg = "AES-256-GCM"
+                prim_type = PrimitiveType.ENCRYPTION
+            desc = f"Python {call_name} constructor invocation"
+
         if alg:
             # Query SQLite signature database
             sig = self.db.lookup_algorithm(alg)
@@ -114,13 +148,15 @@ class PythonASTVisitor(ast.NodeVisitor):
             dedup_key = f"{self.file_path}:{alg}:{line_no}"
             if dedup_key not in self.seen_keys:
                 self.seen_keys.add(dedup_key)
-                matched_code = call_name
+                target_var = self._current_assign_targets[0] if self._current_assign_targets else ""
+                matched_code = f"{target_var} = {call_name}" if target_var else call_name
+                comp_tag = target_var if target_var else alg.lower().replace('-', '_')
                 is_shred, tier = BaseContractEngine.check_crypto_shredding_context(self.content, line_no)
 
                 self.assets.append(BaseContractEngine.build_crypto_asset(
                     asset_prefix="SRC-PY",
                     index=len(self.assets) + 1,
-                    component_name=f"{self.stem}:{alg.lower().replace('-', '_')}",
+                    component_name=f"{self.stem}:{comp_tag}",
                     algorithm=alg,
                     key_size=key_size,
                     primitive_type=prim_type,

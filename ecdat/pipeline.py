@@ -7,10 +7,11 @@ PQC hybrid recommendations, buffer agility hazard audits, and Merkle tree root c
 import os
 import sys
 import json
-import argparse
 import click
+import argparse
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import defaultdict
 from typing import List, Dict, Tuple, Any, Optional
 
 from ecdat.models import (
@@ -53,21 +54,6 @@ from ecdat.report_sarif import export_sarif_file, generate_sarif_dict
 from ecdat.gate import evaluate_quality_gate, GateResult
 
 
-def _infer_primitive_and_alg(var_name: str, sink_call: Optional[str]) -> Tuple[PrimitiveType, str, int]:
-    """Infers appropriate algorithm and primitive type from variable/call semantics."""
-    v_lower = var_name.lower()
-    s_lower = (sink_call or "").lower()
-
-    if any(k in v_lower for k in ["sign", "sig", "cert"]):
-        return PrimitiveType.SIGNATURE, "ECDSA-P256", 256
-    elif any(k in v_lower for k in ["key", "session", "handshake"]):
-        return PrimitiveType.KEY_EXCHANGE, "ECDH-P256", 256
-    elif any(k in v_lower for k in ["backup", "archive"]):
-        return PrimitiveType.KEY_EXCHANGE, "RSA-2048", 2048
-    elif any(k in v_lower for k in ["pan", "card", "vault", "encrypt"]):
-        return PrimitiveType.ENCRYPTION, "AES-128-CBC", 128
-    else:
-        return PrimitiveType.ENCRYPTION, "AES-256-GCM", 256
 
 def _apply_schema_lifespan(asset: CryptoAsset, schema_lifespans: Dict[str, Tuple[XTier, float, str]]) -> None:
     """Correlates asset with autonomous SQL/ORM schema retention inferences."""
@@ -114,6 +100,7 @@ def run_ecdat_scan(
     stochastic_runs: int = 5000,
     generate_negative_proof: bool = True,
     subdirs: Optional[Any] = None,
+    ebpf_log: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Executes an end-to-end cryptographic discovery, temporal risk analysis,
@@ -260,45 +247,45 @@ def run_ecdat_scan(
     assessments: List[Tuple[CryptoAsset, MoscaScore, MigrationRecommendation]] = []
     assets_for_merkle: List[Tuple[CryptoAsset, MoscaScore]] = []
 
-    # 2a. Python AST Inferences
-    for fpath, inf in all_inferences:
-        prim_type, alg, key_size = _infer_primitive_and_alg(inf.target_variable, inf.sink_call)
-        component = Path(fpath).stem
-
-        asset = CryptoAsset(
-            asset_id=f"ASSET-{len(assessments) + 1:03d}",
-            component_name=component,
-            algorithm=alg,
-            key_size=key_size,
-            primitive_type=prim_type,
-            file_path=os.path.relpath(fpath, str(target_path)),
-            line_number=inf.line_number,
-            x_tier=inf.tier,
-            x_confidence=inf.confidence,
-            has_crypto_shredding=False,
-            intent_class=getattr(inf, "intent_class", IntentClass.CONFIDENTIALITY_ENVELOPE),
-            evidence_level=getattr(inf, "evidence_level", EvidenceLevel.E1_STATIC_ARTIFACT),
-            raw_properties={"evidence": inf.evidence, "sink": inf.sink_call},
-        )
-        _apply_schema_lifespan(asset, schema_lifespans)
-        _apply_deployment_exposure(asset, deployment_exposures)
-
-        score = compute_mosca_score(asset, current_year=CURRENT_YEAR)
-        asset.risk_level = score.risk_level
-        rec = recommend_pqc_migration(asset, path_mtu=path_mtu)
-
-        assessments.append((asset, score, rec))
-        assets_for_merkle.append((asset, score))
-
-    # 2b. Polyglot In-Code Source Cryptographic Assets (JS/TS, Go, Rust, Java)
+    # 2a. Polyglot In-Code Source Cryptographic Assets (Python, JS/TS, Go, Rust, Java, Ruby)
+    # Strictly discovered via concrete AST contract engines - zero phantom guessing from variable names.
     polyglot_assets = discover_polyglot_crypto_assets(str(target_path))
     if parsed_subdirs:
         polyglot_assets = [
             p for p in polyglot_assets
             if any(sub in Path(p.file_path).parts for sub in parsed_subdirs)
         ]
+
+    # Correlate Python AST dataflow inferences with genuine in-code cryptographic assets
+    inf_by_file: Dict[str, List[Any]] = defaultdict(list)
+    for fpath, inf in all_inferences:
+        inf_by_file[fpath].append(inf)
+
+    matched_inferences = set()
     for p_asset in polyglot_assets:
         p_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+
+        # If this asset is in a file with dataflow inferences, enrich lifespan and persistence sink
+        abs_py_path = str((target_path / p_asset.file_path).resolve())
+        matched_code_str = ""
+        if hasattr(p_asset, "raw_properties") and isinstance(p_asset.raw_properties, dict):
+            matched_code_str = p_asset.raw_properties.get("matched_code", "")
+        if not matched_code_str:
+            matched_code_str = getattr(p_asset, "matched_code", "") or ""
+
+        for inf in inf_by_file.get(abs_py_path, []):
+            if abs(p_asset.line_number - inf.line_number) <= 5 or (
+                inf.target_variable and inf.target_variable in matched_code_str
+            ):
+                matched_inferences.add(id(inf))
+                p_asset.x_tier = inf.tier
+                p_asset.x_confidence = inf.confidence
+                if hasattr(inf, "intent_class") and inf.intent_class:
+                    p_asset.intent_class = inf.intent_class
+                p_asset.raw_properties["sink"] = inf.sink_call
+                p_asset.raw_properties["evidence"] = inf.evidence
+                break
+
         _apply_schema_lifespan(p_asset, schema_lifespans)
         _apply_deployment_exposure(p_asset, deployment_exposures)
         score = compute_mosca_score(p_asset, current_year=CURRENT_YEAR)
@@ -307,10 +294,21 @@ def run_ecdat_scan(
         assessments.append((p_asset, score, rec))
         assets_for_merkle.append((p_asset, score))
 
+    # Log any unconfirmed dataflow inferences to the Auditable Unknowns Ledger (boundary honesty)
+    for fpath, inf in all_inferences:
+        if id(inf) not in matched_inferences and len(unknowns_ledger) < 150:
+            rel_fpath = os.path.relpath(fpath, str(target_path))
+            unknowns_ledger.append(UnknownEntry(
+                item_path=f"{rel_fpath}:{inf.line_number}",
+                category="UNCONFIRMED_DATAFLOW",
+                reason=f"Dataflow variable '{inf.target_variable}' could not be statically bound to a verified cryptographic API call",
+                recommended_action="Manually review variable lineage to determine if an unmodeled cryptographic library is invoked."
+            ))
+
     # 2c. Discover Filesystem Cryptographic Artifacts via Go binary (cbomkit-theia)
     theia_assets: List[CryptoAsset] = []
     if enable_theia:
-        theia_assets = run_theia_scan(str(target_path))
+        theia_assets = run_theia_scan(str(target_path), unknowns_ledger=unknowns_ledger)
         if parsed_subdirs:
             theia_assets = [
                 f for f in theia_assets
@@ -342,6 +340,23 @@ def run_ecdat_scan(
         rec = recommend_pqc_migration(c_asset, path_mtu=path_mtu)
         assessments.append((c_asset, score, rec))
         assets_for_merkle.append((c_asset, score))
+
+    # 2e. Ingest Dynamic Runtime Cryptographic Operations via eBPF Trace Log (if provided)
+    ebpf_assets: List[CryptoAsset] = []
+    if ebpf_log:
+        from ecdat.runtime.ebpf_observer import EBPFObserver
+        ebpf_path = Path(ebpf_log).resolve()
+        if ebpf_path.exists():
+            ebpf_assets = EBPFObserver().parse_trace_log(ebpf_path)
+            for e_asset in ebpf_assets:
+                e_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+                _apply_schema_lifespan(e_asset, schema_lifespans)
+                _apply_deployment_exposure(e_asset, deployment_exposures)
+                score = compute_mosca_score(e_asset, current_year=CURRENT_YEAR)
+                e_asset.risk_level = score.risk_level
+                rec = recommend_pqc_migration(e_asset, path_mtu=path_mtu)
+                assessments.append((e_asset, score, rec))
+                assets_for_merkle.append((e_asset, score))
 
     if not assets_for_merkle:
         # Fallback: create a default root if no assets found
@@ -595,8 +610,9 @@ def run_ecdat_scan(
 
     return {
         "total_assets": len(assessments),
-        "source_code_assets": len(all_inferences),
+        "source_code_assets": len(polyglot_assets),
         "theia_assets_count": len(theia_assets),
+        "ebpf_assets_count": len(ebpf_assets),
         "manifest_dependencies_count": len(manifest_deps),
         "manifest_dependencies": [d.model_dump() if hasattr(d, "model_dump") else d.dict() for d in manifest_deps],
         "merkle_root": merkle_root_hex,
@@ -854,6 +870,35 @@ def redo_cmd(tx, journal):
         return 1
 
 
+@cli.command("observe")
+@click.option("--output", "-o", default="ebpf_trace.log", help="Output file for eBPF trace log")
+@click.option("--duration", "-d", default=5, type=int, help="Tracing duration in seconds (default: 5)")
+@click.option("--script-only", is_flag=True, help="Generate bpftrace script without executing")
+@click.option("--parse-only", default=None, type=str, help="Parse existing trace log without tracing")
+def observe_cmd(output, duration, script_only, parse_only):
+    """Capture live runtime cryptographic operations using in-kernel eBPF uprobes."""
+    from ecdat.runtime.ebpf_observer import EBPFObserver
+    observer = EBPFObserver()
+    if script_only:
+        p = observer.generate_tracer_script(Path(output))
+        print(f"[+] eBPF bpftrace script written to: {p}")
+        return 0
+    if parse_only:
+        assets = observer.parse_trace_log(Path(parse_only))
+        print(f"[*] Parsed {len(assets)} runtime cryptographic assets from {parse_only}")
+        for a in assets:
+            print(f"  [{a.evidence_level.value}] {a.component_name} -> {a.algorithm} ({a.x_confidence})")
+        return 0
+    try:
+        print(f"[*] Starting {duration}s eBPF cryptographic runtime trace on {observer.libcrypto_path}...")
+        assets = observer.execute_live_trace(duration_seconds=duration, output_file=Path(output))
+        print(f"[+] eBPF trace complete: {len(assets)} runtime cryptographic operations captured in {output}")
+        return 0
+    except Exception as e:
+        print(f"[!] eBPF trace failed: {e}", file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -870,6 +915,7 @@ def main() -> int:
     scan_parser.add_argument("--no-negative-proof", action="store_false", dest="generate_negative_proof", default=True, help="Disable standalone negative proof certificate generation")
     scan_parser.add_argument("--subdirs", help="Comma-separated list of subdirectories to scan within target (e.g. backend,blockchain)")
     scan_parser.add_argument("--format", choices=["cbom", "sarif", "all"], default="all", help="Output format (cbom, sarif, or all; default: all)")
+    scan_parser.add_argument("--ebpf-log", default=None, help="Path to eBPF runtime trace log to correlate with static CBOM assets")
 
     gate_parser = subparsers.add_parser("gate", help="Evaluate CI/CD Cryptographic Quality Gate")
     gate_parser.add_argument("--target", required=True, help="Target project directory to scan")
@@ -911,6 +957,12 @@ def main() -> int:
     redo_parser = subparsers.add_parser("redo", help="Reapply the last (or specified) reverted cryptographic remediation transaction")
     redo_parser.add_argument("--tx", default=None, help="Specific transaction ID to redo (default: last reverted)")
     redo_parser.add_argument("--journal", default=None, help="Custom journal path")
+
+    observe_parser = subparsers.add_parser("observe", help="Capture live runtime cryptographic operations using in-kernel eBPF uprobes")
+    observe_parser.add_argument("--output", "-o", default="ebpf_trace.log", help="Output file for eBPF trace log")
+    observe_parser.add_argument("--duration", "-d", type=int, default=5, help="Tracing duration in seconds (default: 5)")
+    observe_parser.add_argument("--script-only", action="store_true", help="Generate bpftrace script without executing")
+    observe_parser.add_argument("--parse-only", default=None, help="Parse existing trace log without tracing")
 
     args = parser.parse_args()
 
@@ -978,6 +1030,7 @@ def main() -> int:
             stochastic_runs=args.stochastic_runs,
             generate_negative_proof=args.generate_negative_proof,
             subdirs=args.subdirs,
+            ebpf_log=getattr(args, "ebpf_log", None),
         )
         print(f"[+] Scan Complete!")
         print(f"    - Total Assets:      {result['total_assets']}")
@@ -1074,6 +1127,27 @@ def main() -> int:
                 return 1
         except Exception as e:
             print(f"[!] Redo failed: {e}", file=sys.stderr)
+            return 1
+    elif args.command == "observe":
+        from ecdat.runtime.ebpf_observer import EBPFObserver
+        observer = EBPFObserver()
+        if args.script_only:
+            p = observer.generate_tracer_script(Path(args.output))
+            print(f"[+] eBPF bpftrace script written to: {p}")
+            return 0
+        if args.parse_only:
+            assets = observer.parse_trace_log(Path(args.parse_only))
+            print(f"[*] Parsed {len(assets)} runtime cryptographic assets from {args.parse_only}")
+            for a in assets:
+                print(f"  [{a.evidence_level.value}] {a.component_name} -> {a.algorithm} ({a.x_confidence})")
+            return 0
+        try:
+            print(f"[*] Starting {args.duration}s eBPF cryptographic runtime trace on {observer.libcrypto_path}...")
+            assets = observer.execute_live_trace(duration_seconds=args.duration, output_file=Path(args.output))
+            print(f"[+] eBPF trace complete: {len(assets)} runtime cryptographic operations captured in {args.output}")
+            return 0
+        except Exception as e:
+            print(f"[!] eBPF trace failed: {e}", file=sys.stderr)
             return 1
     return 1
 

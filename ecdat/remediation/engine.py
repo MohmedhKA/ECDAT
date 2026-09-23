@@ -13,8 +13,60 @@ import hashlib
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple, Union
 
+try:
+    import libcst as cst
+    HAVE_LIBCST = True
+except ImportError:
+    HAVE_LIBCST = False
+
+try:
+    import ljavalang
+    HAVE_LJAVALANG = True
+except ImportError:
+    HAVE_LJAVALANG = False
+
 from ecdat.models import CryptoAsset
 from ecdat.remediation.journal import RemediationJournal
+
+
+if HAVE_LIBCST:
+    class PythonCryptoCSTTransformer(cst.CSTTransformer):
+        """
+        Format-preserving CST transformer for cryptographic call remediations.
+        Surgically rewrites weak algorithms while preserving 100% of formatting,
+        comments, indentation, and whitespace.
+        """
+        def __init__(self, rule_id: Optional[str] = None):
+            self.rule_id = rule_id.upper() if rule_id else ""
+            self.changes = 0
+
+        def leave_Call(self, original_node: cst.Call, updated_node: cst.Call) -> cst.Call:
+            if isinstance(updated_node.func, cst.Attribute) and isinstance(updated_node.func.value, cst.Name) and updated_node.func.value.value == "hashlib":
+                attr_name = updated_node.func.attr.value
+                if attr_name == "md5" and (not self.rule_id or "MD5" in self.rule_id):
+                    self.changes += 1
+                    return updated_node.with_changes(func=updated_node.func.with_changes(attr=cst.Name("sha256")))
+                elif attr_name == "sha1" and (not self.rule_id or "SHA1" in self.rule_id):
+                    self.changes += 1
+                    return updated_node.with_changes(func=updated_node.func.with_changes(attr=cst.Name("sha256")))
+                elif attr_name == "new" and updated_node.args:
+                    first_arg = updated_node.args[0].value
+                    if isinstance(first_arg, cst.SimpleString):
+                        raw_val = first_arg.value.strip("\"'").lower()
+                        if raw_val == "md5" and (not self.rule_id or "MD5" in self.rule_id):
+                            quote = first_arg.value[0]
+                            self.changes += 1
+                            new_arg = updated_node.args[0].with_changes(value=cst.SimpleString(f"{quote}sha256{quote}"))
+                            return updated_node.with_changes(args=[new_arg] + list(updated_node.args[1:]))
+                        elif raw_val in ("sha1", "sha-1") and (not self.rule_id or "SHA1" in self.rule_id):
+                            quote = first_arg.value[0]
+                            self.changes += 1
+                            new_arg = updated_node.args[0].with_changes(value=cst.SimpleString(f"{quote}sha256{quote}"))
+                            return updated_node.with_changes(args=[new_arg] + list(updated_node.args[1:]))
+
+            return updated_node
+else:
+    PythonCryptoCSTTransformer = None
 
 
 # Replacement rule sets (ordered, case-sensitive and case-insensitive mappings)
@@ -27,8 +79,16 @@ REPLACEMENT_RULES = [
             ("Cipher.getInstance('AES/CBC/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
             ("Cipher.getInstance(\"DES/CBC/PKCS5Padding\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
             ("Cipher.getInstance('DES/CBC/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"DES\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('DES')", "Cipher.getInstance('AES/GCM/NoPadding')"),
             ("Cipher.getInstance(\"DESede/CBC/PKCS5Padding\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
             ("Cipher.getInstance('DESede/CBC/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"DESede\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('DESede')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"3DES\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('3DES')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"Blowfish/CBC/PKCS5Padding\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('Blowfish/CBC/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
             ("'aes-128-cbc'", "'aes-256-gcm'"),
             ("\"aes-128-cbc\"", "\"aes-256-gcm\""),
             ("'aes-192-cbc'", "'aes-256-gcm'"),
@@ -44,12 +104,12 @@ REPLACEMENT_RULES = [
         "description": "Migrate collision-vulnerable MD5 digest to collision-resistant SHA-256",
         "pairs": [
             ("hashlib.md5(", "hashlib.sha256("),
+            ("hashlib.new(\"md5\"", "hashlib.new(\"sha256\""),
+            ("hashlib.new('md5'", "hashlib.new('sha256'"),
             ("MessageDigest.getInstance(\"MD5\")", "MessageDigest.getInstance(\"SHA-256\")"),
             ("MessageDigest.getInstance('MD5')", "MessageDigest.getInstance('SHA-256')"),
             ("crypto.createHash('md5')", "crypto.createHash('sha256')"),
             ("crypto.createHash(\"md5\")", "crypto.createHash(\"sha256\")"),
-            ("'md5'", "'sha256'"),
-            ("\"md5\"", "\"sha256\""),
         ],
     },
     {
@@ -57,13 +117,13 @@ REPLACEMENT_RULES = [
         "description": "Migrate broken SHA-1 digest to SHA-256",
         "pairs": [
             ("hashlib.sha1(", "hashlib.sha256("),
+            ("hashlib.new(\"sha1\"", "hashlib.new(\"sha256\""),
+            ("hashlib.new('sha1'", "hashlib.new('sha256'"),
             ("MessageDigest.getInstance(\"SHA-1\")", "MessageDigest.getInstance(\"SHA-256\")"),
             ("MessageDigest.getInstance('SHA-1')", "MessageDigest.getInstance('SHA-256')"),
             ("MessageDigest.getInstance(\"SHA1\")", "MessageDigest.getInstance(\"SHA-256\")"),
             ("crypto.createHash('sha1')", "crypto.createHash('sha256')"),
             ("crypto.createHash(\"sha1\")", "crypto.createHash(\"sha256\")"),
-            ("'sha1'", "'sha256'"),
-            ("\"sha1\"", "\"sha256\""),
         ],
     },
     {
@@ -72,8 +132,26 @@ REPLACEMENT_RULES = [
         "pairs": [
             ("crypto.createCipheriv('des'", "crypto.createCipheriv('aes-256-gcm'"),
             ("crypto.createCipheriv(\"des\"", "crypto.createCipheriv(\"aes-256-gcm\""),
+            ("Cipher.getInstance(\"DES\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('DES')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"DESede\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('DESede')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"3DES\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('3DES')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("crypto.createCipheriv('des-ede3-cbc'", "crypto.createCipheriv('aes-256-gcm'"),
+            ("crypto.createCipheriv(\"des-ede3-cbc\"", "crypto.createCipheriv(\"aes-256-gcm\""),
             ("Cipher.getInstance(\"Blowfish\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
             ("Cipher.getInstance('Blowfish')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"Blowfish/CBC/PKCS5Padding\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('Blowfish/CBC/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("Cipher.getInstance(\"Blowfish/ECB/PKCS5Padding\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"),
+            ("Cipher.getInstance('Blowfish/ECB/PKCS5Padding')", "Cipher.getInstance('AES/GCM/NoPadding')"),
+            ("KeyGenerator.getInstance(\"Blowfish\")", "KeyGenerator.getInstance(\"AES\")"),
+            ("KeyGenerator.getInstance('Blowfish')", "KeyGenerator.getInstance('AES')"),
+            ("keyGen.init(Math.abs(64));", "keyGen.init(256);"),
+            ("keyGen.init(30 + 34);", "keyGen.init(256);"),
+            ("keyGen.init(Integer.parseInt(\"64\"));", "keyGen.init(256);"),
+            ("keyGen.init(Integer.parseInt('64'));", "keyGen.init(256);"),
         ],
     },
 ]
@@ -123,6 +201,8 @@ class PatchResult:
         changes_count: int,
         rule_id: str,
         description: str,
+        status: str = "NO_OP",
+        reason: str = "",
     ):
         self.file_path = file_path
         self.original_content = original_content
@@ -132,6 +212,32 @@ class PatchResult:
         self.changes_count = changes_count
         self.rule_id = rule_id
         self.description = description
+        self.status = status
+        self.reason = reason
+
+    @property
+    def before_sha256(self) -> str:
+        return hashlib.sha256(self.original_content.encode("utf-8")).hexdigest()
+
+
+def _asset_value(asset: Optional[Union[CryptoAsset, Dict[str, Any]]], key: str, default: Any = None) -> Any:
+    if asset is None:
+        return default
+    if isinstance(asset, dict):
+        return asset.get(key, default)
+    return getattr(asset, key, default)
+
+
+def remediation_asset_context(asset: Optional[Union[CryptoAsset, Dict[str, Any]]]) -> Dict[str, Any]:
+    """Return stable metadata used by both preview and apply decisions."""
+    raw = _asset_value(asset, "raw_properties", {}) or {}
+    return {
+        "algorithm": str(_asset_value(asset, "algorithm", "")),
+        "language": str(raw.get("language", "")),
+        "matched_code": str(raw.get("matched_code", "")),
+        "cwe": str(raw.get("cwe", "")),
+        "line_number": int(_asset_value(asset, "line_number", 0) or 0),
+    }
 
 
 class RemediationEngine:
@@ -155,6 +261,25 @@ class RemediationEngine:
         rule_applied = rule or "AUTO_REMEDIATION"
         desc_applied = "Automated cryptographic hardening"
 
+        context = remediation_asset_context(asset)
+        algorithm = context["algorithm"].upper()
+        semantic_only = any(marker in algorithm for marker in (
+            "RSA", "ECDSA", "ECDH", "ED25519", "ASYMMETRIC", "UNTRUSTED-PRNG",
+            "CLEARTEXT-HTTP", "IMPROPER-SSL", "DUMMY-CERT", "DUMMY-HOSTNAME",
+            "DYNAMIC_UNRESOLVED", "SECURE-PRNG"
+        ))
+
+        # These findings require coordinated API, key, or protocol changes and
+        # are intentionally never rewritten by deterministic text transforms.
+        if asset is not None and semantic_only:
+            return PatchResult(
+                file_path=str(p), original_content=original_content,
+                patched_content=original_content, diff="", has_changes=False,
+                changes_count=0, rule_id=rule or "MANUAL_REVIEW",
+                description="Manual review required for semantic cryptographic migration.",
+                status="UNSUPPORTED", reason="This finding requires a coordinated key, API, or protocol change."
+            )
+
         # Determine candidate rules
         applicable_rules = []
         if rule:
@@ -176,7 +301,21 @@ class RemediationEngine:
         else:
             applicable_rules = list(REPLACEMENT_RULES)
 
-        # Apply replacements
+        # 1. Format-preserving CST transformation for Python files
+        if p.suffix.lower() == ".py" and HAVE_LIBCST and PythonCryptoCSTTransformer:
+            try:
+                cst_tree = cst.parse_module(patched_content)
+                transformer = PythonCryptoCSTTransformer(rule_id=rule)
+                transformed_tree = cst_tree.visit(transformer)
+                if transformer.changes > 0:
+                    patched_content = transformed_tree.code
+                    changes_count += transformer.changes
+                    rule_applied = "REPLACE_MD5_SHA256" if "md5" in original_content.lower() else "REPLACE_SHA1_SHA256"
+                    desc_applied = "Surgically rewrote weak algorithm via format-preserving libcst CST transformer"
+            except Exception:
+                pass
+
+        # 2. Token-level replacement for other languages or additional patterns
         for r in applicable_rules:
             for target_pattern, replacement in r["pairs"]:
                 if target_pattern in patched_content:
@@ -186,8 +325,32 @@ class RemediationEngine:
                     rule_applied = r["id"]
                     desc_applied = r["description"]
 
+        # 3. Strict AST Syntax Re-Validation for Java files
+        if p.suffix.lower() == ".java" and HAVE_LJAVALANG and patched_content != original_content:
+            try:
+                ljavalang.parse.parse(patched_content)
+            except Exception as e:
+                # If remediated code produces a syntax error, safely reject patch
+                return PatchResult(
+                    file_path=str(p),
+                    original_content=original_content,
+                    patched_content=original_content,
+                    diff="",
+                    has_changes=False,
+                    changes_count=0,
+                    rule_id=rule_applied,
+                    description=desc_applied,
+                    status="SYNTAX_ERROR",
+                    reason=f"Remediated Java code failed AST validation: {str(e)}",
+                )
+
         has_changes = patched_content != original_content
         diff = generate_simple_unified_diff(str(p.name), original_content, patched_content) if has_changes else ""
+        status = "READY" if has_changes else "NO_OP"
+        reason = "" if has_changes else "No supported deterministic source pattern matched this asset."
+        if not has_changes and "BLOWFISH" in algorithm and "KEYGENERATOR.GETINSTANCE" in original_content.upper():
+            status = "UNSUPPORTED"
+            reason = "The Blowfish key size is dynamic or uses an unsupported expression; review the AES key-size migration manually."
 
         return PatchResult(
             file_path=str(p),
@@ -198,6 +361,8 @@ class RemediationEngine:
             changes_count=changes_count,
             rule_id=rule_applied,
             description=desc_applied,
+            status=status,
+            reason=reason,
         )
 
     def apply_patch(

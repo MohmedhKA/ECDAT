@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-09-20T10:40:00Z",
+  "total_transactions": 1,
+  "transactions": [
+    {
+      "tx_id": "tx-1789900800883-001",
+      "timestamp": "2026-09-20T10:40:00Z",
+      "target_file": "/tmp/tmpb5n7e0no/target/CryptoTest.java",
+      "asset_id": "",
+      "rule_id": "REPLACE_DES_AES_GCM",
+      "description": "Migrate broken 56/64-bit DES/3DES cipher to AES-256-GCM",
+      "before_sha256": "2fbf13ca774019ea585f67705f44f47048026531a9a942d155cfcd4ffaf714af",
+      "after_sha256": "7348758f6a248da68e53f77c9ebd513d2a1c2bb4d358289fea86786019c7123a",
+      "diff": "--- a/CryptoTest.java\n+++ b/CryptoTest.java\n@@ -1 +1 @@\n-Cipher cipher = Cipher.getInstance(\"Blowfish\");\n+Cipher cipher = Cipher.getInstance(\"AES/GCM/NoPadding\");\n",
+      "original_content": "Cipher cipher = Cipher.getInstance(\"Blowfish\");\n",
+      "remediated_content": "Cipher cipher = Cipher.getInstance(\"AES/GCM/NoPadding\");\n",
+      "status": "APPLIED"
+    }
+  ]
+}

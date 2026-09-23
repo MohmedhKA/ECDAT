@@ -157,3 +157,42 @@ def test_pareto_knapsack_portfolio_optimization():
     assert result.items[0].is_selected is True
     assert result.risk_reduction_pct > 0.0
     assert len(result.frontier_points) >= 2
+
+def test_exact_01_knapsack_beats_greedy_heuristic():
+    from ecdat.optimizer.pareto import solve_01_knapsack_dp
+    from ecdat.models import ParetoItem
+
+    # Classic knapsack counterexample where greedy-by-ratio is suboptimal:
+    # Budget = 6.0 weeks
+    # Item 1: cost 4.0, delta_r 10.0 (efficiency 2.5) -> greedy takes this first, leaves 2.0 budget, cannot take 2 & 3. Total = 10.0
+    # Item 2: cost 3.0, delta_r 7.0 (efficiency 2.33)
+    # Item 3: cost 3.0, delta_r 7.0 (efficiency 2.33)
+    # Exact DP takes Item 2 + Item 3: cost 6.0, total delta_r = 14.0 (> 10.0)!
+    items = [
+        ParetoItem(
+            asset_id="item-greedy-trap", component_name="trap", algorithm="RSA",
+            primitive_type="SIGNATURE", file_path="t.py", line_number=1,
+            r0_score=1, cams_level=0, risk_level="HIGH",
+            delta_r=10.0, cost_dev_weeks=4.0, efficiency=2.5,
+            is_selected=False, cumulative_risk_pct=0.0, cumulative_cost_weeks=0.0
+        ),
+        ParetoItem(
+            asset_id="item-opt-1", component_name="opt1", algorithm="DES",
+            primitive_type="ENCRYPTION", file_path="o1.py", line_number=2,
+            r0_score=1, cams_level=0, risk_level="HIGH",
+            delta_r=7.0, cost_dev_weeks=3.0, efficiency=2.33,
+            is_selected=False, cumulative_risk_pct=0.0, cumulative_cost_weeks=0.0
+        ),
+        ParetoItem(
+            asset_id="item-opt-2", component_name="opt2", algorithm="3DES",
+            primitive_type="ENCRYPTION", file_path="o2.py", line_number=3,
+            r0_score=1, cams_level=0, risk_level="HIGH",
+            delta_r=7.0, cost_dev_weeks=3.0, efficiency=2.33,
+            is_selected=False, cumulative_risk_pct=0.0, cumulative_cost_weeks=0.0
+        ),
+    ]
+
+    selected_ids = solve_01_knapsack_dp(items, budget_weeks=6.0)
+    # Exact DP must choose opt1 and opt2 (total value 14.0), not the greedy choice (total value 10.0)
+    assert selected_ids == {"item-opt-1", "item-opt-2"}
+    assert "item-greedy-trap" not in selected_ids

@@ -1,7 +1,7 @@
 # ECDAT: Enterprise Cryptographic Discovery, Attestation & Transition
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-89%20passed%20(100%25)-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-179%20passed%20(100%25)-brightgreen.svg)](tests/)
 [![Standards](https://img.shields.io/badge/standards-NIST%20FIPS%20203%2F204%20%7C%20OMB%20M--26--15-orange.svg)](https://csrc.nist.gov/)
 [![Format](https://img.shields.io/badge/format-CycloneDX%201.6%20CBOM-blueviolet.svg)](https://cyclonedx.org/)
 
@@ -209,8 +209,8 @@ Every pipeline execution produces an enterprise-grade set of machine-readable an
 
 ECDAT has been evaluated against Virginia Tech **CryptoAPI-Bench** (Afrose et al., IEEE SecDev 2019), the academic gold standard for cryptographic misuse detection:
 
-* **Scope:** All 181 distinct test cases covering 8 complexity dimensions (basic, interprocedural, field-sensitive, path-sensitive, object-sensitive).
-* **Cryptographic Assets Evaluated:** 296 assets extracted directly by the pipeline.
+* **Scope:** All 182 distinct test cases covering 8 complexity dimensions (basic, interprocedural, field-sensitive, path-sensitive, object-sensitive).
+* **Cryptographic Assets Evaluated:** 291 assets extracted directly by the pipeline.
 * **Benchmark Performance:**
   * **True Positives (TP):** 145 (Accurately flagged broken ciphers, weak keys, predictable seeds, insecure IVs).
   * **True Negatives (TN):** 37 (Correctly validated secure primitives, AES-GCM, CSPRNGs, compliant HTTPS).
@@ -227,7 +227,7 @@ python scripts/evaluate_cryptoapi_bench.py
 
 ## Running Automated Tests
 
-ECDAT maintains a comprehensive, zero-regression test suite covering 164 test cases:
+ECDAT maintains a comprehensive, zero-regression test suite covering 179 test cases:
 
 ```bash
 # Run the complete test suite

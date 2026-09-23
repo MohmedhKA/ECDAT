@@ -108,3 +108,47 @@ def test_negative_proof_flags_forbidden_des():
     assert cert.is_certified_clean is False
     assert cert.assertions[0]["status"] == "FAILED"
     assert verify_negative_proof_certificate(cert) is False
+
+def test_negative_proof_flags_forbidden_md5():
+    asset_md5 = CryptoAsset(
+        asset_id="a_md5",
+        component_name="hasher",
+        algorithm="MD5",
+        primitive_type=PrimitiveType.HASH,
+        file_path="hasher.py",
+        x_tier=XTier.EPHEMERAL,
+    )
+    score = MoscaScore(
+        asset_id="a_md5",
+        x_years_effective=0.1,
+        z_regulatory_year=2024,
+        z_regulatory_phase=5,
+        z_physical_10yr_prob="High",
+        y_max_years=-1.0,
+        deadline_year=2024.0,
+        risk_level="CRITICAL",
+        crypto_shredding_viable=False,
+        planning_note="Forbidden broken hash",
+    )
+    rec = MigrationRecommendation(
+        current_algorithm="MD5",
+        primitive_type=PrimitiveType.HASH,
+        recommended_hybrid="SHA-256",
+        recommended_pqc_standalone="SHA-256",
+        target_standard="FIPS 180-4",
+        size_overhead_factor=1.0,
+        security_level="NIST L1",
+        implementation_guidance="Replace MD5 immediately",
+    )
+
+    cert = generate_negative_proof_certificate(
+        assessments=[(asset_md5, score, rec)],
+        unknowns_ledger=[],
+        target_path="/testbeds/broken_app",
+        merkle_root_hex="2222222222222222222222222222222222222222222222222222222222222222",
+    )
+
+    assert cert.is_certified_clean is False
+    assert cert.assertions[0]["status"] == "FAILED"
+    assert "MD5" in cert.assertions[0]["details"]
+    assert verify_negative_proof_certificate(cert) is False

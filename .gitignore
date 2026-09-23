@@ -114,6 +114,8 @@ Thumbs.db
 *.key
 *.p12
 *.pfx
+.ecdat/keys/*.key
+.ecdat/keys/*_private.*
 # Keep sample testbed certs tracked for automated tests:
 !testbeds/**/certs/*
 

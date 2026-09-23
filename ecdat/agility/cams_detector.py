@@ -7,7 +7,6 @@ Evaluates code patterns at cryptographic call sites to classify agility level (0
 - Level 3 (RUNTIME_AGILE): Policy-driven crypto-agile facade (e.g., Google Tink KeysetHandle, hybrid policy engine).
 """
 
-import re
 import ast
 from typing import Optional, Tuple, Any
 from ecdat.models import AgilityLevel
@@ -28,41 +27,73 @@ CAMS_DESCRIPTIONS = {
     AgilityLevel.RUNTIME_AGILE: "Dynamic runtime negotiation / agile wrapper",
 }
 
-# Regex patterns for detecting CAMS patterns across languages (Python, Java, JS/TS, Go, Rust)
-RUNTIME_AGILE_PATTERNS = [
-    re.compile(r"KeysetHandle", re.IGNORECASE),
-    re.compile(r"TinkConfig", re.IGNORECASE),
-    re.compile(r"HybridDecrypt|HybridEncrypt", re.IGNORECASE),
-    re.compile(r"AeadConfig", re.IGNORECASE),
-    re.compile(r"CryptoPolicy|CipherSuitePolicy|AlgorithmPolicy", re.IGNORECASE),
-    re.compile(r"@crypto_agile|CryptoAgileWrapper", re.IGNORECASE),
-    re.compile(r"dynamic_cipher|policy_selector", re.IGNORECASE),
-]
+# Substring tokens for detecting CAMS patterns across polyglot ecosystems (ZERO REGEX)
+RUNTIME_AGILE_TOKENS = (
+    "keysethandle",
+    "tinkconfig",
+    "hybriddecrypt",
+    "hybridencrypt",
+    "aeadconfig",
+    "cryptopolicy",
+    "ciphersuitepolicy",
+    "algorithmpolicy",
+    "@crypto_agile",
+    "cryptoagilewrapper",
+    "dynamic_cipher",
+    "policy_selector",
+)
 
-PROVIDER_PATTERNS = [
-    re.compile(r"(?:Crypto|Cipher|Key|SecretKey|Signature|Digest)Factory\.", re.IGNORECASE),
-    re.compile(r"(?:Security|Cipher)Provider\.", re.IGNORECASE),
-    re.compile(r"Security\.getProvider", re.IGNORECASE),
-    re.compile(r"provider\.get(?:Cipher|Key|Signer|Digest)", re.IGNORECASE),
-    re.compile(r"crypto_provider|cipher_provider", re.IGNORECASE),
-    re.compile(r"inject\(|@Inject|DependencyInjection", re.IGNORECASE),
-    re.compile(r"get_crypto_service|cryptoServiceFactory", re.IGNORECASE),
-]
+PROVIDER_TOKENS = (
+    "cryptofactory.",
+    "cipherfactory.",
+    "keyfactory.",
+    "secretkeyfactory.",
+    "signaturefactory.",
+    "digestfactory.",
+    "securityprovider.",
+    "cipherprovider.",
+    "security.getprovider",
+    "provider.getcipher",
+    "provider.getkey",
+    "provider.getsigner",
+    "provider.getdigest",
+    "crypto_provider",
+    "cipher_provider",
+    "inject(",
+    "@inject",
+    "dependencyinjection",
+    "get_crypto_service",
+    "cryptoservicefactory",
+)
 
-CONFIGURABLE_PATTERNS = [
-    re.compile(r"os\.getenv\s*\(", re.IGNORECASE),
-    re.compile(r"os\.environ(?:\[|\.get)", re.IGNORECASE),
-    re.compile(r"process\.env(?:\.|\[)", re.IGNORECASE),
-    re.compile(r"System\.getenv\s*\(", re.IGNORECASE),
-    re.compile(r"System\.getProperty\s*\(", re.IGNORECASE),
-    re.compile(r"env::var\s*\(", re.IGNORECASE),
-    re.compile(r"config(?:\.get|\[|->get)", re.IGNORECASE),
-    re.compile(r"app\.config(?:\.get|\[)", re.IGNORECASE),
-    re.compile(r"cfg(?:\.get|\.|\b)", re.IGNORECASE),
-    re.compile(r"properties\.getProperty", re.IGNORECASE),
-    re.compile(r"viper\.GetString", re.IGNORECASE),
-    re.compile(r"settings\.(?:CRYPTO|CIPHER|ALGORITHM|HASH)", re.IGNORECASE),
-]
+CONFIGURABLE_TOKENS = (
+    "os.getenv(",
+    "os.getenv (",
+    "os.environ[",
+    "os.environ.get",
+    "process.env.",
+    "process.env[",
+    "system.getenv(",
+    "system.getenv (",
+    "system.getproperty(",
+    "system.getproperty (",
+    "env::var(",
+    "env::var (",
+    "config.get",
+    "config[",
+    "config->get",
+    "app.config.get",
+    "app.config[",
+    "cfg.get",
+    "cfg[",
+    "cfg.",
+    "properties.getproperty",
+    "viper.getstring",
+    "settings.crypto",
+    "settings.cipher",
+    "settings.algorithm",
+    "settings.hash",
+)
 
 def detect_cams_agility(
     source_line: str,
@@ -73,22 +104,22 @@ def detect_cams_agility(
     Evaluates cryptographic invocation context and returns (AgilityLevel, reasoning_str).
     Checks runtime agile facades -> provider/factory -> configurable -> rigid literal.
     """
-    combined_text = f"{source_line}\n{surrounding_code or ''}"
+    combined_lower = f"{source_line}\n{surrounding_code or ''}".lower()
 
     # 1. Level 3 Check: Runtime Agile Facades
-    for pat in RUNTIME_AGILE_PATTERNS:
-        if pat.search(combined_text):
-            return AgilityLevel.RUNTIME_AGILE, f"Runtime crypto-agile facade matched: {pat.pattern}"
+    for token in RUNTIME_AGILE_TOKENS:
+        if token in combined_lower:
+            return AgilityLevel.RUNTIME_AGILE, f"Runtime crypto-agile facade matched: '{token}'"
 
     # 2. Level 2 Check: Provider / Factory Abstraction
-    for pat in PROVIDER_PATTERNS:
-        if pat.search(combined_text):
-            return AgilityLevel.PROVIDER, f"Provider/Factory abstraction matched: {pat.pattern}"
+    for token in PROVIDER_TOKENS:
+        if token in combined_lower:
+            return AgilityLevel.PROVIDER, f"Provider/Factory abstraction matched: '{token}'"
 
     # 3. Level 1 Check: Configurable / Environment / Settings
-    for pat in CONFIGURABLE_PATTERNS:
-        if pat.search(combined_text):
-            return AgilityLevel.CONFIGURABLE, f"Configurable/environment-driven pattern matched: {pat.pattern}"
+    for token in CONFIGURABLE_TOKENS:
+        if token in combined_lower:
+            return AgilityLevel.CONFIGURABLE, f"Configurable/environment-driven pattern matched: '{token}'"
 
     # 4. AST node parameter check (if available for Python)
     if ast_node is not None:

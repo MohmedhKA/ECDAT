@@ -8,6 +8,7 @@ Asynchronous Starlette/Uvicorn server providing:
 Strictly zero-regex: Operates exclusively on string methods, paths, and dictionary structures.
 """
 
+import asyncio
 import os
 import json
 import time
@@ -193,13 +194,13 @@ def inject_fleet_navigation(html_content: str, current_project: str, all_project
             <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
             <span>Fleet View</span>
         </a>
-        <button id="btn-scan-now" onclick="triggerCurrentProjectScan()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 transition shadow-md shadow-cyan-900/30 ring-1 ring-cyan-400/50" title="Trigger immediate re-scan of this codebase">
-            <svg class="w-3.5 h-3.5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <button id="btn-scan-now" onclick="triggerCurrentProjectScan()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-3 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 transition shadow-md shadow-cyan-900/30 ring-1 ring-cyan-400/50" title="Trigger immediate re-scan of this codebase">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             <span>Scan Now</span>
         </button>
         <button onclick="openScanModal()" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white px-2.5 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition shadow-sm" title="Scan a new codebase">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <span>+ Scan Target</span>
+            <span>Scan Target</span>
         </button>
     </div>
     """
@@ -409,7 +410,7 @@ def render_fleet_scorecard_html(projects: List[Dict[str, Any]]) -> str:
             <div class="flex items-center gap-2.5">
                 <button onclick="document.getElementById('scan-target-modal').classList.remove('hidden')" class="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span>+ Scan New Target</span>
+                    <span>Scan New Target</span>
                 </button>
             </div>
         </div>
@@ -550,6 +551,26 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
     """
     app_base_dir = Path(base_dir or Path.cwd()).resolve()
 
+    def resolve_remediation_file(file_path: str, project_name: str = "") -> Optional[Path]:
+        """Resolve report-relative source paths against the registered project roots."""
+        requested = Path(file_path).expanduser()
+        candidates = [requested] if requested.is_absolute() else [app_base_dir / requested]
+
+        from ecdat.dashboard import fleet
+        project = fleet.get_fleet_target(project_name, reports_dir=reports_dir, base_dir=app_base_dir) if project_name else None
+        if project:
+            target_dir = project.get("target_dir", "")
+            output_dir = project.get("output_dir", "")
+            for root in (target_dir, output_dir, str(Path(output_dir).parent) if output_dir else ""):
+                if root:
+                    candidates.append(Path(root) / requested)
+
+        for candidate in candidates:
+            resolved = candidate.resolve()
+            if resolved.is_file():
+                return resolved
+        return None
+
     async def root_handler(request):
         projects = find_scanned_projects(reports_dir=reports_dir, base_dir=app_base_dir)
         if not projects:
@@ -664,6 +685,7 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
             body = await request.json()
             raw_target = body.get("target", "").strip()
             custom_name = body.get("name", "").strip()
+            background_requested = bool(body.get("background"))
 
             from ecdat.dashboard import fleet
             reg_target = fleet.get_fleet_target(raw_target, reports_dir=reports_dir, base_dir=app_base_dir) if raw_target else None
@@ -720,6 +742,38 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
                     "error": f"Target codebase path '{target_path}' does not exist on disk. Please configure the source directory in the scan modal."
                 }, status_code=400)
 
+            if background_requested:
+                async def run_background_scan():
+                    try:
+                        from ecdat.pipeline import run_pipeline
+                        res = await asyncio.to_thread(
+                            run_pipeline,
+                            target_dir=target_path,
+                            output_dir=str(out_dir),
+                        )
+                        total_assets = len(res.assets) if hasattr(res, "assets") else 0
+                        fleet.register_fleet_target(
+                            name=custom_name,
+                            target_dir=target_path,
+                            output_dir=str(out_dir),
+                            asset_count=total_assets,
+                            reports_dir=reports_dir,
+                            base_dir=app_base_dir,
+                        )
+                    except Exception:
+                        # The completed artifact/version endpoint remains the source
+                        # of truth for the client; failed jobs are reported there
+                        # only through the absence of a new version.
+                        pass
+
+                asyncio.create_task(run_background_scan())
+                return JSONResponse({
+                    "status": "started",
+                    "project": custom_name,
+                    "target_dir": target_path,
+                    "output_dir": str(out_dir),
+                }, status_code=202)
+
             # Run pipeline on the ACTUAL source target directory!
             from ecdat.pipeline import run_pipeline
             res = run_pipeline(target_dir=target_path, output_dir=str(out_dir))
@@ -753,21 +807,27 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         try:
             body = await request.json()
             file_path = body.get("file_path", "").strip()
+            project_name = body.get("project", "").strip()
             rule = body.get("rule", "").strip() or None
-            if not file_path or not Path(file_path).exists():
+            asset = body.get("asset")
+            resolved_file = resolve_remediation_file(file_path, project_name)
+            if not file_path or not resolved_file:
                 return JSONResponse({"status": "error", "error": f"File '{file_path}' does not exist."}, status_code=400)
             from ecdat.remediation.engine import RemediationEngine
             engine = RemediationEngine()
-            patch = engine.generate_patch(file_path, rule=rule)
-            is_protected = "evoting" in file_path.lower() or "e-voting" in file_path.lower()
+            patch = engine.generate_patch(resolved_file, asset=asset, rule=rule)
+            is_protected = "evoting" in str(resolved_file).lower() or "e-voting" in str(resolved_file).lower()
             return JSONResponse({
                 "status": "success",
-                "file_path": file_path,
+                "file_path": str(resolved_file),
                 "has_changes": patch.has_changes,
                 "changes_count": patch.changes_count,
                 "rule_id": patch.rule_id,
                 "description": patch.description,
                 "diff": patch.diff,
+                "remediation_status": patch.status,
+                "remediation_reason": patch.reason,
+                "before_sha256": patch.before_sha256,
                 "is_protected": is_protected
             })
         except Exception as e:
@@ -777,12 +837,16 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
         try:
             body = await request.json()
             file_path = body.get("file_path", "").strip()
+            project_name = body.get("project", "").strip()
             rule = body.get("rule", "").strip() or None
-            if not file_path or not Path(file_path).exists():
+            asset = body.get("asset")
+            expected_before_sha256 = body.get("before_sha256", "").strip()
+            resolved_file = resolve_remediation_file(file_path, project_name)
+            if not file_path or not resolved_file:
                 return JSONResponse({"status": "error", "error": f"File '{file_path}' does not exist."}, status_code=400)
 
             # Strict guard against modifying protected repositories
-            if "evoting" in file_path.lower() or "e-voting" in file_path.lower():
+            if "evoting" in str(resolved_file).lower() or "e-voting" in str(resolved_file).lower():
                 return JSONResponse({
                     "status": "error",
                     "error": "PROTECTED REPOSITORY: Automated remediation is strictly disabled for E-Voting-V2 to preserve research integrity."
@@ -790,10 +854,21 @@ def create_fleet_app(reports_dir: Optional[Path] = None, base_dir: Optional[Path
 
             from ecdat.remediation.engine import RemediationEngine
             engine = RemediationEngine()
-            patch = engine.generate_patch(file_path, rule=rule)
+            patch = engine.generate_patch(resolved_file, asset=asset, rule=rule)
+            if expected_before_sha256 and patch.before_sha256 != expected_before_sha256:
+                return JSONResponse({
+                    "status": "stale_preview",
+                    "error": "The source file changed after preview. Generate a new preview before applying.",
+                }, status_code=409)
+            if patch.status == "UNSUPPORTED":
+                return JSONResponse({
+                    "status": "unsupported",
+                    "error": patch.reason,
+                    "reason": patch.reason,
+                }, status_code=422)
             if not patch.has_changes:
-                return JSONResponse({"status": "noop", "message": "No matching remediation patterns found in target file."})
-            tx = engine.apply_patch(file_path, patch)
+                return JSONResponse({"status": "noop", "message": patch.reason})
+            tx = engine.apply_patch(resolved_file, patch)
             return JSONResponse({
                 "status": "success",
                 "transaction": tx

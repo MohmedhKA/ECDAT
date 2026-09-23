@@ -112,3 +112,28 @@ def test_theia_skips_env_and_tokens():
     assert len(assets) == 1
     assert assets[0].algorithm == "RSA-2048"
 
+def test_native_fallback_when_binary_absent():
+    from pathlib import Path
+    certs_dir = str(Path(__file__).resolve().parent.parent / "testbeds" / "sample_crypto_app" / "certs")
+    # Force theia_bin to a non-existent path
+    dummy_bin = Path("/tmp/non_existent_theia_binary_for_test_12345")
+    assets = run_theia_scan(certs_dir, theia_bin=dummy_bin)
+    assert len(assets) >= 1
+    # Check that certs were discovered natively
+    assert any("x509_cert" in a.component_name for a in assets)
+
+def test_password_protected_p12_quarantined(tmp_path):
+    # Create an encrypted/unparseable .p12 file
+    p12_file = tmp_path / "keystore.p12"
+    p12_file.write_bytes(b"\x30\x82\x04\x00\x02\x01\x03bogus_encrypted_pkcs12_data")
+
+    unknowns_ledger = []
+    dummy_bin = Path("/tmp/non_existent_theia_binary_for_test_12345")
+    assets = run_theia_scan(str(tmp_path), theia_bin=dummy_bin, unknowns_ledger=unknowns_ledger)
+
+    # Must not crash, and must quarantine the .p12 file to unknowns_ledger
+    assert len(unknowns_ledger) == 1
+    assert unknowns_ledger[0].category == "ENCRYPTED_KEYSTORE"
+    assert "keystore.p12" in unknowns_ledger[0].item_path
+
+

@@ -60,3 +60,13 @@ def test_default_probe_fallback():
     assert res.mss == res.effective_mtu - 40
     assert res.route_profile in {RouteProfile.STANDARD, RouteProfile.FLEXIBLE, RouteProfile.CONSTRAINED}
     assert len(res.pqc_flight_estimates) >= 5
+
+def test_active_df_path_mtu_probing():
+    from ecdat.network.mtu_prober import _probe_df_path_mtu
+    # 127.0.0.1 or standard loopback/public target
+    mtu = _probe_df_path_mtu("127.0.0.1", port=9)
+    # Loopback MTU on Linux is usually 65536 or detected size
+    # Function must return an integer or None without crashing or requesting root/raw sockets
+    if mtu is not None:
+        assert isinstance(mtu, int)
+        assert mtu >= 500

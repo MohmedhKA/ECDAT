@@ -97,7 +97,7 @@ def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
             file_assets = scan_python_file(p, target_path)
 
         for a in file_assets:
-            dedup_key = f"{a.file_path}:{a.algorithm}:{a.primitive_type.value}"
+            dedup_key = f"{a.file_path}:{a.algorithm}:{a.primitive_type.value}:{a.line_number}"
             if dedup_key in seen_keys:
                 continue
             seen_keys.add(dedup_key)

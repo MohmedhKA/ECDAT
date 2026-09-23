@@ -4,7 +4,7 @@ Implements Pillar 7 resource-constrained knapsack optimization and efficient fro
 calculation over R0 blast radius, CAMS engineering effort, and HNDL quantum risk.
 """
 
-from typing import List, Tuple, Dict, Any, Optional
+from typing import List, Tuple, Dict, Any, Optional, Set
 from pathlib import Path
 from ecdat.models import (
     CryptoAsset,
@@ -187,21 +187,113 @@ def optimize_pareto_portfolio(
     total_estate_risk = sum(it.delta_r for it in sorted_items)
     frontier_points = compute_efficient_frontier(sorted_items)
 
-    # Greedily allocate budget B
+def solve_01_knapsack_dp(items: List[ParetoItem], budget_weeks: float) -> Set[str]:
+    """
+    Solves the exact 0/1 Knapsack Dynamic Programming problem with integer scaling.
+    Guarantees mathematically optimal subset selection subject to budget constraint.
+    """
+    scale = 100  # 0.01 dev-week integer discretization precision
+    W = max(0, int(round(budget_weeks * scale)))
+
+    candidates = [it for it in items if it.delta_r > 0]
+    if not candidates or W <= 0:
+        return set()
+
+    n = len(candidates)
+    weights = [max(1, int(round(it.cost_dev_weeks * scale))) for it in candidates]
+    values = [it.delta_r for it in candidates]
+
+    # 2D DP table: dp[i][w] stores maximum delta_r using a subset of first i items with weight <= w
+    dp = [[0.0] * (W + 1) for _ in range(n + 1)]
+
+    for i in range(1, n + 1):
+        w_i = weights[i - 1]
+        v_i = values[i - 1]
+        for w in range(W + 1):
+            if w < w_i:
+                dp[i][w] = dp[i - 1][w]
+            else:
+                take = dp[i - 1][w - w_i] + v_i
+                dont = dp[i - 1][w]
+                dp[i][w] = take if take > dont else dont
+
+    # Backtrack to reconstruct the exact optimal portfolio subset
+    selected_asset_ids = set()
+    curr_w = W
+    for i in range(n, 0, -1):
+        if dp[i][curr_w] != dp[i - 1][curr_w]:
+            selected_asset_ids.add(candidates[i - 1].asset_id)
+            curr_w -= weights[i - 1]
+
+    return selected_asset_ids
+
+def optimize_pareto_portfolio(
+    assessments: List[Tuple[CryptoAsset, MoscaScore, MigrationRecommendation]],
+    contagion_result: Optional[ContagionGraphResult] = None,
+    budget_dev_weeks: float = 10.0,
+) -> ParetoPortfolioResult:
+    """
+    Solves resource-constrained migration planning for a given sprint budget B
+    via exact 0/1 Knapsack Dynamic Programming and constructs the Pareto efficient frontier.
+    """
+    raw_items: List[ParetoItem] = []
+
+    for asset, score, rec in assessments:
+        r0 = _resolve_r0(asset, contagion_result)
+        delta_r, cost, efficiency = compute_item_pareto_metrics(asset, score, rec, r0)
+
+        cams_val = int(asset.agility_level) if hasattr(asset, "agility_level") else 0
+
+        raw_items.append(ParetoItem(
+            asset_id=asset.asset_id,
+            component_name=asset.component_name,
+            algorithm=asset.algorithm,
+            primitive_type=asset.primitive_type.value if hasattr(asset.primitive_type, "value") else str(asset.primitive_type),
+            file_path=asset.file_path,
+            line_number=asset.line_number,
+            r0_score=r0,
+            cams_level=cams_val,
+            risk_level=score.risk_level,
+            delta_r=delta_r,
+            cost_dev_weeks=cost,
+            efficiency=efficiency,
+            is_selected=False,
+            cumulative_risk_pct=0.0,
+            cumulative_cost_weeks=0.0,
+        ))
+
+    # Sort items by efficiency descending (primary), delta_r descending (secondary), cost ascending (tertiary)
+    sorted_items = sorted(
+        raw_items,
+        key=lambda x: (x.efficiency, x.delta_r, -x.cost_dev_weeks),
+        reverse=True,
+    )
+
+    total_estate_risk = sum(it.delta_r for it in sorted_items)
+    frontier_points = compute_efficient_frontier(sorted_items)
+
+    # Solve exact 0/1 Knapsack DP for optimal subset selection
+    optimal_selected_ids = solve_01_knapsack_dp(sorted_items, budget_dev_weeks)
+
     allocated_cost = 0.0
     accumulated_risk = 0.0
     selected_count = 0
 
+    running_cost = 0.0
+    running_risk = 0.0
     for item in sorted_items:
-        if item.delta_r > 0 and (allocated_cost + item.cost_dev_weeks) <= budget_dev_weeks:
+        if item.asset_id in optimal_selected_ids:
             item.is_selected = True
             allocated_cost = round(allocated_cost + item.cost_dev_weeks, 2)
             accumulated_risk += item.delta_r
             selected_count += 1
 
-        item.cumulative_cost_weeks = allocated_cost
+        if item.delta_r > 0:
+            running_cost = round(running_cost + item.cost_dev_weeks, 2)
+            running_risk += item.delta_r
+        item.cumulative_cost_weeks = running_cost
         item.cumulative_risk_pct = round(
-            (accumulated_risk / total_estate_risk * 100.0) if total_estate_risk > 0 else 100.0,
+            (running_risk / total_estate_risk * 100.0) if total_estate_risk > 0 else 100.0,
             1,
         )
 

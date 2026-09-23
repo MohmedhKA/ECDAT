@@ -135,8 +135,67 @@ def _probe_interface_mtu() -> int:
         pass
     return 1500
 
+IP_MTU_DISCOVER = 10
+IP_PMTUDISC_DO = 2
+IP_MTU = 14
+
+def _probe_df_path_mtu(target_host: str, port: int = 53, timeout: float = 2.0) -> Optional[int]:
+    """
+    Performs unprivileged Path MTU Discovery (RFC 1191) using UDP SOCK_DGRAM
+    with the IP Don't-Fragment (DF) bit set (IP_PMTUDISC_DO).
+    Requires zero root privileges or raw socket capabilities (CAP_NET_RAW).
+    Catches kernel errno.EMSGSIZE to detect bottleneck MTU limits.
+    """
+    if sys.platform != "linux":
+        return None
+
+    sock = None
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(timeout)
+
+        # Set IP_MTU_DISCOVER to IP_PMTUDISC_DO (sets DF bit on all outgoing IP packets)
+        if hasattr(socket, "IP_MTU_DISCOVER") and hasattr(socket, "IP_PMTUDISC_DO"):
+            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MTU_DISCOVER, socket.IP_PMTUDISC_DO)
+        else:
+            sock.setsockopt(socket.IPPROTO_IP, IP_MTU_DISCOVER, IP_PMTUDISC_DO)
+
+        # Resolve IP
+        target_ip = socket.gethostbyname(target_host)
+        sock.connect((target_ip, port))
+
+        # Probe candidate sizes: 1500 (Ethernet), 1420 (WireGuard/VPN), 1280 (IPv6 min)
+        probe_sizes = [1500, 1420, 1280]
+        detected_pmtu = None
+
+        for target_mtu in probe_sizes:
+            payload_len = target_mtu - 28  # 20 B IP + 8 B UDP
+            try:
+                sock.send(b"\x00" * payload_len)
+                try:
+                    learned = sock.getsockopt(socket.IPPROTO_IP, IP_MTU)
+                    if 500 <= learned <= 9000:
+                        detected_pmtu = learned
+                        break
+                except Exception:
+                    detected_pmtu = target_mtu
+                    break
+            except OSError as e:
+                import errno
+                if e.errno == errno.EMSGSIZE:
+                    continue
+                else:
+                    break
+
+        return detected_pmtu
+    except Exception:
+        return None
+    finally:
+        if sock:
+            sock.close()
+
 def _probe_socket_mss(target_host: str, port: int = 443, timeout: float = 1.5) -> Optional[int]:
-    """Attempts unprivileged TCP socket MSS inspection via TCP_MAXSEG."""
+    """Attempts unprivileged TCP socket MSS inspection via TCP_MAXSEG (RFC 4821)."""
     try:
         with socket.create_connection((target_host, port), timeout=timeout) as sock:
             # TCP_MAXSEG socket option
@@ -187,9 +246,20 @@ def probe_network_mtu(
 
     # 2. Socket-based active probe (if target_host provided)
     if target_host:
-        probed_mss = _probe_socket_mss(target_host, port=port)
-        if probed_mss is not None:
-            effective_mtu = probed_mss + TCP_IP_HEADER_OVERHEAD
+        # First attempt real DF-bit PMTUD via unprivileged UDP socket
+        probed_mtu = _probe_df_path_mtu(target_host, port=port if port != 443 else 53)
+        probing_method = f"active_df_pmtud:{target_host}"
+
+        if probed_mtu is None:
+            # Fallback to TCP_MAXSEG inspection (RFC 4821)
+            probed_mss = _probe_socket_mss(target_host, port=port)
+            if probed_mss is not None:
+                probed_mtu = probed_mss + TCP_IP_HEADER_OVERHEAD
+                probing_method = f"socket_mss:{target_host}:{port}"
+
+        if probed_mtu is not None:
+            effective_mtu = probed_mtu
+            effective_mss = effective_mtu - TCP_IP_HEADER_OVERHEAD
             if effective_mtu < 1280:
                 profile = RouteProfile.CONSTRAINED
                 drop_risk = "HIGH"
@@ -206,11 +276,11 @@ def probe_network_mtu(
             return PathMTUResult(
                 route_profile=profile,
                 effective_mtu=effective_mtu,
-                mss=probed_mss,
-                probing_method=f"socket_mss:{target_host}:{port}",
+                mss=effective_mss,
+                probing_method=probing_method,
                 df_bit_strict=df_strict,
                 middlebox_drop_risk=drop_risk,
-                pqc_flight_estimates=calculate_pqc_flight_estimates(probed_mss, df_strict),
+                pqc_flight_estimates=calculate_pqc_flight_estimates(effective_mss, df_strict),
             )
 
     # 3. Local interface / CNI heuristic inspection

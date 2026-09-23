@@ -1,19 +1,33 @@
 """
-ECDAT Theia Go Binary Scanner Bridge:
+ECDAT Theia Go Binary Scanner Bridge & Native Certificate Fallback:
 Invokes the compiled Go binary (cbomkit-theia) to scan directory trees for
 cryptographic certificates (X.509 PEM/DER), private/public keys, and keystores.
 Normalizes discovered CycloneDX 1.6 / 1.7 CBOM components into ECDAT CryptoAsset models.
+
+Go certificate scanning utilizes cbomkit-theia, an open-source tool developed by the
+Linux Foundation Post-Quantum Cryptography Alliance (PQCA).
+When cbomkit-theia is absent or in environments without a Go runtime, ECDAT seamlessly
+activates its native ASN.1 X.509 and PKCS#12 fallback scanner with automatic quarantine of
+password-protected keystores to the Unknowns Ledger.
 """
 
 import os
 import sys
 import json
 import shutil
+import hashlib
 import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
-from ecdat.models import CryptoAsset, PrimitiveType, XTier, EvidenceLevel, IntentClass
+from cryptography import x509
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec, rsa, ed25519, dsa
+from cryptography.hazmat.primitives.serialization import pkcs12
+
+from ecdat.models import CryptoAsset, PrimitiveType, XTier, EvidenceLevel, IntentClass, UnknownEntry
+from ecdat.scanners.filters import should_scan_file
+from ecdat.scanners.factory import CryptoAssetFactory
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_THEIA_BINARY_PATH = REPO_ROOT / "bin" / "cbomkit-theia"
@@ -32,60 +46,6 @@ def find_theia_binary() -> Optional[Path]:
         return Path(which_bin)
 
     return None
-
-def run_theia_scan(
-    target_dir: str,
-    theia_bin: Optional[Path] = None,
-    timeout_seconds: int = 60,
-) -> List[CryptoAsset]:
-    """
-    Executes cbomkit-theia against target_dir and returns discovered CryptoAsset models.
-    """
-    bin_path = theia_bin or find_theia_binary()
-    if not bin_path or not bin_path.exists():
-        # Graceful fallback if binary is absent
-        return []
-
-    target_path = Path(target_dir).resolve()
-    if not target_path.exists():
-        return []
-
-    cmd = [str(bin_path), "dir", str(target_path), "--log-level", "warn"]
-
-    try:
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            check=False,
-        )
-    except Exception:
-        return []
-
-    stdout_clean = proc.stdout.strip()
-    if not stdout_clean:
-        return []
-
-    # cbomkit-theia might output JSON starting after log lines
-    json_start = stdout_clean.find("{")
-    if json_start == -1:
-        return []
-
-    json_str = stdout_clean[json_start:]
-    try:
-        bom_data = json.loads(json_str)
-    except json.JSONDecodeError:
-        return []
-
-    components = bom_data.get("components") or []
-    return parse_theia_components(components, base_dir=target_path)
-
-import hashlib
-from cryptography import x509
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa, ed25519, dsa
-from ecdat.scanners.filters import should_scan_file
 
 def inspect_x509_certificate(cert_bytes: bytes) -> Optional[Dict[str, Any]]:
     """
@@ -169,6 +129,236 @@ def inspect_x509_certificate(cert_bytes: bytes) -> Optional[Dict[str, Any]]:
         "issuer": issuer_str,
         "not_valid_after": not_valid_after,
     }
+
+def scan_native_certificates_and_keys(
+    target_dir: Path,
+    unknowns_ledger: Optional[List[Any]] = None,
+) -> List[CryptoAsset]:
+    """
+    Native Python filesystem scanner for certificates, private/public keys, and keystores.
+    Used when the Linux Foundation PQCA cbomkit-theia Go binary is absent or unexecutable.
+    Quarantines password-protected PKCS#12 (.p12/.pfx) keystores safely to the Unknowns Ledger.
+    """
+    discovered_assets: List[CryptoAsset] = []
+    seen_cert_fingerprints: Dict[str, CryptoAsset] = {}
+    seen_identifiers = set()
+    cert_files = set()
+
+    CERT_EXTS = {".crt", ".cer", ".pem"}
+    KEY_EXTS = {".key", ".sk"}
+    P12_EXTS = {".p12", ".pfx"}
+
+    for root, dirs, files in os.walk(target_dir):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("node_modules", "dist", "build", "target")]
+        for fname in files:
+            file_path = Path(root) / fname
+            try:
+                rel_path = str(file_path.relative_to(target_dir))
+            except ValueError:
+                rel_path = str(file_path)
+
+            if not should_scan_file(rel_path):
+                continue
+
+            sfx = file_path.suffix.lower()
+
+            # 1. PKCS#12 Keystores (.p12, .pfx)
+            if sfx in P12_EXTS:
+                try:
+                    data = file_path.read_bytes()
+                    try:
+                        p12_key, p12_cert, p12_extra = pkcs12.load_key_and_certificates(data, password=None)
+                    except (TypeError, ValueError):
+                        p12_key, p12_cert, p12_extra = pkcs12.load_key_and_certificates(data, password=b"")
+
+                    if p12_cert:
+                        cert_der = p12_cert.public_bytes(serialization.Encoding.DER)
+                        cert_info = inspect_x509_certificate(cert_der)
+                        if cert_info:
+                            asset = CryptoAssetFactory.create_asset(
+                                asset_prefix="THEIA-CERT",
+                                index=len(discovered_assets) + 1,
+                                component_name=f"p12_cert:{file_path.stem}",
+                                algorithm=cert_info["algorithm"],
+                                key_size=cert_info["key_size"],
+                                primitive_type=cert_info["primitive_type"],
+                                file_path=rel_path,
+                                line_number=1,
+                                tier=XTier.OPERATIONAL,
+                                has_shredding=False,
+                                evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
+                                evidence_source="native_bridge:p12_keystore",
+                                matched_code=f"Subject: {cert_info['subject']}",
+                                language="asn1",
+                                description=f"PKCS#12 Certificate ({cert_info['algorithm']})",
+                                extra_properties={
+                                    "source": "native_python_fallback",
+                                    "assetType": "certificate",
+                                    "fingerprint": cert_info["fingerprint"],
+                                },
+                            )
+                            discovered_assets.append(asset)
+                except Exception as e:
+                    if unknowns_ledger is not None:
+                        unknowns_ledger.append(
+                            UnknownEntry(
+                                item_path=rel_path,
+                                category="ENCRYPTED_KEYSTORE",
+                                reason=f"Password-protected PKCS#12 (.p12/.pfx) keystore quarantined: {type(e).__name__}",
+                                recommended_action="Provide keystore password or export public certificate via 'openssl pkcs12 -in <file> -nokeys -out cert.pem'",
+                            )
+                        )
+                continue
+
+            # 2. X.509 Certificates and Keys
+            if sfx in CERT_EXTS or sfx in KEY_EXTS:
+                try:
+                    data = file_path.read_bytes()
+                except Exception:
+                    continue
+
+                cert_info = inspect_x509_certificate(data)
+                if cert_info:
+                    fingerprint = cert_info["fingerprint"]
+                    if fingerprint in seen_cert_fingerprints:
+                        seen_cert_fingerprints[fingerprint].raw_properties.setdefault("replicas", []).append(rel_path)
+                        cert_files.add(rel_path)
+                        continue
+
+                    asset = CryptoAssetFactory.create_asset(
+                        asset_prefix="THEIA-CERT",
+                        index=len(discovered_assets) + 1,
+                        component_name=f"x509_cert:{file_path.stem}",
+                        algorithm=cert_info["algorithm"],
+                        key_size=cert_info["key_size"],
+                        primitive_type=cert_info["primitive_type"],
+                        file_path=rel_path,
+                        line_number=1,
+                        tier=XTier.OPERATIONAL,
+                        has_shredding=False,
+                        evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
+                        evidence_source="native_bridge:x509_filesystem",
+                        matched_code=f"Subject: {cert_info['subject']}",
+                        language="asn1",
+                        description=f"X.509 Certificate ({cert_info['algorithm']})",
+                        extra_properties={
+                            "source": "native_python_fallback",
+                            "assetType": "certificate",
+                            "subject": cert_info["subject"],
+                            "issuer": cert_info["issuer"],
+                            "notValidAfter": cert_info["not_valid_after"],
+                            "fingerprint": fingerprint,
+                            "replicas": [rel_path],
+                        },
+                    )
+                    seen_cert_fingerprints[fingerprint] = asset
+                    discovered_assets.append(asset)
+                    cert_files.add(rel_path)
+                    continue
+
+                key_type = "private-key" if b"PRIVATE KEY" in data else ("public-key" if b"PUBLIC KEY" in data else None)
+                if key_type:
+                    if key_type == "public-key" and rel_path in cert_files:
+                        continue
+                    key_hash = hashlib.sha256(data).hexdigest()
+                    if key_hash in seen_identifiers:
+                        continue
+                    seen_identifiers.add(key_hash)
+
+                    text_sample = data[:4096].decode("utf-8", errors="ignore")
+                    alg_name = "RSA-2048"
+                    key_size = 2048
+                    prim = PrimitiveType.KEY_EXCHANGE if key_type == "private-key" else PrimitiveType.SIGNATURE
+                    tier = XTier.ARCHIVAL if key_type == "private-key" else XTier.OPERATIONAL
+
+                    if "RSA" in text_sample:
+                        alg_name = "RSA-2048"
+                    elif "EC PRIVATE" in text_sample or "ECDSA" in text_sample or "prime256v1" in text_sample:
+                        alg_name = "ECDSA-P256"
+                        key_size = 256
+                        prim = PrimitiveType.SIGNATURE
+                    elif "ED25519" in text_sample:
+                        alg_name = "Ed25519"
+                        key_size = 256
+                        prim = PrimitiveType.SIGNATURE
+
+                    asset = CryptoAssetFactory.create_asset(
+                        asset_prefix="THEIA-KEY",
+                        index=len(discovered_assets) + 1,
+                        component_name=f"keyfile:{file_path.stem}_{key_type}",
+                        algorithm=alg_name,
+                        key_size=key_size,
+                        primitive_type=prim,
+                        file_path=rel_path,
+                        line_number=1,
+                        tier=tier,
+                        has_shredding=False,
+                        evidence_level=EvidenceLevel.E3_CONFIG_CONFIRMED,
+                        evidence_source="native_bridge:key_filesystem",
+                        matched_code=f"Key: {alg_name} ({key_type})",
+                        language="asn1",
+                        description=f"Keyfile {alg_name} ({key_type})",
+                        extra_properties={
+                            "source": "native_python_fallback",
+                            "assetType": "related-crypto-material",
+                            "keyType": key_type,
+                            "format": "PEM",
+                        },
+                    )
+                    discovered_assets.append(asset)
+
+    return discovered_assets
+
+def run_theia_scan(
+    target_dir: str,
+    theia_bin: Optional[Path] = None,
+    timeout_seconds: int = 60,
+    unknowns_ledger: Optional[List[Any]] = None,
+) -> List[CryptoAsset]:
+    """
+    Executes cbomkit-theia against target_dir and returns discovered CryptoAsset models.
+    Falls back to native Python ASN.1 certificate inspection if binary is absent or fails.
+    """
+    target_path = Path(target_dir).resolve()
+    if not target_path.exists():
+        return []
+
+    bin_path = theia_bin or find_theia_binary()
+    if not bin_path or not bin_path.exists():
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+
+    cmd = [str(bin_path), "dir", str(target_path), "--log-level", "warn"]
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except Exception:
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+
+    stdout_clean = proc.stdout.strip()
+    if not stdout_clean:
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+
+    json_start = stdout_clean.find("{")
+    if json_start == -1:
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+
+    json_str = stdout_clean[json_start:]
+    try:
+        bom_data = json.loads(json_str)
+    except json.JSONDecodeError:
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+
+    components = bom_data.get("components") or []
+    theia_assets = parse_theia_components(components, base_dir=target_path)
+    if not theia_assets:
+        return scan_native_certificates_and_keys(target_path, unknowns_ledger=unknowns_ledger)
+    return theia_assets
 
 def parse_theia_components(
     components: List[Dict[str, Any]],

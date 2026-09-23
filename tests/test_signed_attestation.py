@@ -92,3 +92,63 @@ def test_signed_dsse_envelope_root_mismatch():
     is_valid, msg, _ = verify_dsse_envelope(envelope, pubkey_pem, expected_root_hex=wrong_root)
     assert is_valid is False
     assert "ROOT MISMATCH" in msg
+
+def test_mldsa65_verification_and_key_persistence(tmp_path):
+    from ecdat.attestation.envelope import get_or_create_signing_keys, export_mldsa_public_key_pem
+
+    # 1. Generate keys in tmp_path
+    key_dir = tmp_path / "keys"
+    ed_priv, ed_pub, ml_priv, ml_pub = get_or_create_signing_keys(key_dir=key_dir)
+
+    assert (key_dir / "trust_root_ed25519.key").exists()
+    assert (key_dir / "trust_root_mldsa65.key").exists()
+    assert (key_dir / "trust_root_ed25519.pub").exists()
+    assert (key_dir / "trust_root_mldsa65.pub").exists()
+
+    # 2. Reload keys to ensure persistence works
+    ed_priv2, ed_pub2, ml_priv2, ml_pub2 = get_or_create_signing_keys(key_dir=key_dir)
+    assert ed_pub.public_bytes_raw() == ed_pub2.public_bytes_raw()
+    assert ml_pub.public_bytes_raw() == ml_pub2.public_bytes_raw()
+
+    # 3. Create envelope using persistent keys
+    root_hex = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+    statement = build_intoto_statement(
+        project_name="persistent_key_test",
+        merkle_root_hex=root_hex,
+        target_path="/app",
+        total_assets=2,
+        evidence_distribution={},
+        intent_distribution={},
+        cams_distribution={},
+        route_profile="STANDARD",
+        effective_mtu=1500,
+        unknowns_ledger=[],
+    )
+
+    envelope, pubkey, ed_pem = create_signed_dsse_envelope(
+        statement,
+        private_key=ed_priv2,
+        mldsa_private_key=ml_priv2,
+    )
+
+    # Confirm envelope has real ML-DSA-65 signature
+    ml_sig_entry = next((s for s in envelope["signatures"] if s.get("scheme") == "ML-DSA-65"), None)
+    assert ml_sig_entry is not None
+    assert ml_sig_entry["keyid"].startswith("mldsa65:")
+    assert len(base64.b64decode(ml_sig_entry["sig"])) > 3000  # Real ML-DSA-65 signature is ~3.3 KB
+
+    # 4. Verify with ML-DSA-65 public key alone
+    ml_pem = export_mldsa_public_key_pem(ml_pub2)
+    is_valid, msg, stmt = verify_dsse_envelope(envelope, ml_pem, expected_root_hex=root_hex)
+    assert is_valid is True
+    assert "VERIFIED" in msg
+
+    # 5. Verify dual Ed25519 + ML-DSA-65
+    is_valid_dual, msg_dual, stmt_dual = verify_dsse_envelope(
+        envelope,
+        ed_pem,
+        expected_root_hex=root_hex,
+        mldsa_public_key_pem=ml_pem,
+    )
+    assert is_valid_dual is True
+    assert "VERIFIED" in msg_dual

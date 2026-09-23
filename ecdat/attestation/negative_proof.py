@@ -19,7 +19,7 @@ from ecdat.models import (
 )
 
 FORBIDDEN_LEGACY_ALGORITHMS = {
-    "DES", "3DES", "TRIPLEDES", "RC4", "ARCFOUR", "MD4", "SHA1-SIGNATURE"
+    "DES", "3DES", "TRIPLEDES", "RC4", "ARCFOUR", "MD4", "MD5", "SHA1-SIGNATURE"
 }
 
 def generate_negative_proof_certificate(
@@ -34,7 +34,7 @@ def generate_negative_proof_certificate(
     Generates a formal, mathematically bounded negative proof certificate.
     Asserts:
     1. Scope boundary: audited source files, commit/path hash, and quarantined unknowns.
-    2. Zero uninspected forbidden legacy ciphers (DES, 3DES, RC4).
+    2. Zero uninspected forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5).
     3. Boundary quarantine integrity: all uninspected paths are logged with auditor guidance.
     """
     p = Path(target_path).resolve()
@@ -46,7 +46,7 @@ def generate_negative_proof_certificate(
     found_forbidden = [alg for alg in FORBIDDEN_LEGACY_ALGORITHMS if any(alg in da for da in detected_algorithms)]
     assertion_legacy = {
         "claim_id": "NP-CLAIM-001",
-        "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4) detected within audited perimeter",
+        "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5) detected within audited perimeter",
         "status": "PASSED" if not found_forbidden else "FAILED",
         "details": "No forbidden algorithms detected" if not found_forbidden else f"Found forbidden: {found_forbidden}",
     }

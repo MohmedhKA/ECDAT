@@ -96,6 +96,33 @@ def test_remediation_java_cipher_instance(tmp_path):
     assert "AES/GCM/NoPadding" in src_file.read_text(encoding="utf-8")
 
 
+def test_remediation_common_legacy_literal_forms(tmp_path):
+    java_file = tmp_path / "Legacy.java"
+    java_file.write_text('Cipher c = Cipher.getInstance("DES");\n', encoding="utf-8")
+    python_file = tmp_path / "legacy_hash.py"
+    python_file.write_text('digest = hashlib.new("md5", data)\n', encoding="utf-8")
+    node_file = tmp_path / "legacy.js"
+    node_file.write_text("const c = crypto.createCipheriv('des-ede3-cbc', key, iv);\n", encoding="utf-8")
+
+    engine = RemediationEngine(journal_path=tmp_path / ".journal.json")
+    assert engine.generate_patch(java_file, rule="REPLACE_DES_AES_GCM").has_changes is True
+    assert engine.generate_patch(python_file, rule="REPLACE_MD5_SHA256").has_changes is True
+    assert engine.generate_patch(node_file, rule="REPLACE_DES_AES_GCM").has_changes is True
+
+
+def test_remediation_blowfish_key_generator_constant_size(tmp_path):
+    source = tmp_path / "CryptoTest.java"
+    source.write_text(
+        'KeyGenerator keyGen = KeyGenerator.getInstance("Blowfish");\n'
+        'keyGen.init(Math.abs(64));\n',
+        encoding="utf-8",
+    )
+    patch = RemediationEngine().generate_patch(source, rule="REPLACE_DES_AES_GCM")
+    assert patch.status == "READY"
+    assert "KeyGenerator.getInstance(\"AES\")" in patch.patched_content
+    assert "keyGen.init(256);" in patch.patched_content
+
+
 def test_tampering_detection_prevents_corrupt_undo(tmp_path):
     src_file = tmp_path / "test.py"
     src_file.write_text("h = hashlib.md5(x)\n", encoding="utf-8")
@@ -194,3 +221,28 @@ def test_zero_regex_compliance():
             assert "re.compile" not in content, f"Zero-regex violation: 're.compile' found in {fpath}"
             assert "re.search" not in content, f"Zero-regex violation: 're.search' found in {fpath}"
             assert "re." not in content, f"Zero-regex violation: 're.' found in {fpath}"
+
+def test_cst_format_preservation_and_non_crypto_string_protection(tmp_path):
+    py_file = tmp_path / "format_test.py"
+    # Notice: contains comments, custom spacing, and non-cryptographic string mentioning 'md5'
+    original = (
+        "# Security utility module\n"
+        "def compute_hash(data):\n"
+        "    # Note: legacy hash below\n"
+        "    digest = hashlib.md5(data).hexdigest()\n"
+        "    log_msg = \"calculating md5 checksum for audit log\"\n"
+        "    return digest, log_msg\n"
+    )
+    py_file.write_text(original, encoding="utf-8")
+
+    engine = RemediationEngine(journal_path=tmp_path / ".journal.json")
+    patch = engine.generate_patch(py_file, rule="REPLACE_MD5_SHA256")
+    assert patch.has_changes is True
+
+    # hashlib.md5 must be rewritten to hashlib.sha256
+    assert "hashlib.sha256(data)" in patch.patched_content
+    # Comments must be completely preserved
+    assert "# Security utility module" in patch.patched_content
+    assert "# Note: legacy hash below" in patch.patched_content
+    # Non-crypto string literal must NOT be touched
+    assert "calculating md5 checksum for audit log" in patch.patched_content

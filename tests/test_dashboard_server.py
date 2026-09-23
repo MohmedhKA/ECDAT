@@ -272,6 +272,47 @@ def test_api_remediation_preview_and_protection(tmp_path):
     assert "PROTECTED REPOSITORY" in resp_guard.json()["error"]
 
 
+def test_api_remediation_asset_contract_and_stale_preview(tmp_path):
+    reports_root = tmp_path / "reports"
+    app = create_fleet_app(reports_dir=reports_root)
+    source = tmp_path / "crypto_service.py"
+    source.write_text("import hashlib\nhash = hashlib.md5(data)\n", encoding="utf-8")
+    asset = {
+        "asset_id": "ASSET-001",
+        "algorithm": "MD5",
+        "line_number": 2,
+        "raw_properties": {"language": "python", "matched_code": "hashlib.md5(data)", "cwe": "CWE-328"},
+    }
+    body = json.dumps({"file_path": str(source), "rule": "REPLACE_MD5_SHA256", "asset": asset}).encode("utf-8")
+    preview = call_asgi(app, "POST", "/api/remediation/preview", headers={"Content-Type": "application/json"}, body=body)
+    assert preview.status_code == 200
+    preview_data = preview.json()
+    assert preview_data["remediation_status"] == "READY"
+    assert preview_data["has_changes"] is True
+
+    source.write_text("changed before apply\n", encoding="utf-8")
+    stale_body = json.dumps({
+        "file_path": str(source),
+        "rule": "REPLACE_MD5_SHA256",
+        "asset": asset,
+        "before_sha256": preview_data["before_sha256"],
+    }).encode("utf-8")
+    stale = call_asgi(app, "POST", "/api/remediation/apply", headers={"Content-Type": "application/json"}, body=stale_body)
+    assert stale.status_code == 409
+    assert stale.json()["status"] == "stale_preview"
+
+    semantic_asset = {
+        "asset_id": "ASSET-002",
+        "algorithm": "RSA-1024",
+        "line_number": 1,
+        "raw_properties": {"language": "python", "matched_code": "rsa.generate_private_key()"},
+    }
+    semantic_body = json.dumps({"file_path": str(source), "rule": "REPLACE_CBC_GCM", "asset": semantic_asset}).encode("utf-8")
+    semantic = call_asgi(app, "POST", "/api/remediation/preview", headers={"Content-Type": "application/json"}, body=semantic_body)
+    assert semantic.status_code == 200
+    assert semantic.json()["remediation_status"] == "UNSUPPORTED"
+
+
 def test_fleet_targets_endpoint(tmp_path):
     reports_root = tmp_path / "reports"
     app = create_fleet_app(reports_dir=reports_root)

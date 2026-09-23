@@ -11,7 +11,7 @@ import argparse
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 
-from cryptography.hazmat.primitives.asymmetric import ed25519
+from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
 
@@ -21,11 +21,12 @@ def verify_dsse_envelope(
     envelope: Dict[str, Any],
     public_key_pem: str,
     expected_root_hex: Optional[str] = None,
+    mldsa_public_key_pem: Optional[str] = None,
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
     """
     Verifies an in-toto DSSE envelope:
     1. Validates envelope payloadType is application/vnd.in-toto+json
-    2. Reconstructs DSSE PAE and verifies Ed25519 cryptographic signature
+    2. Reconstructs DSSE PAE and verifies Ed25519 and/or ML-DSA-65 cryptographic signatures
     3. Reconciles subject digest with expected Merkle root
     Returns (is_valid, status_message, parsed_statement).
     """
@@ -47,32 +48,56 @@ def verify_dsse_envelope(
     if not signatures:
         return False, "No signatures found in DSSE envelope", None
 
-    # Find the Ed25519 signature
-    ed25519_sig_entry = None
-    for s in signatures:
-        if s.get("keyid", "").startswith("ed25519:"):
-            ed25519_sig_entry = s
-            break
-    if not ed25519_sig_entry:
-        ed25519_sig_entry = signatures[0]
-
-    try:
-        sig_bytes = base64.b64decode(ed25519_sig_entry["sig"])
-    except Exception as e:
-        return False, f"Base64 decoding failed for signature: {e}", None
-
-    # 2. Reconstruct PAE and verify signature
+    # Reconstruct PAE
     pae_bytes = compute_dsse_pae(payload_type, payload_bytes)
 
+    # 2. Verify primary public key (Ed25519 or ML-DSA-65)
     try:
         pubkey = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
-        if not isinstance(pubkey, ed25519.Ed25519PublicKey):
-            return False, "Public key is not an Ed25519 key", None
-        pubkey.verify(sig_bytes, pae_bytes)
-    except InvalidSignature:
-        return False, "CRYPTOGRAPHIC ERROR: Ed25519 signature verification failed! Tampered payload detected.", None
     except Exception as e:
-        return False, f"Public key loading or verification error: {e}", None
+        return False, f"Public key PEM loading error: {e}", None
+
+    if isinstance(pubkey, ed25519.Ed25519PublicKey):
+        ed_sig_entry = next((s for s in signatures if s.get("keyid", "").startswith("ed25519:") or s.get("scheme") == "ed25519"), None)
+        if not ed_sig_entry:
+            return False, "No Ed25519 signature entry found in envelope signatures", None
+        try:
+            sig_bytes = base64.b64decode(ed_sig_entry["sig"])
+            pubkey.verify(sig_bytes, pae_bytes)
+        except InvalidSignature:
+            return False, "CRYPTOGRAPHIC ERROR: Ed25519 signature verification failed! Tampered payload detected.", None
+        except Exception as e:
+            return False, f"Ed25519 verification error: {e}", None
+
+    elif isinstance(pubkey, mldsa.MLDSA65PublicKey):
+        ml_sig_entry = next((s for s in signatures if s.get("keyid", "").startswith("mldsa65:") or s.get("scheme") == "ML-DSA-65"), None)
+        if not ml_sig_entry:
+            return False, "No ML-DSA-65 signature entry found in envelope signatures", None
+        try:
+            sig_bytes = base64.b64decode(ml_sig_entry["sig"])
+            pubkey.verify(sig_bytes, pae_bytes)
+        except InvalidSignature:
+            return False, "CRYPTOGRAPHIC ERROR: ML-DSA-65 signature verification failed! Tampered payload detected.", None
+        except Exception as e:
+            return False, f"ML-DSA-65 verification error: {e}", None
+    else:
+        return False, f"Unsupported public key type: {type(pubkey).__name__}", None
+
+    # Optional secondary ML-DSA-65 verification if explicitly passed
+    if mldsa_public_key_pem:
+        try:
+            ml_pubkey = serialization.load_pem_public_key(mldsa_public_key_pem.encode("utf-8"))
+            if not isinstance(ml_pubkey, mldsa.MLDSA65PublicKey):
+                return False, "Specified mldsa_public_key is not an MLDSA65PublicKey", None
+            ml_sig_entry = next((s for s in signatures if s.get("keyid", "").startswith("mldsa65:") or s.get("scheme") == "ML-DSA-65"), None)
+            if not ml_sig_entry:
+                return False, "No ML-DSA-65 signature entry found in envelope", None
+            sig_bytes = base64.b64decode(ml_sig_entry["sig"])
+            ml_pubkey.verify(sig_bytes, pae_bytes)
+        except InvalidSignature:
+            return False, "CRYPTOGRAPHIC ERROR: ML-DSA-65 signature verification failed! Tampered payload detected.", None
+        except Exception as e:
+            return False, f"ML-DSA-65 verification error: {e}", None
 
     # 3. Parse and validate statement
     try:
@@ -101,6 +126,7 @@ def verify_dsse_envelope_from_file(
     envelope_path: str,
     public_key_path: str,
     expected_root_hex: Optional[str] = None,
+    mldsa_public_key_path: Optional[str] = None,
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
     """Convenience helper to verify DSSE envelope from filesystem paths."""
     env_p = Path(envelope_path).resolve()
@@ -121,6 +147,16 @@ def verify_dsse_envelope_from_file(
     except Exception as e:
         return False, f"Failed to read public key PEM: {e}", None
 
+    mldsa_pubkey_pem = None
+    if mldsa_public_key_path:
+        ml_p = Path(mldsa_public_key_path).resolve()
+        if not ml_p.exists():
+            return False, f"ML-DSA public key file not found: {ml_p}", None
+        try:
+            mldsa_pubkey_pem = ml_p.read_text(encoding="utf-8")
+        except Exception as e:
+            return False, f"Failed to read ML-DSA public key PEM: {e}", None
+
     clean_root = None
     if expected_root_hex:
         r_path = Path(expected_root_hex)
@@ -129,12 +165,13 @@ def verify_dsse_envelope_from_file(
         else:
             clean_root = expected_root_hex.strip()
 
-    return verify_dsse_envelope(envelope, pubkey_pem, clean_root)
+    return verify_dsse_envelope(envelope, pubkey_pem, clean_root, mldsa_public_key_pem=mldsa_pubkey_pem)
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT in-toto DSSE Attestation Envelope Verifier")
     parser.add_argument("--envelope", required=True, help="Path to attestation.dsse.json file")
-    parser.add_argument("--public-key", required=True, help="Path to attestation_pubkey.pem file")
+    parser.add_argument("--public-key", required=True, help="Path to Ed25519 (or ML-DSA-65) public key PEM file")
+    parser.add_argument("--mldsa-key", required=False, help="Path to ML-DSA-65 public key PEM file for dual verification")
     parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
     args = parser.parse_args()
@@ -152,6 +189,14 @@ def main() -> int:
     envelope = json.loads(env_path.read_text(encoding="utf-8"))
     pubkey_pem = pub_path.read_text(encoding="utf-8")
 
+    mldsa_pubkey_pem = None
+    if args.mldsa_key:
+        ml_p = Path(args.mldsa_key).resolve()
+        if not ml_p.exists():
+            print(f"[-] Error: ML-DSA public key file not found: {ml_p}", file=sys.stderr)
+            return 1
+        mldsa_pubkey_pem = ml_p.read_text(encoding="utf-8")
+
     expected_root = None
     if args.root:
         r_path = Path(args.root)
@@ -160,7 +205,12 @@ def main() -> int:
         else:
             expected_root = args.root.strip()
 
-    is_valid, msg, stmt = verify_dsse_envelope(envelope, pubkey_pem, expected_root)
+    is_valid, msg, stmt = verify_dsse_envelope(
+        envelope,
+        pubkey_pem,
+        expected_root,
+        mldsa_public_key_pem=mldsa_pubkey_pem,
+    )
 
     if is_valid:
         proj_name = stmt["subject"][0].get("name", "unknown") if stmt else "unknown"

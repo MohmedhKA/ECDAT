@@ -6,7 +6,6 @@ and the DSIS 4-class functional security intent.
 """
 
 import ast
-import re
 from typing import List, Dict, Optional, Set, Any
 from pydantic import BaseModel, Field
 from ecdat.models import XTier, IntentClass, EvidenceLevel, AgilityLevel
@@ -67,7 +66,7 @@ class CryptoTaintVisitor(ast.NodeVisitor):
         if isinstance(node.value, ast.Call):
             func_name = self._get_call_name(node.value.func).lower()
             # Tokenize to avoid matching non-crypto substrings like 'signal' or 'design'
-            tokens = set(re.split(r"[._\s]+", func_name))
+            tokens = set(func_name.replace(".", " ").replace("_", " ").split())
             if any(kw in tokens or kw in func_name.split(".") for kw in CRYPTO_GENERATION_KEYWORDS):
                 for target in node.targets:
                     if isinstance(target, ast.Name):
