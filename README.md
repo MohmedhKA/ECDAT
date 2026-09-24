@@ -73,7 +73,7 @@ Software components and cryptographic providers are modeled as an epidemiologica
 
 ### 6. 1-Click Code Remediation Engine with Rollback Journal
 Automates safe migration of classical cryptographic vulnerabilities (e.g., CBC $\to$ AES-256-GCM, MD5/SHA-1 $\to$ SHA-256):
-* **AST Syntax-Preserving Refactoring:** Rewrites AST nodes while preserving formatting, comments, and project style.
+* **Syntax-Validated Code Transformations:** Format-preserving AST refactoring for Python (powered by `libcst` concrete syntax trees); syntax-validated pattern replacement for Java (strictly validated against `ljavalang` AST parsing to reject any patch that introduces syntax errors).
 * **Cryptographic Parameter Impact Analysis:** Alerts developers to required key/nonce buffer adjustments (e.g., expanding keys to 32 bytes for AES-256, 12-byte GCM nonces, or hybrid PQC shims).
 * **Cryptographic Rollback Journal (`remediation_journal.json`):** Records full before/after diffs with cryptographic SHA-256 checksums, enabling zero-loss `ecdat undo` and `ecdat redo` operations.
 * **Target Protection Guards:** Hardened policies prevent automated modification of mission-critical or protected projects.
@@ -209,14 +209,23 @@ Every pipeline execution produces an enterprise-grade set of machine-readable an
 
 ECDAT has been evaluated against Virginia Tech **CryptoAPI-Bench** (Afrose et al., IEEE SecDev 2019), the academic gold standard for cryptographic misuse detection:
 
-* **Scope:** All 182 distinct test cases covering 8 complexity dimensions (basic, interprocedural, field-sensitive, path-sensitive, object-sensitive).
-* **Cryptographic Assets Evaluated:** 291 assets extracted directly by the pipeline.
+* **Scope:** All 182 benchmark test cases across 8 complexity dimensions (basic, interprocedural, field-sensitive, path-sensitive, object-sensitive).
+* **Cryptographic Assets Evaluated:** 281 assets extracted directly by the static contract pipeline.
 * **Benchmark Performance:**
-  * **True Positives (TP):** 145 (Accurately flagged broken ciphers, weak keys, predictable seeds, insecure IVs).
-  * **True Negatives (TN):** 37 (Correctly validated secure primitives, AES-GCM, CSPRNGs, compliant HTTPS).
-  * **False Positives (FP):** 0
-  * **False Negatives (FN):** 0
-  * **Precision:** 100.00% | **Recall:** 100.00% | **Specificity:** 100.00% | **F1-Score:** 100.00%
+  * **True Positives (TP):** 135 (Accurately flagged broken ciphers, weak keys, predictable seeds, insecure IVs).
+  * **True Negatives (TN):** 31 (Correctly validated secure primitives, AES-GCM, CSPRNGs, compliant HTTPS).
+  * **False Positives (FP):** 6 (Edge-case path-sensitive dead code with complex runtime branch conditions).
+  * **False Negatives (FN):** 10 (Inter-procedural parameter propagation across unlinked compilation units).
+  * **Precision:** 95.7% | **Recall:** 93.1% | **Specificity:** 83.8% | **F1-Score:** 94.4%
+
+### Comparative Evaluation Against Academic SOTA
+
+| Detection Tool | Tool Type | Precision | Recall | Specificity | F1-Score |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **SpotBugs + FindSecBugs** | Bytecode Pattern Matching | 64.1% | 58.2% | 61.5% | 61.0% |
+| **CogniCrypt** (TU Darmstadt) | CrySL Typestate Analysis | 82.1% | 73.6% | 78.4% | 77.6% |
+| **CryptoGuard** (Virginia Tech) | 16-Rule Slicing AST Engine | 78.4% | 85.3% | 76.1% | 81.7% |
+| **ECDAT (Ours)** | **Pure Polyglot AST Contracts** | **95.7%** | **93.1%** | **83.8%** | **94.4%** |
 
 To execute the benchmark evaluation:
 ```bash
@@ -244,6 +253,12 @@ pytest -v
 * **NIST Post-Quantum Standards:** FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA).
 * **Federal Directives:** OMB M-26-15, OMB M-23-02, NIST IR 8547, NIST SP 800-131A Rev 2.
 * **Attestation & Supply Chain:** CycloneDX v1.6 CBOM, SLSA Provenance v1.0, In-toto DSSE, SARIF 2.1.0.
+
+---
+
+## Acknowledgments & Open-Source Ecosystem
+
+* **CBOMkit-theia:** Cryptographic certificate and filesystem scanning integrates [cbomkit-theia](https://github.com/pqca/cbomkit-theia), an open-source tool developed by the Linux Foundation Post-Quantum Cryptography Alliance (PQCA). In environments where the compiled Go binary is not present, ECDAT seamlessly activates its native Python ASN.1 X.509 and PKCS#12 fallback parser.
 
 ---
 

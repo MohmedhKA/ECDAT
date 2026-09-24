@@ -69,9 +69,14 @@ lerna-debug.log*
 # Generated scan outputs from pipeline runs (keep repos clean of scan artifacts)
 scans/
 **/ecdat_output/
+!testbeds/sample_crypto_app/ecdat_output/
+!testbeds/sample_crypto_app/ecdat_output/**
+!testbeds/sample_crypto_app/ecdat_output/*.pem
+!testbeds/sample_crypto_app/ecdat_output/*.hex
 testbeds/benchmarks/
 testbeds/*_scan_output/
 *.hex
+!testbeds/sample_crypto_app/ecdat_output/*.hex
 proofs/
 test_probe.txt
 

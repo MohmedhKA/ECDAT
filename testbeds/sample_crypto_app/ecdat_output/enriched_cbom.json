@@ -1,0 +1,1557 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:ecdat-c639e82a0db1b2ef",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-24T06:34:09.380173+00:00",
+    "tools": [
+      {
+        "name": "ECDAT",
+        "version": "2.0.0",
+        "vendor": "SIH26164"
+      }
+    ],
+    "properties": [
+      {
+        "name": "ecdat:merkleRoot",
+        "value": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f"
+      },
+      {
+        "name": "ecdat:totalAssets",
+        "value": "11"
+      },
+      {
+        "name": "ecdat:manifestDependencies",
+        "value": "5"
+      },
+      {
+        "name": "ecdat:unknownsLogged",
+        "value": "4"
+      },
+      {
+        "name": "ecdat:routeProfile",
+        "value": "STANDARD"
+      },
+      {
+        "name": "ecdat:effectiveMtu",
+        "value": "1280"
+      },
+      {
+        "name": "ecdat:dsseSigned",
+        "value": "true"
+      },
+      {
+        "name": "ecdat:targetDir",
+        "value": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "cryptographic-asset",
+      "name": "app:session_key",
+      "bom-ref": "ASSET-001",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "EPHEMERAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "24.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "LOW"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "AUTHENTICATION_SIGNATURE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-DSA-65 (NIST FIPS 204)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "5"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:8",
+            "confirmedSinks": [
+              "client_socket.sendall"
+            ],
+            "intentClassification": "AUTHENTICATION_SIGNATURE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "EPHEMERAL",
+            "effectiveSecrecyYears": 0.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 5,
+            "mtuConstrained": false,
+            "middleboxWarning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "app:auth_token",
+      "bom-ref": "ASSET-002",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "SHORT_TERM"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "22.5"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "LOW"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "OPERATIONAL_UTILITY"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "N/A (Symmetric)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "AES-256-GCM"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:14",
+            "confirmedSinks": [
+              "redis.setex"
+            ],
+            "intentClassification": "OPERATIONAL_UTILITY"
+          },
+          "dataLifetime": {
+            "lifespanTier": "SHORT_TERM",
+            "effectiveSecrecyYears": 1.5,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": null
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "app:encrypted_pan",
+      "bom-ref": "ASSET-003",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "OPERATIONAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "22.5"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "LOW"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "N/A (Symmetric)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "AES-256-GCM"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:20",
+            "confirmedSinks": [
+              "db.session.add"
+            ],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "OPERATIONAL",
+            "effectiveSecrecyYears": 1.5,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": null
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "app:encrypted_archive",
+      "bom-ref": "ASSET-004",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "ARCHIVAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "22.5"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "LOW"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "N/A (Symmetric)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "AES-256-GCM"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:27",
+            "confirmedSinks": [
+              "s3.put_object"
+            ],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "ARCHIVAL",
+            "effectiveSecrecyYears": 1.5,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": null
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "app:signature",
+      "bom-ref": "ASSET-005",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "ECDSA-P256",
+          "keyLength": 256,
+          "primitive": "SIGNATURE"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "HUMAN_REVIEW"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "2.5"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "MANUAL_REVIEW_REQUIRED"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-DSA-65 (NIST FIPS 204)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "5"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:34",
+            "confirmedSinks": [
+              "vendor_client.sync_data"
+            ],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "HUMAN_REVIEW",
+            "effectiveSecrecyYears": 1.5,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 5,
+            "mtuConstrained": false,
+            "middleboxWarning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "app:token_blob",
+      "bom-ref": "ASSET-006",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "HUMAN_REVIEW"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "2.5"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "MANUAL_REVIEW_REQUIRED"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "N/A (Symmetric)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "AES-256-GCM"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "1.5"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "app.py:39",
+            "confirmedSinks": [
+              "vendor_client.sync_data"
+            ],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "HUMAN_REVIEW",
+            "effectiveSecrecyYears": 1.5,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": true
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": null
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "common_crypto:session_key",
+      "bom-ref": "ASSET-007",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "AES-256-GCM",
+          "keyLength": 256,
+          "primitive": "ENCRYPTION"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "EPHEMERAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "24.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "LOW"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "N/A (Symmetric)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "AES-256-GCM"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "common_crypto.py:8",
+            "confirmedSinks": [],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "EPHEMERAL",
+            "effectiveSecrecyYears": 0.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": false
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": null
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "common_crypto:token_sig",
+      "bom-ref": "ASSET-008",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "ECDSA-P256",
+          "keyLength": 256,
+          "primitive": "SIGNATURE"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "EPHEMERAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "2.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-DSA-65 (NIST FIPS 204)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E1_STATIC_ARTIFACT"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "STATIC_REACHABLE"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "5"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E1_STATIC_ARTIFACT",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "common_crypto.py:13",
+            "confirmedSinks": [],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "EPHEMERAL",
+            "effectiveSecrecyYears": 0.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": false
+          },
+          "runtimeExecutionStatus": "STATIC_REACHABLE",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 5,
+            "mtuConstrained": false,
+            "middleboxWarning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "x509_cert:legacy_ca",
+      "bom-ref": "ASSET-009",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "RSA-2048",
+          "keyLength": 2048,
+          "primitive": "SIGNATURE"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "OPERATIONAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "5.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "AUTHENTICATION_SIGNATURE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "1.8"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-DSA-65 (NIST FIPS 204)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "5.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "5"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E3_CONFIG_CONFIRMED",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "certs/legacy_ca.crt:1",
+            "confirmedSinks": [],
+            "intentClassification": "AUTHENTICATION_SIGNATURE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "OPERATIONAL",
+            "effectiveSecrecyYears": 5.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": false
+          },
+          "runtimeExecutionStatus": "CONFIG_CONFIRMED",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 5,
+            "mtuConstrained": false,
+            "middleboxWarning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "keyfile:legacy_rsa_private-key",
+      "bom-ref": "ASSET-010",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "RSA-2048",
+          "keyLength": 2048,
+          "primitive": "KEY_EXCHANGE"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "ARCHIVAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "10.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "-6.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "CONFIDENTIALITY_ENVELOPE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "8.0"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "X25519MLKEM768 (ECDHE-ML-KEM Hybrid)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-KEM-768 (NIST FIPS 203)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "10.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "1"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E3_CONFIG_CONFIRMED",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "certs/legacy_rsa.key:1",
+            "confirmedSinks": [],
+            "intentClassification": "CONFIDENTIALITY_ENVELOPE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "ARCHIVAL",
+            "effectiveSecrecyYears": 10.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": false
+          },
+          "runtimeExecutionStatus": "CONFIG_CONFIRMED",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 1,
+            "mtuConstrained": false,
+            "middleboxWarning": "STANDARD_ROUTE: ML-KEM-768 (1,184 B) fits within standard 1,500 B MTU. Avoid ML-KEM-1024 (1,568 B) to prevent middlebox packet fragmentation drops."
+          }
+        }
+      }
+    },
+    {
+      "type": "cryptographic-asset",
+      "name": "keyfile:legacy_rsa_public-key",
+      "bom-ref": "ASSET-011",
+      "cryptoProperties": {
+        "assetType": "algorithm",
+        "algorithmProperties": {
+          "name": "RSA-2048",
+          "keyLength": 2048,
+          "primitive": "SIGNATURE"
+        }
+      },
+      "properties": [
+        {
+          "name": "ecdat:x_tier",
+          "value": "OPERATIONAL"
+        },
+        {
+          "name": "ecdat:x_years_effective",
+          "value": "5.0"
+        },
+        {
+          "name": "ecdat:y_max_years",
+          "value": "0.0"
+        },
+        {
+          "name": "ecdat:risk_level",
+          "value": "CRITICAL"
+        },
+        {
+          "name": "ecdat:intent_class",
+          "value": "AUTHENTICATION_SIGNATURE"
+        },
+        {
+          "name": "ecdat:evidence_level",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:exposure_profile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:p_hndl",
+          "value": "1.0"
+        },
+        {
+          "name": "ecdat:r_q_score",
+          "value": "1.8"
+        },
+        {
+          "name": "ecdat:recommended_hybrid",
+          "value": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+        },
+        {
+          "name": "ecdat:recommended_pqc",
+          "value": "ML-DSA-65 (NIST FIPS 204)"
+        },
+        {
+          "name": "ecdat:cams_agility_level",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cams_agility_name",
+          "value": "RIGID"
+        },
+        {
+          "name": "ecdat:cdx966:reachability",
+          "value": "E3_CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:dataLifetimeYears",
+          "value": "5.0"
+        },
+        {
+          "name": "ecdat:cdx966:runtimeStatus",
+          "value": "CONFIG_CONFIRMED"
+        },
+        {
+          "name": "ecdat:cdx966:exposureProfile",
+          "value": "PUBLIC"
+        },
+        {
+          "name": "ecdat:cdx966:camsLevel",
+          "value": "0"
+        },
+        {
+          "name": "ecdat:cdx966:routeProfile",
+          "value": "STANDARD"
+        },
+        {
+          "name": "ecdat:cdx966:pqcSegments",
+          "value": "5"
+        }
+      ],
+      "cdxAttestation": {
+        "discussion966": {
+          "reachabilityProof": {
+            "evidenceLevel": "E3_CONFIG_CONFIRMED",
+            "reachabilityType": "CONFIGURATION_AUDIT",
+            "callLocation": "certs/legacy_rsa.key:1",
+            "confirmedSinks": [],
+            "intentClassification": "AUTHENTICATION_SIGNATURE"
+          },
+          "dataLifetime": {
+            "lifespanTier": "OPERATIONAL",
+            "effectiveSecrecyYears": 5.0,
+            "extractionProvenance": "default",
+            "cryptoShreddingActive": false
+          },
+          "runtimeExecutionStatus": "CONFIG_CONFIRMED",
+          "adversarialExposure": {
+            "exposureProfile": "PUBLIC",
+            "pHndlInterceptionFactor": 1.0,
+            "harvestRiskCategory": "CRITICAL_HARVEST_TARGET"
+          },
+          "camsMaturity": {
+            "agilityLevel": 0,
+            "agilityClassification": "RIGID",
+            "camsDiscountFactor": 0.0,
+            "migrationEffortMultiplier": 1.0
+          },
+          "pathMtuProfile": {
+            "routeProfile": "STANDARD",
+            "effectiveMtuBytes": 1280,
+            "pqcFragmentSegments": 5,
+            "mtuConstrained": false,
+            "middleboxWarning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."
+          }
+        }
+      }
+    }
+  ],
+  "dependencies": [
+    {
+      "package_name": "cryptography",
+      "ecosystem": "pypi",
+      "version": "41.0.0",
+      "manifest_path": "requirements.txt",
+      "category": "CLASSICAL_ASYMMETRIC",
+      "pqc_readiness": "VULNERABLE_CLASSICAL",
+      "description": "Python OpenSSL bindings (classical public key primitives)",
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+    },
+    {
+      "package_name": "pycryptodome",
+      "ecosystem": "pypi",
+      "version": "3.19.0",
+      "manifest_path": "requirements.txt",
+      "category": "CLASSICAL_ASYMMETRIC",
+      "pqc_readiness": "VULNERABLE_CLASSICAL",
+      "description": "Python cryptography library (RSA, DSA, ECC)",
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+    },
+    {
+      "package_name": "@noble/post-quantum",
+      "ecosystem": "npm",
+      "version": "^0.2.0",
+      "manifest_path": "package.json",
+      "category": "POST_QUANTUM",
+      "pqc_readiness": "MIGRATED_PQC",
+      "description": "NIST FIPS 203/204/205 ML-KEM & ML-DSA",
+      "recommendation": "Validated: Post-Quantum standard algorithm"
+    },
+    {
+      "package_name": "node-forge",
+      "ecosystem": "npm",
+      "version": "^1.3.1",
+      "manifest_path": "package.json",
+      "category": "CLASSICAL_ASYMMETRIC",
+      "pqc_readiness": "VULNERABLE_CLASSICAL",
+      "description": "RSA/ECC classical cipher suite (HNDL risk)",
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+    },
+    {
+      "package_name": "crypto-js",
+      "ecosystem": "npm",
+      "version": "^4.2.0",
+      "manifest_path": "package.json",
+      "category": "SYMMETRIC_OR_HASH",
+      "pqc_readiness": "SAFE_SYMMETRIC",
+      "description": "AES, SHA-2/3, HMAC symmetric algorithms",
+      "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"
+    }
+  ]
+}

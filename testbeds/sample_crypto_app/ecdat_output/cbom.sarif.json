@@ -1,0 +1,463 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ECDAT",
+          "version": "2.0.0",
+          "informationUri": "https://github.com/SIH26164/ECDAT",
+          "rules": [
+            {
+              "id": "ECDAT-CWE-326",
+              "name": "InadequateEncryptionStrength",
+              "shortDescription": {
+                "text": "Inadequate encryption strength or weak cryptographic key size (CWE-326)"
+              },
+              "fullDescription": {
+                "text": "The cryptographic primitive uses a key length below the minimum required by NIST SP 800-131A Rev 2 (e.g., RSA < 2048 bits or ECC < 224 bits), exposing encrypted data or signatures to factoring or brute-force attacks."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "Upgrade key sizes to meet NIST SP 800-131A standards (RSA >= 2048/3072 bits, ECC >= 256 bits, AES >= 128/256 bits) and plan migration to standardized post-quantum algorithms (ML-KEM / ML-DSA)."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "cryptography",
+                  "cwe-326",
+                  "nist-sp-800-131a"
+                ],
+                "precision": "very-high"
+              }
+            },
+            {
+              "id": "ECDAT-CWE-327",
+              "name": "BrokenOrRiskyCryptographicAlgorithm",
+              "shortDescription": {
+                "text": "Use of a broken or risky cryptographic algorithm (CWE-327)"
+              },
+              "fullDescription": {
+                "text": "The cryptographic primitive is broken, obsolete, or banned by NIST and industry security standards (e.g., MD5, SHA-1, DES, 3DES, RC4, ECB mode)."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "Replace deprecated algorithms with approved modern primitives (e.g., SHA-256/SHA-3, AES-256-GCM) and transition to post-quantum standards."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "cryptography",
+                  "cwe-327",
+                  "deprecated-crypto"
+                ],
+                "precision": "very-high"
+              }
+            },
+            {
+              "id": "ECDAT-PQC-MIGRATE-FIPS203",
+              "name": "QuantumVulnerableKeyExchange",
+              "shortDescription": {
+                "text": "Classical key exchange / KEM vulnerable to quantum Harvest-Now-Decrypt-Later (FIPS 203)"
+              },
+              "fullDescription": {
+                "text": "The key exchange or encapsulation mechanism relies on classical discrete logarithm or integer factorization, rendering it vulnerable to Shor's algorithm and retrospective Harvest-Now-Decrypt-Later (HNDL) attacks. Migrate to NIST FIPS 203 (ML-KEM)."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "Upgrade to NIST FIPS 203 ML-KEM-768 or standardized hybrid key exchange (e.g., X25519MLKEM768 / SecP256r1MLKEM768 per RFC 9180 / IETF drafts)."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "cryptography",
+                  "post-quantum",
+                  "fips-203",
+                  "ml-kem",
+                  "hndl"
+                ],
+                "precision": "very-high"
+              }
+            },
+            {
+              "id": "ECDAT-PQC-MIGRATE-FIPS204",
+              "name": "QuantumVulnerableDigitalSignature",
+              "shortDescription": {
+                "text": "Classical digital signature scheme vulnerable to quantum forgery (FIPS 204)"
+              },
+              "fullDescription": {
+                "text": "The digital signature primitive relies on classical modular arithmetic or elliptic curves (RSA, ECDSA, Ed25519), which can be forged in polynomial time by a Cryptanalytically Relevant Quantum Computer (CRQC). Migrate to NIST FIPS 204 (ML-DSA)."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "text": "Upgrade to NIST FIPS 204 ML-DSA-65 (CRYSTALS-Dilithium) or stateful hash-based signatures for firmware verification (LMS/XMSS per RFC 8554 / RFC 8391)."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "cryptography",
+                  "post-quantum",
+                  "fips-204",
+                  "ml-dsa"
+                ],
+                "precision": "very-high"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'app:session_key' evaluated at LOW risk level. NIST Recommendation: NIST FIPS 204 / IETF Composite Signatures. Post-Quantum Alternative: ML-DSA-65 (NIST FIPS 204) (Hybrid: ECDSA-P256 + ML-DSA-65 (Composite Signature))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-001",
+            "componentName": "app:session_key",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "LOW",
+            "nistRecommendation": "NIST FIPS 204 / IETF Composite Signatures",
+            "pqcAlternative": "ML-DSA-65 (NIST FIPS 204)",
+            "recommendedHybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'app:auth_token' evaluated at LOW risk level. NIST Recommendation: NIST SP 800-38D. Post-Quantum Alternative: AES-256-GCM (Hybrid: N/A (Symmetric))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-002",
+            "componentName": "app:auth_token",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "LOW",
+            "nistRecommendation": "NIST SP 800-38D",
+            "pqcAlternative": "AES-256-GCM",
+            "recommendedHybrid": "N/A (Symmetric)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'app:encrypted_pan' evaluated at LOW risk level. NIST Recommendation: NIST SP 800-38D. Post-Quantum Alternative: AES-256-GCM (Hybrid: N/A (Symmetric))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-003",
+            "componentName": "app:encrypted_pan",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "LOW",
+            "nistRecommendation": "NIST SP 800-38D",
+            "pqcAlternative": "AES-256-GCM",
+            "recommendedHybrid": "N/A (Symmetric)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'app:encrypted_archive' evaluated at LOW risk level. NIST Recommendation: NIST SP 800-38D. Post-Quantum Alternative: AES-256-GCM (Hybrid: N/A (Symmetric))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-004",
+            "componentName": "app:encrypted_archive",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "LOW",
+            "nistRecommendation": "NIST SP 800-38D",
+            "pqcAlternative": "AES-256-GCM",
+            "recommendedHybrid": "N/A (Symmetric)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Cryptographic asset 'ECDSA-P256' in component 'app:signature' evaluated at MANUAL_REVIEW_REQUIRED risk level. NIST Recommendation: NIST FIPS 204 / IETF Composite Signatures. Post-Quantum Alternative: ML-DSA-65 (NIST FIPS 204) (Hybrid: ECDSA-P256 + ML-DSA-65 (Composite Signature))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-005",
+            "componentName": "app:signature",
+            "algorithm": "ECDSA-P256",
+            "keySize": 256,
+            "primitiveType": "SIGNATURE",
+            "riskLevel": "MANUAL_REVIEW_REQUIRED",
+            "nistRecommendation": "NIST FIPS 204 / IETF Composite Signatures",
+            "pqcAlternative": "ML-DSA-65 (NIST FIPS 204)",
+            "recommendedHybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'app:token_blob' evaluated at MANUAL_REVIEW_REQUIRED risk level. NIST Recommendation: NIST SP 800-38D. Post-Quantum Alternative: AES-256-GCM (Hybrid: N/A (Symmetric))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app.py"
+                },
+                "region": {
+                  "startLine": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-006",
+            "componentName": "app:token_blob",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "MANUAL_REVIEW_REQUIRED",
+            "nistRecommendation": "NIST SP 800-38D",
+            "pqcAlternative": "AES-256-GCM",
+            "recommendedHybrid": "N/A (Symmetric)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "note",
+          "message": {
+            "text": "Cryptographic asset 'AES-256-GCM' in component 'common_crypto:session_key' evaluated at LOW risk level. NIST Recommendation: NIST SP 800-38D. Post-Quantum Alternative: AES-256-GCM (Hybrid: N/A (Symmetric))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "common_crypto.py"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-007",
+            "componentName": "common_crypto:session_key",
+            "algorithm": "AES-256-GCM",
+            "keySize": 256,
+            "primitiveType": "ENCRYPTION",
+            "riskLevel": "LOW",
+            "nistRecommendation": "NIST SP 800-38D",
+            "pqcAlternative": "AES-256-GCM",
+            "recommendedHybrid": "N/A (Symmetric)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-CWE-326",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Cryptographic asset 'ECDSA-P256' in component 'common_crypto:token_sig' evaluated at CRITICAL risk level. NIST Recommendation: NIST FIPS 204 / IETF Composite Signatures. Post-Quantum Alternative: ML-DSA-65 (NIST FIPS 204) (Hybrid: ECDSA-P256 + ML-DSA-65 (Composite Signature))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "common_crypto.py"
+                },
+                "region": {
+                  "startLine": 13
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-008",
+            "componentName": "common_crypto:token_sig",
+            "algorithm": "ECDSA-P256",
+            "keySize": 256,
+            "primitiveType": "SIGNATURE",
+            "riskLevel": "CRITICAL",
+            "nistRecommendation": "NIST FIPS 204 / IETF Composite Signatures",
+            "pqcAlternative": "ML-DSA-65 (NIST FIPS 204)",
+            "recommendedHybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-PQC-MIGRATE-FIPS204",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Cryptographic asset 'RSA-2048' in component 'x509_cert:legacy_ca' evaluated at CRITICAL risk level. NIST Recommendation: NIST FIPS 204 / IETF Composite Signatures. Post-Quantum Alternative: ML-DSA-65 (NIST FIPS 204) (Hybrid: ECDSA-P256 + ML-DSA-65 (Composite Signature))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "certs/legacy_ca.crt"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-009",
+            "componentName": "x509_cert:legacy_ca",
+            "algorithm": "RSA-2048",
+            "keySize": 2048,
+            "primitiveType": "SIGNATURE",
+            "riskLevel": "CRITICAL",
+            "nistRecommendation": "NIST FIPS 204 / IETF Composite Signatures",
+            "pqcAlternative": "ML-DSA-65 (NIST FIPS 204)",
+            "recommendedHybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-PQC-MIGRATE-FIPS203",
+          "ruleIndex": 2,
+          "level": "error",
+          "message": {
+            "text": "Cryptographic asset 'RSA-2048' in component 'keyfile:legacy_rsa_private-key' evaluated at CRITICAL risk level. NIST Recommendation: NIST FIPS 203 / IETF RFC 9180. Post-Quantum Alternative: ML-KEM-768 (NIST FIPS 203) (Hybrid: X25519MLKEM768 (ECDHE-ML-KEM Hybrid))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "certs/legacy_rsa.key"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-010",
+            "componentName": "keyfile:legacy_rsa_private-key",
+            "algorithm": "RSA-2048",
+            "keySize": 2048,
+            "primitiveType": "KEY_EXCHANGE",
+            "riskLevel": "CRITICAL",
+            "nistRecommendation": "NIST FIPS 203 / IETF RFC 9180",
+            "pqcAlternative": "ML-KEM-768 (NIST FIPS 203)",
+            "recommendedHybrid": "X25519MLKEM768 (ECDHE-ML-KEM Hybrid)"
+          }
+        },
+        {
+          "ruleId": "ECDAT-PQC-MIGRATE-FIPS204",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "Cryptographic asset 'RSA-2048' in component 'keyfile:legacy_rsa_public-key' evaluated at CRITICAL risk level. NIST Recommendation: NIST FIPS 204 / IETF Composite Signatures. Post-Quantum Alternative: ML-DSA-65 (NIST FIPS 204) (Hybrid: ECDSA-P256 + ML-DSA-65 (Composite Signature))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "certs/legacy_rsa.key"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "assetId": "ASSET-011",
+            "componentName": "keyfile:legacy_rsa_public-key",
+            "algorithm": "RSA-2048",
+            "keySize": 2048,
+            "primitiveType": "SIGNATURE",
+            "riskLevel": "CRITICAL",
+            "nistRecommendation": "NIST FIPS 204 / IETF Composite Signatures",
+            "pqcAlternative": "ML-DSA-65 (NIST FIPS 204)",
+            "recommendedHybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)"
+          }
+        }
+      ]
+    }
+  ]
+}

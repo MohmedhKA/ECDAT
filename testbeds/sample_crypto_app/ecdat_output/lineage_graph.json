@@ -1,0 +1,33 @@
+{
+  "nodes": [],
+  "links": [],
+  "has_ingress": false,
+  "stats": {
+    "ingress": 0,
+    "nexus": 0,
+    "egress": 0,
+    "edges": 0,
+    "has_ingress": false,
+    "total_flows": 0
+  },
+  "father_marko": {
+    "has_ingress": false,
+    "hubs": [],
+    "spokes": [],
+    "edges": [],
+    "stats": {
+      "hubs": 0,
+      "spokes": 0,
+      "edges": 0
+    }
+  },
+  "variable_flow": {
+    "has_flows": false,
+    "flows": [],
+    "modules": [],
+    "stats": {
+      "total_flows": 0,
+      "modules_count": 0
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "iterations": 5000,
+  "total_simulated_assets": 11,
+  "mean_breach_probability": 0.383,
+  "max_breach_probability": 0.898,
+  "critical_probabilistic_assets": 4,
+  "high_probabilistic_assets": 1,
+  "results": [
+    {
+      "asset_id": "ASSET-001",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-002",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-003",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-004",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-005",
+      "algorithm": "ECDSA-P256",
+      "iterations": 5000,
+      "breach_probability": 0.041,
+      "p50_safety_margin_years": 3.65,
+      "p95_safety_margin_years": 0.08,
+      "var_95_breach_year": 2030,
+      "risk_category": "HIGH"
+    },
+    {
+      "asset_id": "ASSET-006",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-007",
+      "algorithm": "AES-256-GCM",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-008",
+      "algorithm": "ECDSA-P256",
+      "iterations": 5000,
+      "breach_probability": 0.083,
+      "p50_safety_margin_years": 3.7,
+      "p95_safety_margin_years": -0.26,
+      "var_95_breach_year": 2029,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-009",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.446,
+      "p50_safety_margin_years": 0.47,
+      "p95_safety_margin_years": -3.29,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-010",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.898,
+      "p50_safety_margin_years": -4.95,
+      "p95_safety_margin_years": -9.45,
+      "var_95_breach_year": 2040,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-011",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.446,
+      "p50_safety_margin_years": 0.47,
+      "p95_safety_margin_years": -3.29,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    }
+  ]
+}

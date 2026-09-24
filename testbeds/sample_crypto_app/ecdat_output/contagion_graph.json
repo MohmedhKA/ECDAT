@@ -1,0 +1,251 @@
+{
+  "nodes": [
+    {
+      "id": "api_gateway",
+      "label": "api_gateway",
+      "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/api_gateway.py",
+      "r0": 0,
+      "has_crypto": false,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#64748b",
+      "size": 10,
+      "group": "consumer",
+      "dependents": []
+    },
+    {
+      "id": "common_crypto",
+      "label": "common_crypto",
+      "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/common_crypto.py",
+      "r0": 3,
+      "has_crypto": true,
+      "is_superspreader": true,
+      "is_pqc_anchor": false,
+      "color": "#ef4444",
+      "size": 36,
+      "group": "superspreader",
+      "dependents": [
+        "payment_service",
+        "api_gateway",
+        "auth_service"
+      ]
+    },
+    {
+      "id": "app",
+      "label": "app",
+      "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/app.py",
+      "r0": 0,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": []
+    },
+    {
+      "id": "payment_service",
+      "label": "payment_service",
+      "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/payment_service.py",
+      "r0": 1,
+      "has_crypto": false,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#3b82f6",
+      "size": 14,
+      "group": "intermediary",
+      "dependents": [
+        "api_gateway"
+      ]
+    },
+    {
+      "id": "auth_service",
+      "label": "auth_service",
+      "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/auth_service.py",
+      "r0": 1,
+      "has_crypto": false,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#3b82f6",
+      "size": 14,
+      "group": "intermediary",
+      "dependents": [
+        "api_gateway"
+      ]
+    },
+    {
+      "id": "legacy_ca",
+      "label": "legacy_ca",
+      "file_path": "certs/legacy_ca.crt",
+      "r0": 0,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": []
+    },
+    {
+      "id": "legacy_rsa",
+      "label": "legacy_rsa",
+      "file_path": "certs/legacy_rsa.key",
+      "r0": 0,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": []
+    },
+    {
+      "id": "cryptography",
+      "label": "cryptography",
+      "file_path": "requirements.txt",
+      "r0": 1,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": [
+        "pypi-app"
+      ]
+    },
+    {
+      "id": "pypi-app",
+      "label": "pypi-app",
+      "file_path": ".",
+      "r0": 0,
+      "has_crypto": false,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#64748b",
+      "size": 10,
+      "group": "consumer",
+      "dependents": []
+    },
+    {
+      "id": "pycryptodome",
+      "label": "pycryptodome",
+      "file_path": "requirements.txt",
+      "r0": 1,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": [
+        "pypi-app"
+      ]
+    },
+    {
+      "id": "@noble/post-quantum",
+      "label": "@noble/post-quantum",
+      "file_path": "package.json",
+      "r0": 1,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": true,
+      "color": "#10b981",
+      "size": 28,
+      "group": "pqc_anchor",
+      "dependents": [
+        "npm-app"
+      ]
+    },
+    {
+      "id": "npm-app",
+      "label": "npm-app",
+      "file_path": ".",
+      "r0": 0,
+      "has_crypto": false,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#64748b",
+      "size": 10,
+      "group": "consumer",
+      "dependents": []
+    },
+    {
+      "id": "node-forge",
+      "label": "node-forge",
+      "file_path": "package.json",
+      "r0": 1,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": [
+        "npm-app"
+      ]
+    },
+    {
+      "id": "crypto-js",
+      "label": "crypto-js",
+      "file_path": "package.json",
+      "r0": 1,
+      "has_crypto": true,
+      "is_superspreader": false,
+      "is_pqc_anchor": false,
+      "color": "#f97316",
+      "size": 18,
+      "group": "crypto_source",
+      "dependents": [
+        "npm-app"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "source": "common_crypto",
+      "target": "payment_service",
+      "value": 1
+    },
+    {
+      "source": "common_crypto",
+      "target": "auth_service",
+      "value": 1
+    },
+    {
+      "source": "payment_service",
+      "target": "api_gateway",
+      "value": 1
+    },
+    {
+      "source": "auth_service",
+      "target": "api_gateway",
+      "value": 1
+    },
+    {
+      "source": "cryptography",
+      "target": "pypi-app",
+      "value": 1
+    },
+    {
+      "source": "pycryptodome",
+      "target": "pypi-app",
+      "value": 1
+    },
+    {
+      "source": "@noble/post-quantum",
+      "target": "npm-app",
+      "value": 1
+    },
+    {
+      "source": "node-forge",
+      "target": "npm-app",
+      "value": 1
+    },
+    {
+      "source": "crypto-js",
+      "target": "npm-app",
+      "value": 1
+    }
+  ]
+}

@@ -7,6 +7,10 @@ from ecdat.scanners.theia_bridge import (
     parse_theia_components,
 )
 
+@pytest.mark.skipif(
+    find_theia_binary() is None,
+    reason="cbomkit-theia binary is not vendored (see README / scripts/setup_theia.sh)"
+)
 def test_find_theia_binary():
     bin_path = find_theia_binary()
     assert bin_path is not None

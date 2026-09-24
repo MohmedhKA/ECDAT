@@ -22,6 +22,7 @@ def verify_dsse_envelope(
     public_key_pem: str,
     expected_root_hex: Optional[str] = None,
     mldsa_public_key_pem: Optional[str] = None,
+    require_all_signatures: bool = False,
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
     """
     Verifies an in-toto DSSE envelope:
@@ -83,7 +84,10 @@ def verify_dsse_envelope(
     else:
         return False, f"Unsupported public key type: {type(pubkey).__name__}", None
 
-    # Optional secondary ML-DSA-65 verification if explicitly passed
+    # Check if envelope contains an ML-DSA-65 signature
+    has_mldsa_sig = any(s.get("keyid", "").startswith("mldsa65:") or s.get("scheme") == "ML-DSA-65" for s in signatures)
+
+    # Secondary ML-DSA-65 verification if explicitly passed or required
     if mldsa_public_key_pem:
         try:
             ml_pubkey = serialization.load_pem_public_key(mldsa_public_key_pem.encode("utf-8"))
@@ -98,6 +102,8 @@ def verify_dsse_envelope(
             return False, "CRYPTOGRAPHIC ERROR: ML-DSA-65 signature verification failed! Tampered payload detected.", None
         except Exception as e:
             return False, f"ML-DSA-65 verification error: {e}", None
+    elif has_mldsa_sig and require_all_signatures and not isinstance(pubkey, mldsa.MLDSA65PublicKey):
+        return False, "HYBRID VERIFICATION FAILED: Envelope contains an ML-DSA-65 post-quantum signature, but no ML-DSA-65 public key was provided to verify it.", None
 
     # 3. Parse and validate statement
     try:
@@ -127,6 +133,7 @@ def verify_dsse_envelope_from_file(
     public_key_path: str,
     expected_root_hex: Optional[str] = None,
     mldsa_public_key_path: Optional[str] = None,
+    require_all_signatures: bool = False,
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
     """Convenience helper to verify DSSE envelope from filesystem paths."""
     env_p = Path(envelope_path).resolve()
@@ -165,13 +172,20 @@ def verify_dsse_envelope_from_file(
         else:
             clean_root = expected_root_hex.strip()
 
-    return verify_dsse_envelope(envelope, pubkey_pem, clean_root, mldsa_public_key_pem=mldsa_pubkey_pem)
+    return verify_dsse_envelope(
+        envelope,
+        pubkey_pem,
+        clean_root,
+        mldsa_public_key_pem=mldsa_pubkey_pem,
+        require_all_signatures=require_all_signatures,
+    )
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT in-toto DSSE Attestation Envelope Verifier")
     parser.add_argument("--envelope", required=True, help="Path to attestation.dsse.json file")
     parser.add_argument("--public-key", required=True, help="Path to Ed25519 (or ML-DSA-65) public key PEM file")
     parser.add_argument("--mldsa-key", required=False, help="Path to ML-DSA-65 public key PEM file for dual verification")
+    parser.add_argument("--require-all", action="store_true", default=False, help="Fail closed if hybrid signatures are present but unverified")
     parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
     args = parser.parse_args()
@@ -210,6 +224,7 @@ def main() -> int:
         pubkey_pem,
         expected_root,
         mldsa_public_key_pem=mldsa_pubkey_pem,
+        require_all_signatures=args.require_all,
     )
 
     if is_valid:

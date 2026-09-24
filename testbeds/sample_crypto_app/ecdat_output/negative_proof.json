@@ -1,0 +1,35 @@
+{
+  "certificate_id": "ecdat-np-562c837e93a7d8f7",
+  "timestamp": "2026-09-24T06:34:09.379636+00:00",
+  "merkle_root_hex": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f",
+  "target_project": "sample_crypto_app",
+  "audited_perimeter": {
+    "target_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app",
+    "total_source_files": 5,
+    "total_cryptographic_assets": 11,
+    "merkle_root_commitment": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f"
+  },
+  "quarantined_unknowns_count": 4,
+  "assertions": [
+    {
+      "claim_id": "NP-CLAIM-001",
+      "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5) detected within audited perimeter",
+      "status": "PASSED",
+      "details": "No forbidden algorithms detected"
+    },
+    {
+      "claim_id": "NP-CLAIM-002",
+      "description": "All discovered asymmetric primitives are mapped to NIST FIPS 203/204/205 post-quantum migration targets",
+      "status": "PASSED",
+      "details": "11 primitives mapped to standard migration roadmaps"
+    },
+    {
+      "claim_id": "NP-CLAIM-003",
+      "description": "All non-auditable files, binary blobs, and external third-party dependencies are quarantined in Unknowns Ledger",
+      "status": "PASSED",
+      "quarantined_items_count": 4,
+      "details": "4 perimeter boundaries formally acknowledged and logged"
+    }
+  ],
+  "is_certified_clean": true
+}

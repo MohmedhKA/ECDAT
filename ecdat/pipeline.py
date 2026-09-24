@@ -348,15 +348,50 @@ def run_ecdat_scan(
         ebpf_path = Path(ebpf_log).resolve()
         if ebpf_path.exists():
             ebpf_assets = EBPFObserver().parse_trace_log(ebpf_path)
-            for e_asset in ebpf_assets:
-                e_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
-                _apply_schema_lifespan(e_asset, schema_lifespans)
-                _apply_deployment_exposure(e_asset, deployment_exposures)
-                score = compute_mosca_score(e_asset, current_year=CURRENT_YEAR)
-                e_asset.risk_level = score.risk_level
-                rec = recommend_pqc_migration(e_asset, path_mtu=path_mtu)
-                assessments.append((e_asset, score, rec))
-                assets_for_merkle.append((e_asset, score))
+            correlated_ebpf_indices = set()
+            for ebpf_idx, e_asset in enumerate(ebpf_assets):
+                # Cross-correlate with static assets by algorithm family and primitive type
+                e_alg = (e_asset.algorithm or "").upper()
+                for static_asset, s_score, s_rec in assessments:
+                    s_alg = (static_asset.algorithm or "").upper()
+                    alg_match = False
+                    if e_alg and s_alg:
+                        if e_alg == s_alg:
+                            alg_match = True
+                        elif "AES" in e_alg and "AES" in s_alg:
+                            alg_match = True
+                        elif "RSA" in e_alg and "RSA" in s_alg:
+                            alg_match = True
+                        elif "DES" in e_alg and "DES" in s_alg:
+                            alg_match = True
+                        elif any(h in e_alg for h in ["SHA", "DIGEST", "MD5"]) and any(h in s_alg for h in ["SHA", "DIGEST", "MD5"]):
+                            alg_match = True
+
+                    if alg_match and static_asset.primitive_type == e_asset.primitive_type:
+                        # Elevate static asset to E5_CORRELATED_SIGNED (multi-source verified)
+                        static_asset.evidence_level = EvidenceLevel.E5_CORRELATED_SIGNED
+                        static_asset.component_name = f"{static_asset.component_name} [{e_asset.component_name}]"
+                        if "ebpf_runtime_correlation" not in static_asset.evidence_sources:
+                            static_asset.evidence_sources.append("ebpf_runtime_correlation")
+                        static_asset.raw_properties.setdefault("ebpf_correlated", []).append({
+                            "ebpf_component": e_asset.component_name,
+                            "ebpf_algorithm": e_asset.algorithm,
+                            "trace_line": e_asset.raw_properties.get("trace_line", ""),
+                        })
+                        correlated_ebpf_indices.add(ebpf_idx)
+                        break
+
+            # Append un-correlated eBPF assets as standalone E4 items
+            for ebpf_idx, e_asset in enumerate(ebpf_assets):
+                if ebpf_idx not in correlated_ebpf_indices:
+                    e_asset.asset_id = f"ASSET-{len(assessments) + 1:03d}"
+                    _apply_schema_lifespan(e_asset, schema_lifespans)
+                    _apply_deployment_exposure(e_asset, deployment_exposures)
+                    score = compute_mosca_score(e_asset, current_year=CURRENT_YEAR)
+                    e_asset.risk_level = score.risk_level
+                    rec = recommend_pqc_migration(e_asset, path_mtu=path_mtu)
+                    assessments.append((e_asset, score, rec))
+                    assets_for_merkle.append((e_asset, score))
 
     if not assets_for_merkle:
         # Fallback: create a default root if no assets found
@@ -608,10 +643,17 @@ def run_ecdat_scan(
     # Clean up stale dashboard.html if present
     (out_path / "dashboard.html").unlink(missing_ok=True)
 
+    theia_engine_used = (
+        "cbomkit-theia Go binary"
+        if (theia_assets and any("theia_cyclonedx" in getattr(a, "evidence_source", "") for a in theia_assets))
+        else "native ASN.1 fallback"
+    )
+
     return {
         "total_assets": len(assessments),
         "source_code_assets": len(polyglot_assets),
         "theia_assets_count": len(theia_assets),
+        "theia_engine_used": theia_engine_used,
         "ebpf_assets_count": len(ebpf_assets),
         "manifest_dependencies_count": len(manifest_deps),
         "manifest_dependencies": [d.model_dump() if hasattr(d, "model_dump") else d.dict() for d in manifest_deps],
@@ -899,6 +941,40 @@ def observe_cmd(output, duration, script_only, parse_only):
         return 1
 
 
+@cli.command("verify-attestation")
+@click.option("--envelope", "-e", required=True, type=str, help="Path to attestation.dsse.json file")
+@click.option("--pubkey", "-p", required=True, type=str, help="Path to attestation_pubkey.pem file")
+@click.option("--mldsa-key", "-m", default=None, type=str, help="Path to ML-DSA-65 public key PEM file (defaults to .ecdat/keys/trust_root_mldsa65.pub if present)")
+@click.option("--root", "-r", default=None, type=str, help="Path to cbom_root.hex or raw root hex string")
+@click.option("--require-all/--allow-unverified-mldsa", default=True, help="Fail closed if hybrid signatures are present but unverified (default: True)")
+def verify_attestation_cmd(envelope, pubkey, mldsa_key, root, require_all):
+    """Verify an in-toto / SLSA DSSE attestation envelope against public key(s)."""
+    from ecdat.attestation.verifier import verify_dsse_envelope_from_file
+    mldsa_key_path = mldsa_key
+    if not mldsa_key_path:
+        default_mldsa = Path(".ecdat/keys/trust_root_mldsa65.pub")
+        if default_mldsa.exists():
+            mldsa_key_path = str(default_mldsa)
+
+    is_valid, msg, stmt = verify_dsse_envelope_from_file(
+        envelope,
+        pubkey,
+        expected_root_hex=root,
+        mldsa_public_key_path=mldsa_key_path,
+        require_all_signatures=require_all,
+    )
+    if is_valid:
+        proj = stmt["subject"][0].get("name", "unknown") if stmt else "unknown"
+        root_val = stmt["subject"][0]["digest"].get("sha256", "") if stmt else ""
+        print(f"[+] SUCCESS — {msg}")
+        print(f"    - Target Project: {proj}")
+        print(f"    - Merkle Root:    0x{root_val}")
+        return 0
+    else:
+        print(f"[-] VERIFICATION FAILED: {msg}", file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="ECDAT: Enterprise Cryptographic Discovery and Analysis Tool CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -927,6 +1003,8 @@ def main() -> int:
     verify_parser = subparsers.add_parser("verify-attestation", help="Verify an in-toto / SLSA DSSE attestation envelope against public key")
     verify_parser.add_argument("--envelope", required=True, help="Path to attestation.dsse.json file")
     verify_parser.add_argument("--pubkey", required=True, help="Path to attestation_pubkey.pem file")
+    verify_parser.add_argument("--mldsa-key", required=False, default=None, help="Path to ML-DSA-65 public key PEM file (defaults to .ecdat/keys/trust_root_mldsa65.pub if present)")
+    verify_parser.add_argument("--allow-unverified-mldsa", dest="require_all", action="store_false", default=True, help="Allow unverified ML-DSA signatures in hybrid envelopes")
     verify_parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
     dash_parser = subparsers.add_parser("dashboard", help="Serve and view an ECDAT cryptographic audit report (report.html)")
@@ -1035,8 +1113,8 @@ def main() -> int:
         print(f"[+] Scan Complete!")
         print(f"    - Total Assets:      {result['total_assets']}")
         print(f"      * AST Inferences:  {result['source_code_assets']}")
-        print(f"      * Theia Filesystem:{result['theia_assets_count']} (X.509/Keys via cbomkit-theia)")
-        print(f"      * Supply Chain:    {result['manifest_dependencies_count']} (Polyglot Manifest Packages)")
+        print(f"      * Theia Filesystem:{result['theia_assets_count']} (X.509/Keys via {result.get('theia_engine_used', 'native ASN.1 fallback')})")
+        print(f"    - Manifest Findings (separate): {result['manifest_dependencies_count']} (Polyglot Manifest Packages)")
         print(f"    - Buffer Hazards:    {result['buffer_hazards']}")
         print(f"    - Superspreaders:    {result['contagion_superspreaders']}")
         print(f"    - Transport MTU:     {result['path_mtu']} B ({result['route_profile']})")
@@ -1069,7 +1147,19 @@ def main() -> int:
         return gate_result.exit_code
     elif args.command == "verify-attestation":
         from ecdat.attestation.verifier import verify_dsse_envelope_from_file
-        is_valid, msg, stmt = verify_dsse_envelope_from_file(args.envelope, args.pubkey, expected_root_hex=args.root)
+        mldsa_key_path = args.mldsa_key
+        if not mldsa_key_path:
+            default_mldsa = Path(".ecdat/keys/trust_root_mldsa65.pub")
+            if default_mldsa.exists():
+                mldsa_key_path = str(default_mldsa)
+
+        is_valid, msg, stmt = verify_dsse_envelope_from_file(
+            args.envelope,
+            args.pubkey,
+            expected_root_hex=args.root,
+            mldsa_public_key_path=mldsa_key_path,
+            require_all_signatures=getattr(args, "require_all", True),
+        )
         if is_valid:
             proj = stmt["subject"][0].get("name", "unknown") if stmt else "unknown"
             root_val = stmt["subject"][0]["digest"].get("sha256", "") if stmt else ""

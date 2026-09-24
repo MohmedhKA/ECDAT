@@ -29,11 +29,10 @@ class BenchmarkAsset:
     file_path: str
     risk_level: str = "UNKNOWN"
 
-# Upstream ground truth corrections / canonical mappings
+# Upstream ground truth corrections (ground truth Excel filename typos documented in upstream repo)
 UPSTREAM_FILE_CORRECTIONS = {
     "PredictableSeedsABPMCase2.java": "PredictableSeedsABMCCase2.java",
     "PredictableSeedsABPM2.java": "PredictableSeedsABMC2.java",
-    "CredentialInStringBBCase2.java": "CredentialInStringBBCase1.java",
 }
 
 VULN_CATEGORY_RULES = {
@@ -63,7 +62,7 @@ VULN_CATEGORY_RULES = {
     "Dummy Verifier": {"broken": ["DUMMY-HOSTNAME-VERIFIER"], "type": "DUMMY_VERIFIER"},
     "Socket Hostname w/o verification": {"broken": ["IMPROPER-SSL-SOCKET-FACTORY"], "type": "HOSTNAME_VERIFICATION"},
     "Usage of Random Method from Library": {"broken": ["UNTRUSTED-PRNG"], "type": "INSECURE_PRNG"},
-    "Credential in String": {"broken": ["HARDCODED-PASSWORD", "PREDICTABLE-KEY", "AES-256"], "type": "CREDENTIAL_STRING"},
+    "Credential in String": {"broken": ["HARDCODED-PASSWORD", "PREDICTABLE-KEY"], "type": "CREDENTIAL_STRING"},
 }
 
 INSECURE_ALGORITHMS = {

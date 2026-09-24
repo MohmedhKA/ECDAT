@@ -142,50 +142,6 @@ def compute_efficient_frontier(items: List[ParetoItem]) -> List[Dict[str, Any]]:
 
     return frontier
 
-def optimize_pareto_portfolio(
-    assessments: List[Tuple[CryptoAsset, MoscaScore, MigrationRecommendation]],
-    contagion_result: Optional[ContagionGraphResult] = None,
-    budget_dev_weeks: float = 10.0,
-) -> ParetoPortfolioResult:
-    """
-    Solves resource-constrained migration planning for a given sprint budget B.
-    Ranks remediation backlog by efficiency (Delta R / Cost) and builds the efficient frontier.
-    """
-    raw_items: List[ParetoItem] = []
-
-    for asset, score, rec in assessments:
-        r0 = _resolve_r0(asset, contagion_result)
-        delta_r, cost, efficiency = compute_item_pareto_metrics(asset, score, rec, r0)
-
-        cams_val = int(asset.agility_level) if hasattr(asset, "agility_level") else 0
-
-        raw_items.append(ParetoItem(
-            asset_id=asset.asset_id,
-            component_name=asset.component_name,
-            algorithm=asset.algorithm,
-            primitive_type=asset.primitive_type.value if hasattr(asset.primitive_type, "value") else str(asset.primitive_type),
-            file_path=asset.file_path,
-            line_number=asset.line_number,
-            r0_score=r0,
-            cams_level=cams_val,
-            risk_level=score.risk_level,
-            delta_r=delta_r,
-            cost_dev_weeks=cost,
-            efficiency=efficiency,
-            is_selected=False,
-            cumulative_risk_pct=0.0,
-            cumulative_cost_weeks=0.0,
-        ))
-
-    # Sort items by efficiency descending (primary), delta_r descending (secondary), cost ascending (tertiary)
-    sorted_items = sorted(
-        raw_items,
-        key=lambda x: (x.efficiency, x.delta_r, -x.cost_dev_weeks),
-        reverse=True,
-    )
-
-    total_estate_risk = sum(it.delta_r for it in sorted_items)
-    frontier_points = compute_efficient_frontier(sorted_items)
 
 def solve_01_knapsack_dp(items: List[ParetoItem], budget_weeks: float) -> Set[str]:
     """

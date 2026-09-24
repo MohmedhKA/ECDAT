@@ -101,3 +101,7 @@ def test_pipeline_ingest_ebpf_trace_log(tmp_path):
         cbom = json.load(f)
     comp_names = [c["name"] for c in cbom["components"]]
     assert any("microservice:9999" in name for name in comp_names)
+    correlated_comp = next(c for c in cbom["components"] if "microservice:9999" in c["name"])
+    props = {p["name"]: p["value"] for p in correlated_comp.get("properties", [])}
+    assert props.get("ecdat:evidence_level") == "E5_CORRELATED_SIGNED"
+
