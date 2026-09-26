@@ -58,19 +58,50 @@ def scan_python_file(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
     """Scans a Python source file for in-code crypto operations using native AST contract engine."""
     return _python_engine.scan_file(file_path, base_dir)
 
+import concurrent.futures
+
+def _scan_single_file_dispatch(file_path: Path, base_dir: Path) -> List[CryptoAsset]:
+    """Dispatches a single source file to its corresponding contract engine."""
+    suffix = file_path.suffix.lower()
+    if suffix in {".js", ".mjs", ".cjs", ".ts"}:
+        return scan_javascript_file(file_path, base_dir)
+    elif suffix == ".go":
+        return scan_go_file(file_path, base_dir)
+    elif suffix == ".rs":
+        return scan_rust_file(file_path, base_dir)
+    elif suffix == ".java":
+        return scan_java_file(file_path, base_dir)
+    elif suffix == ".rb":
+        return scan_ruby_file(file_path, base_dir)
+    elif suffix == ".py":
+        return scan_python_file(file_path, base_dir)
+    return []
+
+def _scan_file_batch(args: Tuple[List[Path], Path]) -> List[CryptoAsset]:
+    """Worker function for batch file processing in worker processes."""
+    file_paths, base_dir = args
+    results: List[CryptoAsset] = []
+    for fp in file_paths:
+        try:
+            file_assets = _scan_single_file_dispatch(fp, base_dir)
+            if file_assets:
+                results.extend(file_assets)
+        except Exception:
+            continue
+    return results
+
 def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
     """
     Recursively scans target_dir for in-code cryptographic operations across
     JavaScript (.js, .mjs, .cjs, .ts), Go (.go), Rust (.rs), Java (.java),
     Python (.py), and Ruby (.rb) via pure contract engines.
+    Employs multi-core batch chunking for enterprise repos.
     """
     target_path = Path(target_dir).resolve()
     if not target_path.exists():
         return []
 
-    all_assets: List[CryptoAsset] = []
-    seen_keys: Set[str] = set()
-
+    candidate_files: List[Path] = []
     for p in sorted(target_path.glob("**/*")):
         if not p.is_file():
             continue
@@ -79,29 +110,40 @@ def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
             continue
         if not should_scan_file(str(p), base_dir=str(target_path)):
             continue
+        candidate_files.append(p)
 
-        file_assets: List[CryptoAsset] = []
-        suffix = p.suffix.lower()
+    raw_assets: List[CryptoAsset] = []
 
-        if suffix in {".js", ".mjs", ".cjs", ".ts"}:
-            file_assets = scan_javascript_file(p, target_path)
-        elif suffix == ".go":
-            file_assets = scan_go_file(p, target_path)
-        elif suffix == ".rs":
-            file_assets = scan_rust_file(p, target_path)
-        elif suffix == ".java":
-            file_assets = scan_java_file(p, target_path)
-        elif suffix == ".rb":
-            file_assets = scan_ruby_file(p, target_path)
-        elif suffix == ".py":
-            file_assets = scan_python_file(p, target_path)
+    # Parallelize when scanning more than 12 files
+    if len(candidate_files) > 12:
+        cpu_count = os.cpu_count() or 4
+        max_workers = min(8, max(1, cpu_count))
+        chunk_size = max(10, len(candidate_files) // (max_workers * 4))
+        chunks = [
+            (candidate_files[i:i + chunk_size], target_path)
+            for i in range(0, len(candidate_files), chunk_size)
+        ]
+        try:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+                for batch_result in executor.map(_scan_file_batch, chunks):
+                    raw_assets.extend(batch_result)
+        except Exception:
+            # Fallback to sequential scanning if multiprocessing is unavailable
+            for p in candidate_files:
+                raw_assets.extend(_scan_single_file_dispatch(p, target_path))
+    else:
+        for p in candidate_files:
+            raw_assets.extend(_scan_single_file_dispatch(p, target_path))
 
-        for a in file_assets:
-            dedup_key = f"{a.file_path}:{a.algorithm}:{a.primitive_type.value}:{a.line_number}"
-            if dedup_key in seen_keys:
-                continue
-            seen_keys.add(dedup_key)
-            all_assets.append(a)
+    all_assets: List[CryptoAsset] = []
+    seen_keys: Set[str] = set()
+
+    for a in raw_assets:
+        dedup_key = f"{a.file_path}:{a.algorithm}:{a.primitive_type.value}:{a.line_number}"
+        if dedup_key in seen_keys:
+            continue
+        seen_keys.add(dedup_key)
+        all_assets.append(a)
 
     for idx, a in enumerate(all_assets, start=1):
         a.asset_id = f"SRC-CRYPTO-{idx:03d}"

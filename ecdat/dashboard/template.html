@@ -1504,6 +1504,11 @@
                     <div class="text-[11px] text-slate-400">RFC 9180 Hybrid Pairing:</div>
                     <div id="drawer-hybrid-target" class="text-emerald-300 font-semibold">ECDSA-P256 + ML-DSA-65</div>
                 </div>
+                <div>
+                    <div class="text-[11px] text-slate-400">Migration Guidance:</div>
+                    <div id="drawer-guidance" class="text-slate-300 text-[11px] leading-relaxed">Deploy NIST FIPS 203/204 standardized replacement.</div>
+                </div>
+            </div>
             <!-- 1-Click Code Remediation Card -->
             <div id="drawer-remed-card" class="p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 font-mono space-y-2.5">
                 <div class="flex items-center justify-between">
@@ -1726,40 +1731,54 @@
                 }
             }
 
-            document.getElementById('drawer-asset-id').innerText = asset.asset_id;
-            document.getElementById('drawer-title').innerText = `${asset.component} (${asset.algorithm})`;
-            document.getElementById('drawer-file-path').innerText = `${asset.file_path} : line ${asset.line_number}`;
-            document.getElementById('drawer-sink-call').innerText = asset.evidence || 'Direct Cryptographic Primitive Call';
-            document.getElementById('drawer-tier').innerText = `${asset.x_tier} (${asset.x_years}y retention)`;
-            document.getElementById('drawer-confidence').innerText = Number(asset.confidence || 1.0).toFixed(2);
-            document.getElementById('drawer-pqc-target').innerText = asset.recommended_pqc || 'ML-KEM-768';
-            document.getElementById('drawer-hybrid-target').innerText = asset.recommended_hybrid || 'Hybrid Pairing';
-            document.getElementById('drawer-guidance').innerText = asset.guidance || 'Deploy NIST FIPS 203/204 standardized replacement.';
+            const setElemText = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = val;
+            };
+
+            setElemText('drawer-asset-id', asset.asset_id || '');
+            setElemText('drawer-title', `${asset.component || 'Asset'} (${asset.algorithm || 'Unknown'})`);
+            setElemText('drawer-file-path', `${asset.file_path || ''} : line ${asset.line_number || ''}`);
+            setElemText('drawer-sink-call', asset.evidence || 'Direct Cryptographic Primitive Call');
+            setElemText('drawer-tier', `${asset.x_tier || 'N/A'} (${asset.x_years || 0}y retention)`);
+            setElemText('drawer-confidence', Number(asset.confidence || 1.0).toFixed(2));
+            setElemText('drawer-pqc-target', asset.recommended_pqc || 'ML-KEM-768');
+            setElemText('drawer-hybrid-target', asset.recommended_hybrid || 'Hybrid Pairing');
+            setElemText('drawer-guidance', asset.guidance || 'Deploy NIST FIPS 203/204 standardized replacement.');
 
             const diffTerm = (asset.z_reg_year - 2026) - asset.x_years;
-            document.getElementById('drawer-mosca-calc').innerHTML = `
-                $$Y_{\\max} = \\max\\left(0, (${asset.z_reg_year} - 2026) - ${asset.x_years}\\right) = \\max(0, ${diffTerm}) = \\mathbf{${asset.y_max_years}\\text{ years budget remaining}}$$
-            `;
+            const moscaEl = document.getElementById('drawer-mosca-calc');
+            if (moscaEl) {
+                moscaEl.innerHTML = `
+                    $$Y_{\\max} = \\max\\left(0, (${asset.z_reg_year} - 2026) - ${asset.x_years}\\right) = \\max(0, ${diffTerm}) = \\mathbf{${asset.y_max_years}\\text{ years budget remaining}}$$
+                `;
+            }
 
             const pill = document.getElementById('drawer-risk-pill');
-            if (asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
-                pill.innerText = 'MANUAL REVIEW REQUIRED';
-                pill.className = 'text-xs px-3 py-1 rounded-full font-mono font-bold border bg-purple-950 text-purple-300 border-purple-800';
-            } else {
-                pill.innerText = `${asset.risk_level} RISK (Ymax: ${asset.y_max_years}y)`;
-                pill.className = `text-xs px-3 py-1 rounded-full font-mono font-bold border ${
-                    asset.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
-                    asset.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-300 border-amber-800' :
-                    asset.risk_level === 'MEDIUM' ? 'bg-yellow-950 text-yellow-300 border-yellow-800' :
-                    'bg-emerald-950 text-emerald-300 border-emerald-800'
-                }`;
+            if (pill) {
+                if (asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
+                    pill.innerText = 'MANUAL REVIEW REQUIRED';
+                    pill.className = 'text-xs px-3 py-1 rounded-full font-mono font-bold border bg-purple-950 text-purple-300 border-purple-800';
+                } else {
+                    pill.innerText = `${asset.risk_level} RISK (Ymax: ${asset.y_max_years}y)`;
+                    pill.className = `text-xs px-3 py-1 rounded-full font-mono font-bold border ${
+                        asset.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
+                        asset.risk_level === 'HIGH' ? 'bg-amber-950 text-amber-300 border-amber-800' :
+                        asset.risk_level === 'MEDIUM' ? 'bg-yellow-950 text-yellow-300 border-yellow-800' :
+                        'bg-emerald-950 text-emerald-300 border-emerald-800'
+                    }`;
+                }
             }
 
             const backdrop = document.getElementById('asset-drawer-backdrop');
             const drawer = document.getElementById('asset-drawer');
-            backdrop.classList.remove('opacity-0', 'pointer-events-none');
-            backdrop.classList.add('opacity-100');
-            drawer.classList.remove('translate-x-full');
+            if (backdrop) {
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                backdrop.classList.add('opacity-100');
+            }
+            if (drawer) {
+                drawer.classList.remove('translate-x-full');
+            }
 
             setTimeout(triggerKaTeX, 40);
         }

@@ -75,6 +75,13 @@ DYNAMIC_STRING_METHODS = {
     "toLowerCase", "toUpperCase", "concat", "trim", "format",
 }
 
+CRYPTO_METHOD_MEMBERS = {"getInstance", "setSeed", "load", "getDefault"}
+CRYPTO_CLASS_CREATORS = {
+    "SecretKeySpec", "PBEKeySpec", "PBEParameterSpec", "IvParameterSpec",
+    "SecureRandom", "URL", "Random"
+}
+CRYPTO_INTERFACE_NAMES = {"X509TrustManager", "HostnameVerifier"}
+
 
 class JavaAstHelper:
     """Utility class for pure AST-level type, expression, and cross-file resolution."""
@@ -204,6 +211,7 @@ class JavaAstHelper:
         start_file: Path,
         ast_cache: Dict[Path, CompilationUnit],
         call_depth: int = 0,
+        memo: Optional[Dict[Tuple[str, str, int], Optional[str]]] = None,
     ) -> Optional[str]:
         """
         Recursively resolves method parameters by searching callers within the compilation unit
@@ -212,11 +220,23 @@ class JavaAstHelper:
         if call_depth > 5:
             return None
 
+        if memo is None:
+            memo = {}
+
+        cache_key = (target_class_name, method_name, param_idx)
+        if cache_key in memo:
+            return memo[cache_key]
+
         files_to_check = [start_file] + list(start_file.parent.glob("*.java"))
         for sf in files_to_check:
             st = ast_cache.get(sf)
             if not st:
-                continue
+                try:
+                    content = sf.read_text(encoding="utf-8", errors="replace")
+                    st = javalang.parse.parse(content)
+                    ast_cache[sf] = st
+                except Exception:
+                    continue
 
             is_same_file = (sf == start_file)
 
@@ -256,14 +276,17 @@ class JavaAstHelper:
                                         c_type = getattr(st, "types", [None])[0]
                                         c_name = c_type.name if c_type else ""
                                         rec_val = JavaAstHelper.resolve_param_recursive(
-                                            c_name, enclosing_m.name, p2_idx, sf, ast_cache, call_depth + 1
+                                            c_name, enclosing_m.name, p2_idx, sf, ast_cache, call_depth + 1, memo
                                         )
                                         if rec_val:
+                                            memo[cache_key] = rec_val
                                             return rec_val
 
                         v = JavaAstHelper.resolve_ast_expression(arg_node, sf_locals, {}, st, sf)
                         if v:
+                            memo[cache_key] = v
                             return v
+        memo[cache_key] = None
         return None
 
     @staticmethod
@@ -313,6 +336,7 @@ class JavaContractEngine(BaseContractEngine):
     def __init__(self):
         self.db = get_signature_db()
         self._ast_cache: Dict[Path, CompilationUnit] = {}
+        self._param_resolution_cache: Dict[Tuple[str, str, int], Optional[str]] = {}
 
     def _get_or_parse(self, file_path: Path) -> Optional[CompilationUnit]:
         if file_path in self._ast_cache:
@@ -332,9 +356,8 @@ class JavaContractEngine(BaseContractEngine):
                 return None
 
     def _preload_directory(self, dir_path: Path):
-        for p in dir_path.glob("*.java"):
-            if p not in self._ast_cache:
-                self._get_or_parse(p)
+        # Lazy on-demand parsing in _get_or_parse replaces eager batch preloading
+        pass
 
     def scan_file(self, file_path: Path, base_dir: Path) -> List[CryptoAsset]:
         try:
@@ -345,9 +368,35 @@ class JavaContractEngine(BaseContractEngine):
         rel_path = str(file_path.relative_to(base_dir) if file_path.is_relative_to(base_dir) else file_path)
         stem = file_path.stem
 
-        self._preload_directory(file_path.parent)
         tree = self._get_or_parse(file_path)
         if not tree:
+            return []
+
+        # 100% Pure AST Fast-Gate: Check if file contains any candidate crypto constructs
+        has_crypto_candidate = False
+        for _, inv in tree.filter(MethodInvocation):
+            if inv.member in CRYPTO_METHOD_MEMBERS:
+                has_crypto_candidate = True
+                break
+
+        if not has_crypto_candidate:
+            for _, cc in tree.filter(ClassCreator):
+                c_name = cc.type.name if hasattr(cc.type, "name") else ""
+                if c_name in CRYPTO_CLASS_CREATORS:
+                    has_crypto_candidate = True
+                    break
+
+        if not has_crypto_candidate:
+            for _, cd in tree.filter(ClassDeclaration):
+                for iface in (cd.implements or []):
+                    iname = iface.name if hasattr(iface, "name") else ""
+                    if any(ci in iname for ci in CRYPTO_INTERFACE_NAMES):
+                        has_crypto_candidate = True
+                        break
+                if has_crypto_candidate:
+                    break
+
+        if not has_crypto_candidate:
             return []
 
         assets: List[CryptoAsset] = []
@@ -364,6 +413,20 @@ class JavaContractEngine(BaseContractEngine):
                 if d.initializer and isinstance(d.initializer, Literal) and str(d.initializer.value).isdigit():
                     int_constants[d.name] = int(d.initializer.value)
 
+        # Collect member references that appear in candidate crypto invocations/creators
+        crypto_referenced_names: Set[str] = set()
+        for _, inv in tree.filter(MethodInvocation):
+            if inv.member in CRYPTO_METHOD_MEMBERS:
+                for arg in (inv.arguments or []):
+                    if isinstance(arg, MemberReference):
+                        crypto_referenced_names.add(arg.member)
+        for _, cc in tree.filter(ClassCreator):
+            c_name = cc.type.name if hasattr(cc.type, "name") else ""
+            if c_name in CRYPTO_CLASS_CREATORS:
+                for arg in (cc.arguments or []):
+                    if isinstance(arg, MemberReference):
+                        crypto_referenced_names.add(arg.member)
+
         # 2. Check constructor field assignments from parameters across classes in file
         for c in getattr(tree, "types", []):
             for ctor in getattr(c, "constructors", []):
@@ -372,11 +435,12 @@ class JavaContractEngine(BaseContractEngine):
                     if isinstance(assign.expressionl, MemberReference) and isinstance(assign.value, MemberReference):
                         f_name = assign.expressionl.member
                         p_name = assign.value.member
-                        if p_name in param_names:
+                        # Targeted check: only resolve if field is referenced in candidate crypto
+                        if p_name in param_names and (not crypto_referenced_names or f_name in crypto_referenced_names):
                             p_idx = param_names.index(p_name)
                             files_to_check = [file_path] + list(file_path.parent.glob("*.java"))
                             for sf in files_to_check:
-                                st = self._ast_cache.get(sf)
+                                st = self._get_or_parse(sf)
                                 if not st:
                                     continue
                                 for _, cc in st.filter(ClassCreator):
@@ -397,6 +461,19 @@ class JavaContractEngine(BaseContractEngine):
             method_int_constants = dict(int_constants)
             randomized_vars: Set[str] = set()
             maps: Dict[str, Dict[str, Any]] = defaultdict(dict)
+
+            # Check if this method has any candidate crypto operations
+            method_has_crypto = False
+            for _, inv in method.filter(MethodInvocation):
+                if inv.member in CRYPTO_METHOD_MEMBERS:
+                    method_has_crypto = True
+                    break
+            if not method_has_crypto:
+                for _, cc in method.filter(ClassCreator):
+                    c_name = cc.type.name if hasattr(cc.type, "name") else ""
+                    if c_name in CRYPTO_CLASS_CREATORS:
+                        method_has_crypto = True
+                        break
 
             for _, ldecl in method.filter(LocalVariableDeclaration):
                 for d in ldecl.declarators:
@@ -426,16 +503,21 @@ class JavaContractEngine(BaseContractEngine):
                     if val_resolved == "DYNAMIC_RANDOM":
                         randomized_vars.add(v_name)
 
-            # Interprocedural caller parameter resolution
-            if method.parameters:
+            # Interprocedural caller parameter resolution (targeted to methods with crypto and referenced params)
+            if method_has_crypto and method.parameters:
+                method_param_refs = {mr.member for _, mr in method.filter(MemberReference)}
                 for p_idx, param in enumerate(method.parameters):
-                    resolved_p = JavaAstHelper.resolve_param_recursive(class_name, method.name, p_idx, file_path, self._ast_cache)
-                    if resolved_p:
-                        local_scope[param.name] = Literal(value=f'"{resolved_p}"')
-                        if resolved_p.isdigit():
-                            method_int_constants[param.name] = int(resolved_p)
-                        if resolved_p == "DYNAMIC_RANDOM":
-                            randomized_vars.add(param.name)
+                    if param.name in method_param_refs:
+                        resolved_p = JavaAstHelper.resolve_param_recursive(
+                            class_name, method.name, p_idx, file_path, self._ast_cache,
+                            memo=self._param_resolution_cache
+                        )
+                        if resolved_p:
+                            local_scope[param.name] = Literal(value=f'"{resolved_p}"')
+                            if resolved_p.isdigit():
+                                method_int_constants[param.name] = int(resolved_p)
+                            if resolved_p == "DYNAMIC_RANDOM":
+                                randomized_vars.add(param.name)
 
             # Track direct PRNG invocations
             for _, inv in method.filter(MethodInvocation):
