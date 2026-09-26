@@ -1,6 +1,6 @@
 {
   "certificate_id": "ecdat-np-562c837e93a7d8f7",
-  "timestamp": "2026-09-24T06:34:09.379636+00:00",
+  "timestamp": "2026-09-26T00:25:40.354706+00:00",
   "merkle_root_hex": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f",
   "target_project": "sample_crypto_app",
   "audited_perimeter": {

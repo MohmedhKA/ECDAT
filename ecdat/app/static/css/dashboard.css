@@ -1,0 +1,766 @@
+/* ==========================================================================
+   ECDAT Modern Enterprise Security Dashboard Stylesheet (Light Theme)
+   Design Philosophy: Crisp White/Slate Base, High Information Density,
+   Plus Jakarta Sans & JetBrains Mono, Pinterest Masonry Waterfall Strategy.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-base: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #ffffff;
+    --bg-sunken: #f1f5f9;
+    --bg-sunken-alt: #e2e8f0;
+    
+    --border-subtle: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --border-active: #0284c7;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    /* Functional Severity Palette (Light Theme) */
+    --sev-critical: #dc2626;
+    --sev-critical-bg: #fee2e2;
+    --sev-critical-border: #fca5a5;
+    
+    --sev-high: #d97706;
+    --sev-high-bg: #fef3c7;
+    --sev-high-border: #fcd34d;
+    
+    --sev-medium: #b45309;
+    --sev-medium-bg: #fef9c3;
+    --sev-medium-border: #fde047;
+    
+    --sev-low: #0284c7;
+    --sev-low-bg: #e0f2fe;
+    --sev-low-border: #bae6fd;
+    
+    /* Quantum Safe & Brand Accents */
+    --pqc-emerald: #16a34a;
+    --pqc-emerald-bg: #dcfce7;
+    --pqc-emerald-border: #86efac;
+    
+    --accent-cyan: #0284c7;
+    --accent-blue: #2563eb;
+    --accent-purple: #7c3aed;
+    --accent-purple-bg: #f3e8ff;
+    --accent-purple-border: #d8b4fe;
+
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
+.top-header {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.75rem;
+    gap: 1.5rem;
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.brand-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0284c7, #16a34a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.brand-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.brand-subtitle {
+    font-size: 0.7rem;
+    color: var(--pqc-emerald);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.project-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.project-select-wrapper {
+    position: relative;
+}
+
+.project-select {
+    background-color: var(--bg-sunken);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 0.5rem 2.2rem 0.5rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    transition: all 0.2s ease;
+}
+
+.project-select:hover, .project-select:focus {
+    border-color: var(--border-active);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0369a1, #075985);
+    box-shadow: 0 4px 8px rgba(2, 132, 199, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-emerald {
+    background: #16a34a;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+}
+.btn-emerald:hover {
+    background: #15803d;
+    box-shadow: 0 4px 8px rgba(22, 163, 74, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #ffffff;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+}
+.btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    background-color: var(--bg-sunken);
+}
+
+/* ==========================================================================
+   Navigation Tabs
+   ========================================================================== */
+.nav-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 1.75rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-subtle);
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+}
+
+.nav-tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.nav-tab-item:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-sunken);
+}
+
+.nav-tab-item.active {
+    color: #0284c7;
+    background-color: #e0f2fe;
+    border-color: #bae6fd;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Pinterest Masonry Layout (Waterfall Grid)
+   ========================================================================== */
+.dashboard-container {
+    max-width: 1720px;
+    margin: 0 auto;
+    padding: 1.75rem;
+}
+
+.pinterest-masonry-wrapper {
+    width: 100%;
+}
+
+.pinterest-masonry {
+    column-count: 1;
+    column-gap: 1.5rem;
+    width: 100%;
+}
+
+@media (min-width: 680px) {
+    .pinterest-masonry {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 1100px) {
+    .pinterest-masonry {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 1540px) {
+    .pinterest-masonry {
+        column-count: 4;
+    }
+}
+
+.masonry-card {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1.35rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+.masonry-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
+}
+
+.masonry-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.masonry-card.theme-emerald::before { background: var(--pqc-emerald); }
+.masonry-card.theme-critical::before { background: var(--sev-critical); }
+.masonry-card.theme-high::before { background: var(--sev-high); }
+.masonry-card.theme-cyan::before { background: var(--accent-cyan); }
+.masonry-card.theme-purple::before { background: var(--accent-purple); }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.card-badge {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* Lively Chart Containers */
+.lively-chart-box {
+    background-color: var(--bg-sunken);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    margin: 0.85rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-drilldown-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.card-drilldown-hint span.link-text {
+    color: var(--accent-cyan);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.masonry-card:hover .card-drilldown-hint span.link-text {
+    color: #0369a1;
+}
+
+/* ==========================================================================
+   Stat Grids & Metric Pills
+   ========================================================================== */
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.stat-item {
+    background-color: var(--bg-sunken);
+    padding: 0.75rem 0.95rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+.stat-val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.stat-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-sunken-alt);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+/* ==========================================================================
+   Tab View Panes
+   ========================================================================== */
+.tab-content-pane {
+    display: none;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.tab-content-pane.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-header-banner {
+    background-color: #ffffff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-title-wrap h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.tab-title-wrap p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.tab-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Modal & Drawers
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    background-color: #ffffff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 580px;
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    transform: translateY(10px);
+    transition: transform 0.2s ease;
+}
+
+.modal-overlay.active .modal-box {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.modal-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+.modal-close:hover { color: var(--text-primary); }
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-input {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-family: var(--font-mono);
+    outline: none;
+    transition: all 0.2s ease;
+}
+.form-input:focus {
+    border-color: var(--border-active);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+/* ==========================================================================
+   Live Scanning Drawer / Banner
+   ========================================================================== */
+.live-scan-drawer {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1.35rem;
+    width: 380px;
+    box-shadow: var(--shadow-lg);
+    z-index: 500;
+    display: none;
+}
+
+.live-scan-drawer.active {
+    display: block;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.log-stream-box {
+    background-color: var(--bg-sunken);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem;
+    max-height: 120px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: #334155;
+    margin-top: 0.5rem;
+    white-space: pre-wrap;
+}
+
+/* ==========================================================================
+   Utility Classes & Badges (Light Theme)
+   ========================================================================== */
+.badge-critical { background-color: var(--sev-critical-bg); color: var(--sev-critical); border: 1px solid var(--sev-critical-border); }
+.badge-high { background-color: var(--sev-high-bg); color: var(--sev-high); border: 1px solid var(--sev-high-border); }
+.badge-medium { background-color: var(--sev-medium-bg); color: var(--sev-medium); border: 1px solid var(--sev-medium-border); }
+.badge-low { background-color: var(--sev-low-bg); color: var(--sev-low); border: 1px solid var(--sev-low-border); }
+.badge-pqc { background-color: var(--pqc-emerald-bg); color: var(--pqc-emerald); border: 1px solid var(--pqc-emerald-border); }
+
+.mono { font-family: var(--font-mono); }
+.text-emerald { color: var(--pqc-emerald); }
+.text-critical { color: var(--sev-critical); }
+.text-high { color: var(--sev-high); }
+.text-muted { color: var(--text-muted); }
+
+
+/* ==========================================================================
+   CISO Briefing Formatted Tables & Standards Banner
+   ========================================================================== */
+.ciso-table-wrap {
+    margin: 1.25rem 0;
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-sm);
+    background: #ffffff;
+}
+
+.ciso-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.ciso-table th {
+    background-color: var(--bg-sunken);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border-strong);
+}
+
+.ciso-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.ciso-table tr:last-child td {
+    border-bottom: none;
+}
+
+.ciso-table tr:hover td {
+    background-color: rgba(2, 132, 199, 0.02);
+}
+
+/* ==========================================================================
+   Micro Variable Flow Drawer & Cards
+   ========================================================================== */
+.variable-flow-drawer {
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+}
+
+.variable-flow-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.variable-flow-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: #0284c7 !important;
+}
+
+.flow-subcard {
+    transition: border-color 0.15s ease;
+}
+
+.flow-subcard:hover {
+    border-color: #0284c7;
+}
+
+/* ==========================================================================
+   Lineage Graph Inspector & Active Selection
+   ========================================================================== */
+#lineage-inspector-card {
+    animation: fadeIn 0.2s ease;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.active-selected-asset {
+    background-color: rgba(2, 132, 199, 0.08) !important;
+    border-left: 3px solid #0284c7 !important;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   1-Click Cryptographic Remediation Modal & Diff Viewer
+   ========================================================================== */
+.remediation-diff-box {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.diff-del {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    display: block;
+}
+
+.diff-add {
+    background: rgba(16, 185, 129, 0.2);
+    color: #86efac;
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    display: block;
+}

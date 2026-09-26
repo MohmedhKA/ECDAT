@@ -133,264 +133,6 @@
             background: rgba(0, 245, 160, 0.7);
         }
 
-        .tab-scroll-container {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 0.35rem;
-            overflow: visible;
-        }
-
-        .tab-scroll-container .tab-btn {
-            min-width: 0;
-            justify-content: center;
-            padding: 0.65rem 0.55rem;
-            text-align: center;
-            white-space: normal;
-            line-height: 1.25;
-        }
-
-        .tab-scroll-container .tab-btn.tab-active::after {
-            bottom: 0;
-        }
-
-        .dashboard-tab-menu {
-            position: relative;
-        }
-
-        .dashboard-tab-menu > summary {
-            align-items: center;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            border-radius: 0.75rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            display: flex;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            font-weight: 700;
-            gap: 0.6rem;
-            justify-content: space-between;
-            list-style: none;
-            padding: 0.7rem 0.85rem;
-        }
-
-        .dashboard-tab-menu > summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .dashboard-tab-menu[open] > summary {
-            border-color: rgba(0, 245, 160, 0.6);
-            color: #00f5a0;
-        }
-
-        .dashboard-tab-menu > summary::after {
-            content: '\2630';
-            color: #00f5a0;
-            font-size: 1rem;
-        }
-
-        .dashboard-tab-menu[open] > summary::after {
-            content: '\2715';
-        }
-
-        .dashboard-tab-menu .tab-scroll-container {
-            background: rgba(6, 9, 17, 0.98);
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            border-radius: 0.75rem;
-            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
-            margin-top: 0.45rem;
-            padding: 0.45rem;
-        }
-
-        .dashboard-command-bar {
-            align-items: center;
-            background: linear-gradient(105deg, rgba(10, 16, 31, 0.96), rgba(15, 23, 42, 0.82));
-            border: 1px solid rgba(51, 65, 85, 0.85);
-            border-radius: 1rem;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: minmax(230px, 1fr) minmax(230px, 0.8fr) auto;
-            padding: 0.65rem 0.8rem;
-        }
-
-        .dashboard-command-title {
-            display: flex;
-            align-items: baseline;
-            flex-wrap: wrap;
-            column-gap: 0.55rem;
-            row-gap: 0.15rem;
-            min-width: 0;
-        }
-
-        .dashboard-command-kicker {
-            color: #00f5a0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-        }
-
-        .dashboard-command-title strong {
-            color: #f8fafc;
-            font-size: 0.78rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .dashboard-command-caption {
-            color: #64748b;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem;
-        }
-
-        .dashboard-command-select-wrap {
-            min-width: 0;
-        }
-
-        #dashboard-view-select {
-            appearance: none;
-            background: #060911;
-            border: 1px solid rgba(0, 245, 160, 0.38);
-            border-radius: 0.65rem;
-            color: #d1fae5;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            font-weight: 700;
-            outline: none;
-            padding: 0.62rem 2rem 0.62rem 0.75rem;
-            width: 100%;
-        }
-
-        #dashboard-view-select:focus {
-            border-color: #00f5a0;
-            box-shadow: 0 0 0 2px rgba(0, 245, 160, 0.12);
-        }
-
-        .dashboard-command-actions {
-            align-items: center;
-            display: flex;
-            gap: 0.4rem;
-            justify-content: flex-end;
-        }
-
-        .dashboard-command-actions button {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(51, 65, 85, 0.9);
-            border-radius: 0.55rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            padding: 0.55rem 0.65rem;
-        }
-
-        .dashboard-command-actions button:hover {
-            border-color: #00f5a0;
-            color: #00f5a0;
-        }
-
-        .dashboard-command-status {
-            align-items: center;
-            color: #64748b;
-            display: inline-flex;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.58rem;
-            font-weight: 800;
-            gap: 0.3rem;
-        }
-
-        .dashboard-status-dot {
-            background: #00f5a0;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(0, 245, 160, 0.8);
-            height: 0.4rem;
-            width: 0.4rem;
-        }
-
-        @media (max-width: 820px) {
-            .dashboard-command-bar {
-                grid-template-columns: 1fr auto;
-            }
-
-            .dashboard-command-select-wrap {
-                grid-column: 1 / -1;
-                grid-row: 2;
-            }
-        }
-
-        @media (max-width: 520px) {
-            .dashboard-command-caption,
-            .dashboard-command-status {
-                display: none;
-            }
-
-            .dashboard-command-actions button {
-                font-size: 0.58rem;
-                padding: 0.5rem;
-            }
-        }
-
-        .cbom-inventory-table {
-            width: 100%;
-            table-layout: fixed;
-        }
-
-        .cbom-inventory-table th,
-        .cbom-inventory-table td {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-        }
-
-        @media (max-width: 900px) {
-            .tab-scroll-container {
-                grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-            }
-
-            .cbom-inventory-table thead {
-                display: none;
-            }
-
-            .cbom-inventory-table,
-            .cbom-inventory-table tbody,
-            .cbom-inventory-table tr,
-            .cbom-inventory-table td {
-                display: block;
-                width: 100%;
-            }
-
-            .cbom-inventory-table tr {
-                padding: 0.75rem;
-                border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-            }
-
-            .cbom-inventory-table td {
-                display: grid;
-                grid-template-columns: minmax(7rem, 34%) minmax(0, 1fr);
-                gap: 0.75rem;
-                padding: 0.45rem 0.25rem;
-                text-align: left;
-            }
-
-            .cbom-inventory-table td::before {
-                color: #64748b;
-                content: attr(data-label);
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 0.65rem;
-                font-weight: 700;
-                letter-spacing: 0.04em;
-                text-transform: uppercase;
-            }
-        }
-
-        @media (max-width: 520px) {
-            .tab-scroll-container .tab-btn {
-                font-size: 0.68rem;
-            }
-        }
-
         /* Academic Mathematical Typography (KaTeX Prominence) */
         .katex {
             font-size: 1.18em !important;
@@ -611,15 +353,8 @@
                 </div>
             </div>
 
-            <!-- Fleet Navigation & Scan Now Toolbar Slot -->
-            <!-- FLEET_NAVIGATION_SLOT_START -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <button id="btn-scan-now" onclick="triggerCurrentProjectScan()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition shadow-md shadow-cyan-900/30 ring-1 ring-cyan-400/50" title="Trigger immediate cryptographic scan of this target">
-                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    <span>Scan Now</span>
-                </button>
-            </div>
-            <!-- FLEET_NAVIGATION_SLOT_END -->
+            <!-- Fleet Navigation Toolbar Slot -->
+            <!-- FLEET_NAVIGATION_SLOT_START --><!-- FLEET_NAVIGATION_SLOT_END -->
 
             <!-- Header Quick Actions & Merkle Root Chip -->
             <div class="flex items-center flex-wrap gap-2 justify-end flex-shrink-0">
@@ -758,38 +493,48 @@
 
     <!-- Tab Navigation Bar -->
     <nav class="max-w-[1720px] mx-auto px-4 sm:px-8 xl:px-12 mt-6 w-full border-b border-slate-800">
-        <div class="dashboard-command-bar" data-legacy-tab-ids="tab-btn-contagion tab-btn-lineage tab-btn-mosca tab-btn-pareto tab-btn-cbom tab-btn-buffer tab-btn-supplychain tab-btn-proof tab-btn-unknowns tab-btn-ciso">
-            <div class="dashboard-command-title">
-                <span class="dashboard-command-kicker">VIEW</span>
-                <strong id="active-view-label">Cryptographic Contagion Graph</strong>
-                <span class="dashboard-command-caption">Navigate the audit surface</span>
-            </div>
-            <label class="dashboard-command-select-wrap">
-                <span class="sr-only">Dashboard section</span>
-                <select id="dashboard-view-select" onchange="switchTab(this.value)" aria-label="Dashboard section">
-                    <optgroup label="Analyze">
-                        <option value="contagion">Cryptographic Contagion Graph</option>
-                        <option value="lineage">Father Marko Lineage</option>
-                        <option value="mosca">Mosca Y-max Schedule</option>
-                        <option value="pareto">Pareto Optimizer</option>
-                    </optgroup>
-                    <optgroup label="Inventory">
-                        <option value="cbom">CBOM Inventory &amp; Trace</option>
-                        <option value="buffer">Buffer Agility Hazards (1)</option>
-                        <option value="supplychain">Supply Chain SBOM (5)</option>
-                    </optgroup>
-                    <optgroup label="Evidence">
-                        <option value="proof">Attestation Sandbox</option>
-                        <option value="unknowns">Unknowns Ledger (4)</option>
-                        <option value="ciso">Executive CISO Report</option>
-                    </optgroup>
-                </select>
-            </label>
-            <div class="dashboard-command-actions">
-                <span class="dashboard-command-status"><span class="dashboard-status-dot"></span>LIVE</span>
-                <button type="button" onclick="switchTab('cbom'); clearCbomFilter();" title="Open full inventory">Inventory</button>
-                <button type="button" onclick="switchTab('ciso');" title="Open executive report">Briefing</button>
-            </div>
+        <div class="flex space-x-1 sm:space-x-2 overflow-x-auto tab-scroll-container text-xs font-semibold text-slate-400 pb-2">
+            <button onclick="switchTab('contagion')" id="tab-btn-contagion" class="tab-btn tab-active pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3" stroke-width="2"/><circle cx="6" cy="12" r="3" stroke-width="2"/><circle cx="18" cy="19" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.59 13.51l6.83 3.98m-.01-10.98l-6.82 3.98"/></svg>
+                <span>Cryptographic Contagion Graph ($R_0$)</span>
+            </button>
+            <button onclick="switchTab('lineage')" id="tab-btn-lineage" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Father Marko Lineage</span>
+                <span class="bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded text-[10px] font-mono border border-cyan-800/60">Provenance</span>
+            </button>
+            <button onclick="switchTab('mosca')" id="tab-btn-mosca" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/></svg>
+                <span>Mosca $Y_{\max}$ Schedule</span>
+            </button>
+                        <button onclick="switchTab('pareto')" id="tab-btn-pareto" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                <span>Pareto Optimizer</span>
+            </button>
+            <button onclick="switchTab('cbom')" id="tab-btn-cbom" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                <span>CBOM Inventory & Trace</span>
+            </button>
+            <button onclick="switchTab('buffer')" id="tab-btn-buffer" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>Buffer Agility Hazards (1)</span>
+            </button>
+            <button onclick="switchTab('supplychain')" id="tab-btn-supplychain" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <span>Supply Chain SBOM (5)</span>
+            </button>
+            <button onclick="switchTab('proof')" id="tab-btn-proof" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-teal-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <span>Attestation Sandbox</span>
+            </button>
+            <button onclick="switchTab('unknowns')" id="tab-btn-unknowns" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span>Unknowns Ledger (4)</span>
+            </button>
+            <button onclick="switchTab('ciso')" id="tab-btn-ciso" class="tab-btn pb-3 px-3 flex items-center gap-2 hover:text-slate-200">
+                <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Executive CISO Report</span>
+            </button>
         </div>
     </nav>
 
@@ -1290,8 +1035,8 @@
             </div>
 
             <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-                <div>
-                    <table class="cbom-inventory-table text-left text-xs">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
                         <thead class="bg-slate-950/80 border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                             <tr>
                                 <th class="py-3 px-4">Asset ID & Component</th>
@@ -1848,55 +1593,27 @@
     <!-- Embedded Datasets and Client-Side Engine -->
     <script>
         const ASSETS_DATA = [{"asset_id": "ASSET-001", "component": "app:session_key", "file_path": "app.py", "line_number": 8, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "EPHEMERAL", "x_years": 0.0, "z_reg_year": 2050, "y_max_years": 24.0, "risk_level": "LOW", "hndl_vulnerable": false, "recommended_hybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)", "recommended_pqc": "ML-DSA-65 (NIST FIPS 204)", "target_standard": "NIST FIPS 204 / IETF Composite Signatures", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "HIGH", "evidence": "client_socket.sendall", "guidance": "Replace classical signature with dual composite or ML-DSA-65. CRITICAL: Signature size expands by 12.9x (to 3309 bytes). Audit message transport MTU, network packet fragmentation, and in-memory buffer allocations before rolling out.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "session_key = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": "client_socket.sendall", "evidence": "Network socket or HTTP transmission; transient volatile buffer zeroed on session close. (Matched sink: 'client_socket.sendall' at line 9)."}, "intent_class": "AUTHENTICATION_SIGNATURE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 5, "mtu_warning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."}, {"asset_id": "ASSET-002", "component": "app:auth_token", "file_path": "app.py", "line_number": 14, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "SHORT_TERM", "x_years": 1.5, "z_reg_year": 2050, "y_max_years": 22.5, "risk_level": "LOW", "hndl_vulnerable": true, "recommended_hybrid": "N/A (Symmetric)", "recommended_pqc": "AES-256-GCM", "target_standard": "NIST SP 800-38D", "security_level": "256-bit Classical / 128-bit Post-Quantum (Grover resilient)", "confidence": "HIGH", "evidence": "redis.setex", "guidance": "AES-256 authenticated encryption provides 128 bits of security margin against Grover's quantum search algorithm. No migration required under NIST IR 8547 and OMB M-26-15.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "auth_token = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": "redis.setex", "evidence": "Transient caching layer with TTL expiration. (Matched sink: 'redis.setex' at line 15)."}, "intent_class": "OPERATIONAL_UTILITY", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": null}, {"asset_id": "ASSET-003", "component": "app:encrypted_pan", "file_path": "app.py", "line_number": 20, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "OPERATIONAL", "x_years": 1.5, "z_reg_year": 2050, "y_max_years": 22.5, "risk_level": "LOW", "hndl_vulnerable": true, "recommended_hybrid": "N/A (Symmetric)", "recommended_pqc": "AES-256-GCM", "target_standard": "NIST SP 800-38D", "security_level": "256-bit Classical / 128-bit Post-Quantum (Grover resilient)", "confidence": "HIGH", "evidence": "db.session.add", "guidance": "AES-256 authenticated encryption provides 128 bits of security margin against Grover's quantum search algorithm. No migration required under NIST IR 8547 and OMB M-26-15.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "encrypted_pan = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": "db.session.add", "evidence": "Relational/document database persistence sink (active operational store). (Matched sink: 'db.session.add' at line 21)."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": null}, {"asset_id": "ASSET-004", "component": "app:encrypted_archive", "file_path": "app.py", "line_number": 27, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "ARCHIVAL", "x_years": 1.5, "z_reg_year": 2050, "y_max_years": 22.5, "risk_level": "LOW", "hndl_vulnerable": true, "recommended_hybrid": "N/A (Symmetric)", "recommended_pqc": "AES-256-GCM", "target_standard": "NIST SP 800-38D", "security_level": "256-bit Classical / 128-bit Post-Quantum (Grover resilient)", "confidence": "HIGH", "evidence": "s3.put_object", "guidance": "AES-256 authenticated encryption provides 128 bits of security margin against Grover's quantum search algorithm. No migration required under NIST IR 8547 and OMB M-26-15.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "encrypted_archive = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": "s3.put_object", "evidence": "Long-term disk, file, or cloud object storage archive sink. (Matched sink: 's3.put_object' at line 28)."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": null}, {"asset_id": "ASSET-005", "component": "app:signature", "file_path": "app.py", "line_number": 34, "algorithm": "ECDSA-P256", "key_size": 256, "primitive": "SIGNATURE", "x_tier": "HUMAN_REVIEW", "x_years": 1.5, "z_reg_year": 2030, "y_max_years": 2.5, "risk_level": "MANUAL_REVIEW_REQUIRED", "hndl_vulnerable": true, "recommended_hybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)", "recommended_pqc": "ML-DSA-65 (NIST FIPS 204)", "target_standard": "NIST FIPS 204 / IETF Composite Signatures", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "LOW", "evidence": "vendor_client.sync_data", "guidance": "Replace classical signature with dual composite or ML-DSA-65. CRITICAL: Signature size expands by 51.7x (to 3309 bytes). Audit message transport MTU, network packet fragmentation, and in-memory buffer allocations before rolling out.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "signature = cipher.sign", "description": "Python cipher.sign digital signature invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "cwe": "CWE-326", "ecdat:risk_level": "HIGH", "sink": "vendor_client.sync_data", "evidence": "Taint escaped across module boundary into unanalyzed function 'vendor_client.sync_data' at line 40. Static persistence sink could not be verified automatically."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 5, "mtu_warning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."}, {"asset_id": "ASSET-006", "component": "app:token_blob", "file_path": "app.py", "line_number": 39, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "HUMAN_REVIEW", "x_years": 1.5, "z_reg_year": 2030, "y_max_years": 2.5, "risk_level": "MANUAL_REVIEW_REQUIRED", "hndl_vulnerable": true, "recommended_hybrid": "N/A (Symmetric)", "recommended_pqc": "AES-256-GCM", "target_standard": "NIST SP 800-38D", "security_level": "256-bit Classical / 128-bit Post-Quantum (Grover resilient)", "confidence": "LOW", "evidence": "vendor_client.sync_data", "guidance": "AES-256 authenticated encryption provides 128 bits of security margin against Grover's quantum search algorithm. No migration required under NIST IR 8547 and OMB M-26-15.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "token_blob = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": "vendor_client.sync_data", "evidence": "Taint escaped across module boundary into unanalyzed function 'vendor_client.sync_data' at line 40. Static persistence sink could not be verified automatically."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": null}, {"asset_id": "ASSET-007", "component": "common_crypto:session_key", "file_path": "common_crypto.py", "line_number": 8, "algorithm": "AES-256-GCM", "key_size": 256, "primitive": "ENCRYPTION", "x_tier": "EPHEMERAL", "x_years": 0.0, "z_reg_year": 2050, "y_max_years": 24.0, "risk_level": "LOW", "hndl_vulnerable": false, "recommended_hybrid": "N/A (Symmetric)", "recommended_pqc": "AES-256-GCM", "target_standard": "NIST SP 800-38D", "security_level": "256-bit Classical / 128-bit Post-Quantum (Grover resilient)", "confidence": "MEDIUM", "evidence": "Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.", "guidance": "AES-256 authenticated encryption provides 128 bits of security margin against Grover's quantum search algorithm. No migration required under NIST IR 8547 and OMB M-26-15.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "session_key = cipher.encrypt", "description": "Python cipher.encrypt cipher encryption invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "ecdat:risk_level": "LOW", "sink": null, "evidence": "Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 0.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": null}, {"asset_id": "ASSET-008", "component": "common_crypto:token_sig", "file_path": "common_crypto.py", "line_number": 13, "algorithm": "ECDSA-P256", "key_size": 256, "primitive": "SIGNATURE", "x_tier": "EPHEMERAL", "x_years": 0.0, "z_reg_year": 2026, "y_max_years": 0.0, "risk_level": "CRITICAL", "hndl_vulnerable": false, "recommended_hybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)", "recommended_pqc": "ML-DSA-65 (NIST FIPS 204)", "target_standard": "NIST FIPS 204 / IETF Composite Signatures", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "MEDIUM", "evidence": "Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.", "guidance": "Replace classical signature with dual composite or ML-DSA-65. CRITICAL: Signature size expands by 51.7x (to 3309 bytes). Audit message transport MTU, network packet fragmentation, and in-memory buffer allocations before rolling out.", "raw_properties": {"source": "contract_engine", "language": "python", "matched_code": "token_sig = cipher.sign", "description": "Python cipher.sign digital signature invocation", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "cwe": "CWE-326", "ecdat:risk_level": "HIGH", "sink": null, "evidence": "Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope."}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E1_STATIC_ARTIFACT", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 2.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 5, "mtu_warning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."}, {"asset_id": "ASSET-009", "component": "x509_cert:legacy_ca", "file_path": "certs/legacy_ca.crt", "line_number": 1, "algorithm": "RSA-2048", "key_size": 2048, "primitive": "SIGNATURE", "x_tier": "OPERATIONAL", "x_years": 5.0, "z_reg_year": 2031, "y_max_years": 0.0, "risk_level": "CRITICAL", "hndl_vulnerable": true, "recommended_hybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)", "recommended_pqc": "ML-DSA-65 (NIST FIPS 204)", "target_standard": "NIST FIPS 204 / IETF Composite Signatures", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "HIGH", "evidence": "O=Legacy Org,CN=legacy-enterprise-ca.internal", "guidance": "Replace classical signature with dual composite or ML-DSA-65. CRITICAL: Signature size expands by 12.9x (to 3309 bytes). Audit message transport MTU, network packet fragmentation, and in-memory buffer allocations before rolling out.", "raw_properties": {"source": "cbomkit-theia", "language": "asn1", "matched_code": "Subject: O=Legacy Org,CN=legacy-enterprise-ca.internal", "description": "X.509 Certificate (RSA-2048)", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "assetType": "certificate", "subject": "O=Legacy Org,CN=legacy-enterprise-ca.internal", "issuer": "O=Legacy Org,CN=legacy-enterprise-ca.internal", "notValidAfter": "2027-09-04T10:34:09+00:00", "fingerprint": "642938c7122c5822cbece494b2f075c9b04b32a811a3531cd309e6a46f3e05e4", "replicas": ["certs/legacy_ca.crt"]}, "intent_class": "AUTHENTICATION_SIGNATURE", "evidence_level": "E3_CONFIG_CONFIRMED", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 1.8, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 5, "mtu_warning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."}, {"asset_id": "ASSET-010", "component": "keyfile:legacy_rsa_private-key", "file_path": "certs/legacy_rsa.key", "line_number": 1, "algorithm": "RSA-2048", "key_size": 2048, "primitive": "KEY_EXCHANGE", "x_tier": "ARCHIVAL", "x_years": 10.0, "z_reg_year": 2030, "y_max_years": -6.0, "risk_level": "CRITICAL", "hndl_vulnerable": true, "recommended_hybrid": "X25519MLKEM768 (ECDHE-ML-KEM Hybrid)", "recommended_pqc": "ML-KEM-768 (NIST FIPS 203)", "target_standard": "NIST FIPS 203 / IETF RFC 9180", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "HIGH", "evidence": "Direct Cryptographic Material", "guidance": "Deploy X25519MLKEM768 hybrid combiner in TLS 1.3 key_share extension. Maintains classical security if lattice problem experiences zero-day cryptanalytic break, while providing immediate protection against Harvest-Now-Decrypt-Later attacks.", "raw_properties": {"source": "cbomkit-theia", "language": "asn1", "matched_code": "Key: RSA-2048 (private-key)", "description": "Keyfile RSA-2048 (private-key)", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "assetType": "related-crypto-material", "keyType": "private-key", "format": "PEM", "oid": "1.2.840.113549.1.1.1"}, "intent_class": "CONFIDENTIALITY_ENVELOPE", "evidence_level": "E3_CONFIG_CONFIRMED", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 8.0, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 1, "mtu_warning": "STANDARD_ROUTE: ML-KEM-768 (1,184 B) fits within standard 1,500 B MTU. Avoid ML-KEM-1024 (1,568 B) to prevent middlebox packet fragmentation drops."}, {"asset_id": "ASSET-011", "component": "keyfile:legacy_rsa_public-key", "file_path": "certs/legacy_rsa.key", "line_number": 1, "algorithm": "RSA-2048", "key_size": 2048, "primitive": "SIGNATURE", "x_tier": "OPERATIONAL", "x_years": 5.0, "z_reg_year": 2031, "y_max_years": 0.0, "risk_level": "CRITICAL", "hndl_vulnerable": true, "recommended_hybrid": "ECDSA-P256 + ML-DSA-65 (Composite Signature)", "recommended_pqc": "ML-DSA-65 (NIST FIPS 204)", "target_standard": "NIST FIPS 204 / IETF Composite Signatures", "security_level": "NIST Security Category 3 (AES-192 equivalent)", "confidence": "HIGH", "evidence": "Direct Cryptographic Material", "guidance": "Replace classical signature with dual composite or ML-DSA-65. CRITICAL: Signature size expands by 12.9x (to 3309 bytes). Audit message transport MTU, network packet fragmentation, and in-memory buffer allocations before rolling out.", "raw_properties": {"source": "cbomkit-theia", "language": "asn1", "matched_code": "Key: RSA-2048 (public-key)", "description": "Keyfile RSA-2048 (public-key)", "cams_evidence": "Hardcoded cryptographic algorithm literal (no agility abstraction)", "assetType": "related-crypto-material", "keyType": "public-key", "format": "PEM", "oid": "1.2.840.113549.1.1.1"}, "intent_class": "AUTHENTICATION_SIGNATURE", "evidence_level": "E3_CONFIG_CONFIRMED", "agility_level": 0, "exposure_profile": "PUBLIC", "p_hndl": 1.0, "r_q_score": 1.8, "agility_factor": 0.0, "path_profile": "STANDARD", "mtu_constrained": false, "packet_segments": 5, "mtu_warning": "TRANSPORT_ALERT: ML-DSA-65 certificate flight overhead (~5,261 B) requires 5 TCP segments. Middlebox packet drop risk is MEDIUM on strict DF paths."}];
-        const GRAPH_DATA = {"nodes": [{"id": "api_gateway", "label": "api_gateway", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/api_gateway.py", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "common_crypto", "label": "common_crypto", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/common_crypto.py", "r0": 3, "has_crypto": true, "is_superspreader": true, "is_pqc_anchor": false, "color": "#ef4444", "size": 36, "group": "superspreader", "dependents": ["payment_service", "api_gateway", "auth_service"]}, {"id": "app", "label": "app", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/app.py", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "payment_service", "label": "payment_service", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/payment_service.py", "r0": 1, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#3b82f6", "size": 14, "group": "intermediary", "dependents": ["api_gateway"]}, {"id": "auth_service", "label": "auth_service", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/auth_service.py", "r0": 1, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#3b82f6", "size": 14, "group": "intermediary", "dependents": ["api_gateway"]}, {"id": "legacy_ca", "label": "legacy_ca", "file_path": "certs/legacy_ca.crt", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "legacy_rsa", "label": "legacy_rsa", "file_path": "certs/legacy_rsa.key", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "cryptography", "label": "cryptography", "file_path": "requirements.txt", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["pypi-app"]}, {"id": "pypi-app", "label": "pypi-app", "file_path": ".", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "pycryptodome", "label": "pycryptodome", "file_path": "requirements.txt", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["pypi-app"]}, {"id": "@noble/post-quantum", "label": "@noble/post-quantum", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": true, "color": "#10b981", "size": 28, "group": "pqc_anchor", "dependents": ["npm-app"]}, {"id": "npm-app", "label": "npm-app", "file_path": ".", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "node-forge", "label": "node-forge", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["npm-app"]}, {"id": "crypto-js", "label": "crypto-js", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["npm-app"]}], "links": [{"source": "common_crypto", "target": "payment_service", "value": 1}, {"source": "common_crypto", "target": "auth_service", "value": 1}, {"source": "payment_service", "target": "api_gateway", "value": 1}, {"source": "auth_service", "target": "api_gateway", "value": 1}, {"source": "cryptography", "target": "pypi-app", "value": 1}, {"source": "pycryptodome", "target": "pypi-app", "value": 1}, {"source": "@noble/post-quantum", "target": "npm-app", "value": 1}, {"source": "node-forge", "target": "npm-app", "value": 1}, {"source": "crypto-js", "target": "npm-app", "value": 1}]};
+        const GRAPH_DATA = {"nodes": [{"id": "api_gateway", "label": "api_gateway", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/api_gateway.py", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "common_crypto", "label": "common_crypto", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/common_crypto.py", "r0": 3, "has_crypto": true, "is_superspreader": true, "is_pqc_anchor": false, "color": "#ef4444", "size": 36, "group": "superspreader", "dependents": ["auth_service", "payment_service", "api_gateway"]}, {"id": "app", "label": "app", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/app.py", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "payment_service", "label": "payment_service", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/payment_service.py", "r0": 1, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#3b82f6", "size": 14, "group": "intermediary", "dependents": ["api_gateway"]}, {"id": "auth_service", "label": "auth_service", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/auth_service.py", "r0": 1, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#3b82f6", "size": 14, "group": "intermediary", "dependents": ["api_gateway"]}, {"id": "legacy_ca", "label": "legacy_ca", "file_path": "certs/legacy_ca.crt", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "legacy_rsa", "label": "legacy_rsa", "file_path": "certs/legacy_rsa.key", "r0": 0, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": []}, {"id": "cryptography", "label": "cryptography", "file_path": "requirements.txt", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["pypi-app"]}, {"id": "pypi-app", "label": "pypi-app", "file_path": ".", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "pycryptodome", "label": "pycryptodome", "file_path": "requirements.txt", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["pypi-app"]}, {"id": "@noble/post-quantum", "label": "@noble/post-quantum", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": true, "color": "#10b981", "size": 28, "group": "pqc_anchor", "dependents": ["npm-app"]}, {"id": "npm-app", "label": "npm-app", "file_path": ".", "r0": 0, "has_crypto": false, "is_superspreader": false, "is_pqc_anchor": false, "color": "#64748b", "size": 10, "group": "consumer", "dependents": []}, {"id": "node-forge", "label": "node-forge", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["npm-app"]}, {"id": "crypto-js", "label": "crypto-js", "file_path": "package.json", "r0": 1, "has_crypto": true, "is_superspreader": false, "is_pqc_anchor": false, "color": "#f97316", "size": 18, "group": "crypto_source", "dependents": ["npm-app"]}], "links": [{"source": "common_crypto", "target": "payment_service", "value": 1}, {"source": "common_crypto", "target": "auth_service", "value": 1}, {"source": "payment_service", "target": "api_gateway", "value": 1}, {"source": "auth_service", "target": "api_gateway", "value": 1}, {"source": "cryptography", "target": "pypi-app", "value": 1}, {"source": "pycryptodome", "target": "pypi-app", "value": 1}, {"source": "@noble/post-quantum", "target": "npm-app", "value": 1}, {"source": "node-forge", "target": "npm-app", "value": 1}, {"source": "crypto-js", "target": "npm-app", "value": 1}]};
         const LINEAGE_DATA = {"nodes": [], "links": [], "has_ingress": false, "stats": {"ingress": 0, "nexus": 0, "egress": 0, "edges": 0, "has_ingress": false, "total_flows": 0}, "father_marko": {"has_ingress": false, "hubs": [], "spokes": [], "edges": [], "stats": {"hubs": 0, "spokes": 0, "edges": 0}}, "variable_flow": {"has_flows": false, "flows": [], "modules": [], "stats": {"total_flows": 0, "modules_count": 0}}};
         const HAZARDS_DATA = [{"variable": "sig_buffer", "file": "app.py", "file_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app/app.py", "line": 33, "allocated": 64, "required": 3309, "severity": "CRITICAL", "description": "FIXED BUFFER HAZARD: Variable 'sig_buffer' at line 33 allocates a static buffer of 64 bytes. Target PQC primitive (e.g. ML-DSA-65) requires 3309 bytes. Swapping algorithm without expanding buffer causes memory overflow or serialization failure."}];
         const PROOFS_DATA = [{"asset_id": "ASSET-001", "component_name": "app:session_key", "path_hash": "568470d013cd12e4", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "EPHEMERAL", "risk_level": "LOW", "y_max_years": 24.0, "z_regulatory_year": 2050, "leaf_index": 0, "leaf_hash": "44c6436a728aaba66a3e5284372452a125dd16052c002a89dddf9da7a061c871", "sibling_path": [{"hash": "690aac1ebf9c0cf71cf35d5c2a7dcb32e1bc56dbc7cad73fd9bb0cf41322ccc6", "position": "right"}, {"hash": "30ec534a8b35fcf8bfe2cfbc7a32f59fc496db690064336b398c9f06d164ef24", "position": "right"}, {"hash": "d1047f5e604b41965d9aafa29597dae40c531b543373bb90750314dd949bf2dc", "position": "right"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-002", "component_name": "app:auth_token", "path_hash": "568470d013cd12e4", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "SHORT_TERM", "risk_level": "LOW", "y_max_years": 22.5, "z_regulatory_year": 2050, "leaf_index": 1, "leaf_hash": "690aac1ebf9c0cf71cf35d5c2a7dcb32e1bc56dbc7cad73fd9bb0cf41322ccc6", "sibling_path": [{"hash": "44c6436a728aaba66a3e5284372452a125dd16052c002a89dddf9da7a061c871", "position": "left"}, {"hash": "30ec534a8b35fcf8bfe2cfbc7a32f59fc496db690064336b398c9f06d164ef24", "position": "right"}, {"hash": "d1047f5e604b41965d9aafa29597dae40c531b543373bb90750314dd949bf2dc", "position": "right"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-003", "component_name": "app:encrypted_pan", "path_hash": "568470d013cd12e4", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "OPERATIONAL", "risk_level": "LOW", "y_max_years": 22.5, "z_regulatory_year": 2050, "leaf_index": 2, "leaf_hash": "e9ca57a00075dca480ac4a8581411e36abd1fa22aa2e701dbc3f3af1fdc24972", "sibling_path": [{"hash": "29f13253bf4085af4b1f66b9c4e1244286fc09d726f98d9e0faa66c89a8e48d1", "position": "right"}, {"hash": "848449660bbf04beb17c305a02e4d7a8d0f4a711847568d3ff8b1c2bb2240e26", "position": "left"}, {"hash": "d1047f5e604b41965d9aafa29597dae40c531b543373bb90750314dd949bf2dc", "position": "right"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-004", "component_name": "app:encrypted_archive", "path_hash": "568470d013cd12e4", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "ARCHIVAL", "risk_level": "LOW", "y_max_years": 22.5, "z_regulatory_year": 2050, "leaf_index": 3, "leaf_hash": "29f13253bf4085af4b1f66b9c4e1244286fc09d726f98d9e0faa66c89a8e48d1", "sibling_path": [{"hash": "e9ca57a00075dca480ac4a8581411e36abd1fa22aa2e701dbc3f3af1fdc24972", "position": "left"}, {"hash": "848449660bbf04beb17c305a02e4d7a8d0f4a711847568d3ff8b1c2bb2240e26", "position": "left"}, {"hash": "d1047f5e604b41965d9aafa29597dae40c531b543373bb90750314dd949bf2dc", "position": "right"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-005", "component_name": "app:signature", "path_hash": "568470d013cd12e4", "algorithm": "ECDSA-P256", "key_size": 256, "primitive_type": "SIGNATURE", "x_tier": "HUMAN_REVIEW", "risk_level": "MANUAL_REVIEW_REQUIRED", "y_max_years": 2.5, "z_regulatory_year": 2030, "leaf_index": 4, "leaf_hash": "abffb622b1ffc6d0f739d291b680212631049e38daaf20f72630867ce07fd07b", "sibling_path": [{"hash": "0ac98c4cabf8f79501cf7c62616231bef6a5a3bbe5e584d096e65de65ce59f2b", "position": "right"}, {"hash": "4543a2050a52b0079f14cbae6b3f5e179943e0a7b422bc510776e383e15d69b1", "position": "right"}, {"hash": "dfb1589dc3e9297d27deca35a0bde89e4e6bf0ecf5136995dddce8dd712b0e20", "position": "left"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-006", "component_name": "app:token_blob", "path_hash": "568470d013cd12e4", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "HUMAN_REVIEW", "risk_level": "MANUAL_REVIEW_REQUIRED", "y_max_years": 2.5, "z_regulatory_year": 2030, "leaf_index": 5, "leaf_hash": "0ac98c4cabf8f79501cf7c62616231bef6a5a3bbe5e584d096e65de65ce59f2b", "sibling_path": [{"hash": "abffb622b1ffc6d0f739d291b680212631049e38daaf20f72630867ce07fd07b", "position": "left"}, {"hash": "4543a2050a52b0079f14cbae6b3f5e179943e0a7b422bc510776e383e15d69b1", "position": "right"}, {"hash": "dfb1589dc3e9297d27deca35a0bde89e4e6bf0ecf5136995dddce8dd712b0e20", "position": "left"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-007", "component_name": "common_crypto:session_key", "path_hash": "e9cb5658dd0b14c7", "algorithm": "AES-256-GCM", "key_size": 256, "primitive_type": "ENCRYPTION", "x_tier": "EPHEMERAL", "risk_level": "LOW", "y_max_years": 24.0, "z_regulatory_year": 2050, "leaf_index": 6, "leaf_hash": "a5ebaa51b034418311e54b31244f45cc5573bdbeefab4f3677dc3762bd72a08d", "sibling_path": [{"hash": "bec943d8593cef1fcdeff2ab21ee43deb90162ac4f241b971b18ce608a46fd37", "position": "right"}, {"hash": "3c57145535899edc79e3ef545da02b7a5a7d5f43f8f6900a305d0bce6edec9f3", "position": "left"}, {"hash": "dfb1589dc3e9297d27deca35a0bde89e4e6bf0ecf5136995dddce8dd712b0e20", "position": "left"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-008", "component_name": "common_crypto:token_sig", "path_hash": "e9cb5658dd0b14c7", "algorithm": "ECDSA-P256", "key_size": 256, "primitive_type": "SIGNATURE", "x_tier": "EPHEMERAL", "risk_level": "CRITICAL", "y_max_years": 0.0, "z_regulatory_year": 2026, "leaf_index": 7, "leaf_hash": "bec943d8593cef1fcdeff2ab21ee43deb90162ac4f241b971b18ce608a46fd37", "sibling_path": [{"hash": "a5ebaa51b034418311e54b31244f45cc5573bdbeefab4f3677dc3762bd72a08d", "position": "left"}, {"hash": "3c57145535899edc79e3ef545da02b7a5a7d5f43f8f6900a305d0bce6edec9f3", "position": "left"}, {"hash": "dfb1589dc3e9297d27deca35a0bde89e4e6bf0ecf5136995dddce8dd712b0e20", "position": "left"}, {"hash": "7ca4fe98c8f2ec2aec1fbaeafb0407b324a621e4569b04d7bf6a2ff7708e2a1a", "position": "right"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-009", "component_name": "x509_cert:legacy_ca", "path_hash": "c91acad0277f7392", "algorithm": "RSA-2048", "key_size": 2048, "primitive_type": "SIGNATURE", "x_tier": "OPERATIONAL", "risk_level": "CRITICAL", "y_max_years": 0.0, "z_regulatory_year": 2031, "leaf_index": 8, "leaf_hash": "16879e2a88c0983566def0fd3334ee5420324cc673bb6a5ceffd2a2405047dbf", "sibling_path": [{"hash": "19f8df3c9c8977865ddc509837fdf7cf8f495e354fd95f1b53cd9788eb7fafe8", "position": "right"}, {"hash": "717bc1ba48a31266f56efe7d7565a6899b86b3584f10cb6d4bc356d0970fd775", "position": "right"}, {"hash": "6474f124a8e5b783170eb25f0e763ecfc5e2cd196e1dfe81afb5fd693f5b35cf", "position": "right"}, {"hash": "3848a590c00e9041a7a3081c6e7e72ba43edaac877be277591438ebd5f08c167", "position": "left"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-010", "component_name": "keyfile:legacy_rsa_private-key", "path_hash": "ea296f3ef035ee1d", "algorithm": "RSA-2048", "key_size": 2048, "primitive_type": "KEY_EXCHANGE", "x_tier": "ARCHIVAL", "risk_level": "CRITICAL", "y_max_years": -6.0, "z_regulatory_year": 2030, "leaf_index": 9, "leaf_hash": "19f8df3c9c8977865ddc509837fdf7cf8f495e354fd95f1b53cd9788eb7fafe8", "sibling_path": [{"hash": "16879e2a88c0983566def0fd3334ee5420324cc673bb6a5ceffd2a2405047dbf", "position": "left"}, {"hash": "717bc1ba48a31266f56efe7d7565a6899b86b3584f10cb6d4bc356d0970fd775", "position": "right"}, {"hash": "6474f124a8e5b783170eb25f0e763ecfc5e2cd196e1dfe81afb5fd693f5b35cf", "position": "right"}, {"hash": "3848a590c00e9041a7a3081c6e7e72ba43edaac877be277591438ebd5f08c167", "position": "left"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}, {"asset_id": "ASSET-011", "component_name": "keyfile:legacy_rsa_public-key", "path_hash": "ea296f3ef035ee1d", "algorithm": "RSA-2048", "key_size": 2048, "primitive_type": "SIGNATURE", "x_tier": "OPERATIONAL", "risk_level": "CRITICAL", "y_max_years": 0.0, "z_regulatory_year": 2031, "leaf_index": 10, "leaf_hash": "d099832ffc23e1c72dba1255ac5fbaa162bdbbfa2f0b8b5ff8b76ea320a64922", "sibling_path": [{"hash": "d099832ffc23e1c72dba1255ac5fbaa162bdbbfa2f0b8b5ff8b76ea320a64922", "position": "right"}, {"hash": "961d6a334ba2041293b7cda14313d4257ee3fba163dc5c194807fd1d7479748c", "position": "left"}, {"hash": "6474f124a8e5b783170eb25f0e763ecfc5e2cd196e1dfe81afb5fd693f5b35cf", "position": "right"}, {"hash": "3848a590c00e9041a7a3081c6e7e72ba43edaac877be277591438ebd5f08c167", "position": "left"}], "expected_root": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "salt": "ECDAT_SALT_2026"}];
         const DEPS_DATA = [{"package_name": "cryptography", "ecosystem": "pypi", "version": "41.0.0", "manifest_path": "requirements.txt", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Python OpenSSL bindings (classical public key primitives)", "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"}, {"package_name": "pycryptodome", "ecosystem": "pypi", "version": "3.19.0", "manifest_path": "requirements.txt", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Python cryptography library (RSA, DSA, ECC)", "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"}, {"package_name": "@noble/post-quantum", "ecosystem": "npm", "version": "^0.2.0", "manifest_path": "package.json", "category": "POST_QUANTUM", "pqc_readiness": "MIGRATED_PQC", "description": "NIST FIPS 203/204/205 ML-KEM & ML-DSA", "recommendation": "Validated: Post-Quantum standard algorithm"}, {"package_name": "node-forge", "ecosystem": "npm", "version": "^1.3.1", "manifest_path": "package.json", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "RSA/ECC classical cipher suite (HNDL risk)", "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"}, {"package_name": "crypto-js", "ecosystem": "npm", "version": "^4.2.0", "manifest_path": "package.json", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "AES, SHA-2/3, HMAC symmetric algorithms", "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"}];
         const UNKNOWNS_DATA = [{"item_path": "common_crypto.py:13", "category": "UNCONFIRMED_DATAFLOW", "reason": "Dataflow variable 'token_sig' could not be statically bound to a verified cryptographic API call", "recommended_action": "Manually review variable lineage to determine if an unmodeled cryptographic library is invoked."}, {"item_path": "app.py:34", "category": "UNCONFIRMED_DATAFLOW", "reason": "Dataflow variable 'signature' could not be statically bound to a verified cryptographic API call", "recommended_action": "Manually review variable lineage to determine if an unmodeled cryptographic library is invoked."}, {"item_path": "payment_service.py:8", "category": "UNCONFIRMED_DATAFLOW", "reason": "Dataflow variable 'encrypted_envelope' could not be statically bound to a verified cryptographic API call", "recommended_action": "Manually review variable lineage to determine if an unmodeled cryptographic library is invoked."}, {"item_path": "auth_service.py:8", "category": "UNCONFIRMED_DATAFLOW", "reason": "Dataflow variable 'token' could not be statically bound to a verified cryptographic API call", "recommended_action": "Manually review variable lineage to determine if an unmodeled cryptographic library is invoked."}];
         const MERKLE_ROOT_HEX = "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f";
-        const CISO_MD_TEXT = "# ECDAT \u2014 Executive Cryptographic Risk & Migration Report\n\n> **Standards Baseline:** NIST IR 8547 / FIPS 203, 204, 205 | US OMB M-26-15 | GRI 2025 Survey\n> **Attestation Commitment:** SHA-256 Merkle Root `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n\n## 1. Executive Summary\n\n| Metric | Value | Executive Assessment |\n| :--- | :--- | :--- |\n| **Total Cryptographic Assets** | `11` | Discovered across source code & infrastructure |\n| **Critical Risk ($Y_{max} \\le 1.0\\text{y}$)** | `4` | Immediate migration queue (HNDL window open / past deadline) |\n| **High Risk ($1.0 < Y_{max} \\le 2.5\\text{y}$)** | `0` | Must be scheduled in current 2-year planning budget |\n| **Manual Review Required ($E_0$)** | `2` | Dynamic unresolvable cryptographic calls quarantined for auditor triage |\n| **Medium / Low Risk** | `5` | Safe operational window ($> 2.5\\text{y}$ buffer) |\n| **Operational Utility Suppressed** | `1` | False-positives eliminated (ETags/Caches: $R_Q = 0.0$) |\n| **Buffer Overflow Hazards** | `1` | Fixed-size memory allocations incompatible with PQC |\n| **Boundary Unknowns Logged** | `4` | Explicitly audited excluded paths and binary limitations |\n\n### 4-Tier Data Lifespan ($X$) Distribution\n\n| Lifespan Tier | Assets | Estimated Secrecy $X$ | Typical Sinks |\n| :--- | :--- | :--- | :--- |\n| **`EPHEMERAL`** | `3` | ~0 Years | Network sockets, transient memory buffers zeroed on close |\n| **`SHORT_TERM`** | `1` | ~1\u20132 Years | Caching layers (Redis TTL), rotating session tokens |\n| **`OPERATIONAL`** | `3` | ~5 Years | Relational databases (PostgreSQL/MySQL), customer records |\n| **`ARCHIVAL`** | `2` | ~10+ Years | Long-term cloud backups (S3), HIPAA/SOX compliance logs |\n| **`HUMAN_REVIEW`** | `2` | Flagged | Ambiguous dataflows / unanalyzed external library boundaries |\n\n### Cryptographic Agility Maturity (CAMS Model)\n\n| Agility Level | Assets | Architectural Implementation | Refactor Effort | Urgency Multiplier |\n| :--- | :---: | :--- | :---: | :---: |\n| **`L0: RIGID`** | `11` | Hardcoded string literals, inflexible primitives | `1.00x` | `1.00x` (Full urgency) |\n| **`L1: CONFIGURABLE`** | `0` | Parameterized configs/env vars, no code edits | `0.70x` | `0.70x` (30% discount) |\n| **`L2: PROVIDER`** | `0` | Pluggable crypto provider abstraction | `0.40x` | `0.40x` (60% discount) |\n| **`L3: RUNTIME_AGILE`** | `0` | Dynamic runtime negotiation / agile wrapper | `0.15x` | `0.15x` (85% discount) |\n\n### Functional Security Intent (DSIS Lattice)\n\n| Functional Intent Class | Assets | Quantum Exploit Risk | Mitigation Status |\n| :--- | :---: | :--- | :--- |\n| **`CONFIDENTIALITY_ENVELOPE`** | `7` | High ($W=1.0$) | Primary HNDL target \u2014 payload confidentiality |\n| **`AUTHENTICATION_SIGNATURE`** | `3` | Medium-High ($W=0.8$) | Identity forgery \u2014 handshake & token authentication |\n| **`INTEGRITY_CHECKSUM`** | `0` | Low-Medium ($W=0.3$) | Tamper detection \u2014 audit trails & code integrity |\n| **`OPERATIONAL_UTILITY`** | `1` | **Zero ($R_Q = 0.0$)** | **Suppressed from CISO queue (HTTP ETags & CDN caches)** |\n\n### Deployment Exposure & Harvest Interception ($P_{\\text{HNDL}}$)\n\n| Exposure Profile | Assets | $P_{\\text{HNDL}}$ Interception Factor | Threat Model Scope |\n| :--- | :---: | :---: | :--- |\n| **`PUBLIC`** | `11` | `1.00` | Internet Ingress / LoadBalancer (Actively harvested) |\n| **`INTERNAL`** | `0` | `0.05` | Private VPC / ClusterIP (Requires lateral pivot) |\n| **`AIRGAPPED`** | `0` | `0.00` | Standalone isolated host (Immune to passive HNDL) |\n\n### Transport Network Path MTU & PQC Fragmentation Readiness\n\n| Transport Metric | Measured Value | PQC Engineering Assessment |\n| :--- | :--- | :--- |\n| **Effective Path MTU** | `1280 Bytes` | Maximum Transmission Unit over network route |\n| **Route Classification** | **`STANDARD`** | `Standard Ethernet route (1,500 B). ML-KEM-1024 and ML-DSA exceed MSS and require fragmentation.` |\n| **TCP Fragmentation Drop Risk** | **`MEDIUM`** | Middlebox packet drop exposure under PQC expansion |\n| **Don't Fragment (DF) Enforcement** | `True` | Strict DF bit prevents IP fragmentation |\n\n#### PQC Handshake Flight Overhead (NIST FIPS 203 / 204)\n\n| Algorithm | Primitive | Flight Overhead | TCP Packets | Packet Drop Risk |\n| :--- | :--- | :---: | :---: | :---: |\n| **`ML-KEM-512`** | `KEM` | `800 B` | `1 pkt` | `LOW` |\n| **`ML-KEM-768`** | `KEM` | `1184 B` | `1 pkt` | `LOW` |\n| **`ML-KEM-1024`** | `KEM` | `1568 B` | `2 pkt` | `HIGH` |\n| **`X25519MLKEM768`** | `HYBRID_KEM` | `1216 B` | `1 pkt` | `LOW` |\n| **`ML-DSA-44`** | `SIGNATURE` | `3732 B` | `4 pkt` | `HIGH` |\n| **`ML-DSA-65`** | `SIGNATURE` | `5261 B` | `5 pkt` | `HIGH` |\n| **`ML-DSA-87`** | `SIGNATURE` | `7219 B` | `6 pkt` | `HIGH` |\n| **`SLH-DSA-128S`** | `SIGNATURE` | `7888 B` | `7 pkt` | `HIGH` |\n\n---\n\n## 2. Actionable Migration Backlog (Ranked by $Y_{max}$ Budget)\n\nThe table below replaces flat checklists with mathematically grounded deadlines: **$Y_{max} = (Z_{reg} - 2026) - X_{eff}$**.\n\n| Priority | Asset ID | File Location & Line | Trigger Sink / Evidence | Algorithm | CAMS | $X$ Tier | $Y_{max}$ Budget | Mandate Year | Recommended Hybrid | Risk Level |\n| :---: | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :--- | :---: |\n| **#1** | `ASSET-010` | `certs/legacy_rsa.key:1` | `Direct Cryptographic Material` | `RSA-2048` | `RIGID` | `ARCHIVAL` | **`-6.0y`** | `2030` | X25519MLKEM768 (ECDHE-ML-KEM Hybrid) | **`CRITICAL`** |\n| **#2** | `ASSET-008` | `common_crypto.py:13` | `Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.` | `ECDSA-P256` | `RIGID` | `EPHEMERAL` | **`+0.0y`** | `2026` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#3** | `ASSET-009` | `certs/legacy_ca.crt:1` | `O=Legacy Org,CN=legacy-enterprise-ca.internal` | `RSA-2048` | `RIGID` | `OPERATIONAL` | **`+0.0y`** | `2031` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#4** | `ASSET-011` | `certs/legacy_rsa.key:1` | `Direct Cryptographic Material` | `RSA-2048` | `RIGID` | `OPERATIONAL` | **`+0.0y`** | `2031` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#5** | `ASSET-005` | `app.py:34` | `vendor_client.sync_data` | `ECDSA-P256` | `RIGID` | `HUMAN_REVIEW` | **`+2.5y`** | `2030` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`MANUAL_REVIEW_REQUIRED`** |\n| **#6** | `ASSET-006` | `app.py:39` | `vendor_client.sync_data` | `AES-256-GCM` | `RIGID` | `HUMAN_REVIEW` | **`+2.5y`** | `2030` | N/A (Symmetric) | **`MANUAL_REVIEW_REQUIRED`** |\n| **#7** | `ASSET-002` | `app.py:14` | `redis.setex` | `AES-256-GCM` | `RIGID` | `SHORT_TERM` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#8** | `ASSET-003` | `app.py:20` | `db.session.add` | `AES-256-GCM` | `RIGID` | `OPERATIONAL` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#9** | `ASSET-004` | `app.py:27` | `s3.put_object` | `AES-256-GCM` | `RIGID` | `ARCHIVAL` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#10** | `ASSET-001` | `app.py:8` | `client_socket.sendall` | `AES-256-GCM` | `RIGID` | `EPHEMERAL` | **`+24.0y`** | `2050` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`LOW`** |\n| **#11** | `ASSET-007` | `common_crypto.py:8` | `Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.` | `AES-256-GCM` | `RIGID` | `EPHEMERAL` | **`+24.0y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n\n---\n\n## 3. Cryptographic Agility & Buffer Hazard Audit\n\n| Variable Name | Allocated Buffer | PQC Requirement (ML-DSA-65) | Line | Severity | Action Required |\n| :--- | :---: | :---: | :---: | :---: | :--- |\n| `sig_buffer` | `64 B` | `3309 B` | Line 33 | **`CRITICAL`** | Expand static buffer before swapping algorithm to avoid buffer overflow |\n\n---\n\n## 4. Epidemiological R0 Dependency Contagion (Superspreaders)\n\nCryptographic vulnerability propagates through software dependency contact networks. The **$R_0$ score** measures how many downstream services inherit quantum risk from an unmigrated component.\n\n| Component / Module | $R_0$ Score | Direct Crypto | Downstream Affected Services | Actionable Mitigation Impact |\n| :--- | :---: | :---: | :--- | :--- |\n| **`common_crypto`** | **`3`** | `True` | `payment_service, api_gateway, auth_service` | SUPERSPREADER (R0=3): Migrating 'common_crypto' to PQC immediately eliminates quantum risk across 3 downstream services: payment_service, api_gateway, auth_service. |\n\n---\n\n## 5. Privacy-Preserving Attestation via Merkle Commitments\n\nConventional audit practices require handing over full, plain-text Cryptography Bills of Materials (CBOMs), which inadvertently functions as a targeting map for adversaries. ECDAT resolves this through **selective inclusion proofs**:\n\n- **Committed Root Hash:** `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n- **Auditor Verification Protocol:** For any compliance query, ECDAT issues a single leaf proof package (`proof_<assetId>.json`).\n- **Verification Command:**\n  ```bash\n  python -m ecdat.merkle.verifier --proof proofs/proof_asset_1.json --root cbom_root.hex\n  ```\n- **Guarantee:** Proves mathematically that a specific component is compliant without disclosing internal codebase paths or unpatched inventory items.\n\n\n---\n\n## 6. Auditable Unknowns Ledger & Boundary Declarations\n\nConventional vulnerability scanners report false 100% perimeter coverage by silently omitting files or paths they cannot parse. ECDAT enforces **Auditable Boundary Honesty** by declaring all excluded paths, uninspected binary files, and encrypted containers.\n\n| Item Path / Identifier | Category | Scanning Boundary Reason | Recommended Auditor Action |\n| :--- | :---: | :--- | :--- |\n| `common_crypto.py:13` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'token_sig' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `app.py:34` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'signature' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `payment_service.py:8` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'encrypted_envelope' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `auth_service.py:8` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'token' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n\n---\n\n## 7. SLSA / in-toto Signed DSSE Attestation & Negative Proofs\n\nECDAT produces cryptographically non-malleable, tamper-evident audit attestations complying with the **in-toto v1.0 Statement** specification and **RFC 9162 Dead Simple Signing Envelope (DSSE)**.\n\n- **Attestation Envelope File:** `attestation.dsse.json`\n- **Payload Type:** `application/vnd.in-toto+json`\n- **Predicate Type:** `https://ecdat.dev/attestation/v1`\n- **Primary Signer Key ID:** `ed25519:5a20ea9e828ea614` (2 signatures: Ed25519 primary + ML-DSA-65 post-quantum hybrid commitment)\n- **Committed Merkle Root:** `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n\n### Certified Negative Proofs\n\n> **Assertion:** Audited perimeter contains 4 declared boundary unknowns; all other paths certified.\n> \n> ECDAT certifies that within the audited codebase boundary (11 cryptographic assets discovered), no reachable vulnerable primitives outside the declared inventory exist. All exclusions and uninspected binary files are strictly quarantined in the Auditable Unknowns Ledger.\n\n### Independent Auditor Verification Protocol\n\nAuditors can independently verify the authenticity, integrity, and non-repudiation of this scan without access to the ECDAT source code:\n\n```bash\n# Verify Ed25519 DSSE envelope against the public key\npython -m ecdat.attestation.verifier --envelope ecdat_output/attestation.dsse.json --pubkey ecdat_output/attestation_pubkey.pem\n```\n\n---\n\n## 8. Pareto Migration Portfolio Optimization (Pillar 7)\n\nRather than an unranked severity list, ECDAT formulates remediation as a resource-constrained knapsack problem with target budget $B = 10.0$ developer-weeks:\n\n- **Target Sprint Capacity:** `10.0 dev-weeks`\n- **Allocated Effort:** `9.8 dev-weeks`\n- **Estate Risk Reduction Achieved:** `+96.8%` (4 / 11 assets selected)\n\n| Asset ID | Component | Algorithm | Effort (dev-wks) | Blast Reduction ($\\Delta R$) | ROI Efficiency | Sprint Status |\n| :--- | :--- | :--- | :---: | :---: | :---: | :--- |\n| `ASSET-008` | `common_crypto:token_sig` | `ECDSA-P256` | `2.9` | `30.0` | `10.35` | **SELECTED FOR SPRINT** |\n| `ASSET-009` | `x509_cert:legacy_ca` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-010` | `keyfile:legacy_rsa_private-key` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-011` | `keyfile:legacy_rsa_public-key` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-005` | `app:signature` | `ECDSA-P256` | `2.3` | `2.0` | `0.87` | **DEFERRED** |\n| `ASSET-001` | `app:session_key` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-002` | `app:auth_token` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-003` | `app:encrypted_pan` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-004` | `app:encrypted_archive` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-006` | `app:token_blob` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n\n---\n\n## 9. Stochastic Monte Carlo Quantum Risk Analysis\n\nUnder empirical Monte Carlo sampling (5000 iterations) calibrated against the Global Risk Institute (GRI) 2025 Quantum Threat Report:\n\n- **Mean Estate Breach Probability:** `38.3%`\n- **Peak Single-Asset Breach Probability:** `89.8%`\n- **Critical Probabilistic Exposure Assets:** `4`\n";
+        const CISO_MD_TEXT = "# ECDAT \u2014 Executive Cryptographic Risk & Migration Report\n\n> **Standards Baseline:** NIST IR 8547 / FIPS 203, 204, 205 | US OMB M-26-15 | GRI 2025 Survey\n> **Attestation Commitment:** SHA-256 Merkle Root `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n\n## 1. Executive Summary\n\n| Metric | Value | Executive Assessment |\n| :--- | :--- | :--- |\n| **Total Cryptographic Assets** | `11` | Discovered across source code & infrastructure |\n| **Critical Risk ($Y_{max} \\le 1.0\\text{y}$)** | `4` | Immediate migration queue (HNDL window open / past deadline) |\n| **High Risk ($1.0 < Y_{max} \\le 2.5\\text{y}$)** | `0` | Must be scheduled in current 2-year planning budget |\n| **Manual Review Required ($E_0$)** | `2` | Dynamic unresolvable cryptographic calls quarantined for auditor triage |\n| **Medium / Low Risk** | `5` | Safe operational window ($> 2.5\\text{y}$ buffer) |\n| **Operational Utility Suppressed** | `1` | False-positives eliminated (ETags/Caches: $R_Q = 0.0$) |\n| **Buffer Overflow Hazards** | `1` | Fixed-size memory allocations incompatible with PQC |\n| **Boundary Unknowns Logged** | `4` | Explicitly audited excluded paths and binary limitations |\n\n### 4-Tier Data Lifespan ($X$) Distribution\n\n| Lifespan Tier | Assets | Estimated Secrecy $X$ | Typical Sinks |\n| :--- | :--- | :--- | :--- |\n| **`EPHEMERAL`** | `3` | ~0 Years | Network sockets, transient memory buffers zeroed on close |\n| **`SHORT_TERM`** | `1` | ~1\u20132 Years | Caching layers (Redis TTL), rotating session tokens |\n| **`OPERATIONAL`** | `3` | ~5 Years | Relational databases (PostgreSQL/MySQL), customer records |\n| **`ARCHIVAL`** | `2` | ~10+ Years | Long-term cloud backups (S3), HIPAA/SOX compliance logs |\n| **`HUMAN_REVIEW`** | `2` | Flagged | Ambiguous dataflows / unanalyzed external library boundaries |\n\n### Cryptographic Agility Maturity (CAMS Model)\n\n| Agility Level | Assets | Architectural Implementation | Refactor Effort | Urgency Multiplier |\n| :--- | :---: | :--- | :---: | :---: |\n| **`L0: RIGID`** | `11` | Hardcoded string literals, inflexible primitives | `1.00x` | `1.00x` (Full urgency) |\n| **`L1: CONFIGURABLE`** | `0` | Parameterized configs/env vars, no code edits | `0.70x` | `0.70x` (30% discount) |\n| **`L2: PROVIDER`** | `0` | Pluggable crypto provider abstraction | `0.40x` | `0.40x` (60% discount) |\n| **`L3: RUNTIME_AGILE`** | `0` | Dynamic runtime negotiation / agile wrapper | `0.15x` | `0.15x` (85% discount) |\n\n### Functional Security Intent (DSIS Lattice)\n\n| Functional Intent Class | Assets | Quantum Exploit Risk | Mitigation Status |\n| :--- | :---: | :--- | :--- |\n| **`CONFIDENTIALITY_ENVELOPE`** | `7` | High ($W=1.0$) | Primary HNDL target \u2014 payload confidentiality |\n| **`AUTHENTICATION_SIGNATURE`** | `3` | Medium-High ($W=0.8$) | Identity forgery \u2014 handshake & token authentication |\n| **`INTEGRITY_CHECKSUM`** | `0` | Low-Medium ($W=0.3$) | Tamper detection \u2014 audit trails & code integrity |\n| **`OPERATIONAL_UTILITY`** | `1` | **Zero ($R_Q = 0.0$)** | **Suppressed from CISO queue (HTTP ETags & CDN caches)** |\n\n### Deployment Exposure & Harvest Interception ($P_{\\text{HNDL}}$)\n\n| Exposure Profile | Assets | $P_{\\text{HNDL}}$ Interception Factor | Threat Model Scope |\n| :--- | :---: | :---: | :--- |\n| **`PUBLIC`** | `11` | `1.00` | Internet Ingress / LoadBalancer (Actively harvested) |\n| **`INTERNAL`** | `0` | `0.05` | Private VPC / ClusterIP (Requires lateral pivot) |\n| **`AIRGAPPED`** | `0` | `0.00` | Standalone isolated host (Immune to passive HNDL) |\n\n### Transport Network Path MTU & PQC Fragmentation Readiness\n\n| Transport Metric | Measured Value | PQC Engineering Assessment |\n| :--- | :--- | :--- |\n| **Effective Path MTU** | `1280 Bytes` | Maximum Transmission Unit over network route |\n| **Route Classification** | **`STANDARD`** | `Standard Ethernet route (1,500 B). ML-KEM-1024 and ML-DSA exceed MSS and require fragmentation.` |\n| **TCP Fragmentation Drop Risk** | **`MEDIUM`** | Middlebox packet drop exposure under PQC expansion |\n| **Don't Fragment (DF) Enforcement** | `True` | Strict DF bit prevents IP fragmentation |\n\n#### PQC Handshake Flight Overhead (NIST FIPS 203 / 204)\n\n| Algorithm | Primitive | Flight Overhead | TCP Packets | Packet Drop Risk |\n| :--- | :--- | :---: | :---: | :---: |\n| **`ML-KEM-512`** | `KEM` | `800 B` | `1 pkt` | `LOW` |\n| **`ML-KEM-768`** | `KEM` | `1184 B` | `1 pkt` | `LOW` |\n| **`ML-KEM-1024`** | `KEM` | `1568 B` | `2 pkt` | `HIGH` |\n| **`X25519MLKEM768`** | `HYBRID_KEM` | `1216 B` | `1 pkt` | `LOW` |\n| **`ML-DSA-44`** | `SIGNATURE` | `3732 B` | `4 pkt` | `HIGH` |\n| **`ML-DSA-65`** | `SIGNATURE` | `5261 B` | `5 pkt` | `HIGH` |\n| **`ML-DSA-87`** | `SIGNATURE` | `7219 B` | `6 pkt` | `HIGH` |\n| **`SLH-DSA-128S`** | `SIGNATURE` | `7888 B` | `7 pkt` | `HIGH` |\n\n---\n\n## 2. Actionable Migration Backlog (Ranked by $Y_{max}$ Budget)\n\nThe table below replaces flat checklists with mathematically grounded deadlines: **$Y_{max} = (Z_{reg} - 2026) - X_{eff}$**.\n\n| Priority | Asset ID | File Location & Line | Trigger Sink / Evidence | Algorithm | CAMS | $X$ Tier | $Y_{max}$ Budget | Mandate Year | Recommended Hybrid | Risk Level |\n| :---: | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :--- | :---: |\n| **#1** | `ASSET-010` | `certs/legacy_rsa.key:1` | `Direct Cryptographic Material` | `RSA-2048` | `RIGID` | `ARCHIVAL` | **`-6.0y`** | `2030` | X25519MLKEM768 (ECDHE-ML-KEM Hybrid) | **`CRITICAL`** |\n| **#2** | `ASSET-008` | `common_crypto.py:13` | `Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.` | `ECDSA-P256` | `RIGID` | `EPHEMERAL` | **`+0.0y`** | `2026` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#3** | `ASSET-009` | `certs/legacy_ca.crt:1` | `O=Legacy Org,CN=legacy-enterprise-ca.internal` | `RSA-2048` | `RIGID` | `OPERATIONAL` | **`+0.0y`** | `2031` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#4** | `ASSET-011` | `certs/legacy_rsa.key:1` | `Direct Cryptographic Material` | `RSA-2048` | `RIGID` | `OPERATIONAL` | **`+0.0y`** | `2031` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`CRITICAL`** |\n| **#5** | `ASSET-005` | `app.py:34` | `vendor_client.sync_data` | `ECDSA-P256` | `RIGID` | `HUMAN_REVIEW` | **`+2.5y`** | `2030` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`MANUAL_REVIEW_REQUIRED`** |\n| **#6** | `ASSET-006` | `app.py:39` | `vendor_client.sync_data` | `AES-256-GCM` | `RIGID` | `HUMAN_REVIEW` | **`+2.5y`** | `2030` | N/A (Symmetric) | **`MANUAL_REVIEW_REQUIRED`** |\n| **#7** | `ASSET-002` | `app.py:14` | `redis.setex` | `AES-256-GCM` | `RIGID` | `SHORT_TERM` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#8** | `ASSET-003` | `app.py:20` | `db.session.add` | `AES-256-GCM` | `RIGID` | `OPERATIONAL` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#9** | `ASSET-004` | `app.py:27` | `s3.put_object` | `AES-256-GCM` | `RIGID` | `ARCHIVAL` | **`+22.5y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n| **#10** | `ASSET-001` | `app.py:8` | `client_socket.sendall` | `AES-256-GCM` | `RIGID` | `EPHEMERAL` | **`+24.0y`** | `2050` | ECDSA-P256 + ML-DSA-65 (Composite Signature) | **`LOW`** |\n| **#11** | `ASSET-007` | `common_crypto.py:8` | `Variable 'session_key' created at line 8 does not flow into any persistence sink; retained exclusively in volatile memory scope.` | `AES-256-GCM` | `RIGID` | `EPHEMERAL` | **`+24.0y`** | `2050` | N/A (Symmetric) | **`LOW`** |\n\n---\n\n## 3. Cryptographic Agility & Buffer Hazard Audit\n\n| Variable Name | Allocated Buffer | PQC Requirement (ML-DSA-65) | Line | Severity | Action Required |\n| :--- | :---: | :---: | :---: | :---: | :--- |\n| `sig_buffer` | `64 B` | `3309 B` | Line 33 | **`CRITICAL`** | Expand static buffer before swapping algorithm to avoid buffer overflow |\n\n---\n\n## 4. Epidemiological R0 Dependency Contagion (Superspreaders)\n\nCryptographic vulnerability propagates through software dependency contact networks. The **$R_0$ score** measures how many downstream services inherit quantum risk from an unmigrated component.\n\n| Component / Module | $R_0$ Score | Direct Crypto | Downstream Affected Services | Actionable Mitigation Impact |\n| :--- | :---: | :---: | :--- | :--- |\n| **`common_crypto`** | **`3`** | `True` | `auth_service, payment_service, api_gateway` | SUPERSPREADER (R0=3): Migrating 'common_crypto' to PQC immediately eliminates quantum risk across 3 downstream services: auth_service, payment_service, api_gateway. |\n\n---\n\n## 5. Privacy-Preserving Attestation via Merkle Commitments\n\nConventional audit practices require handing over full, plain-text Cryptography Bills of Materials (CBOMs), which inadvertently functions as a targeting map for adversaries. ECDAT resolves this through **selective inclusion proofs**:\n\n- **Committed Root Hash:** `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n- **Auditor Verification Protocol:** For any compliance query, ECDAT issues a single leaf proof package (`proof_<assetId>.json`).\n- **Verification Command:**\n  ```bash\n  python -m ecdat.merkle.verifier --proof proofs/proof_asset_1.json --root cbom_root.hex\n  ```\n- **Guarantee:** Proves mathematically that a specific component is compliant without disclosing internal codebase paths or unpatched inventory items.\n\n\n---\n\n## 6. Auditable Unknowns Ledger & Boundary Declarations\n\nConventional vulnerability scanners report false 100% perimeter coverage by silently omitting files or paths they cannot parse. ECDAT enforces **Auditable Boundary Honesty** by declaring all excluded paths, uninspected binary files, and encrypted containers.\n\n| Item Path / Identifier | Category | Scanning Boundary Reason | Recommended Auditor Action |\n| :--- | :---: | :--- | :--- |\n| `common_crypto.py:13` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'token_sig' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `app.py:34` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'signature' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `payment_service.py:8` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'encrypted_envelope' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n| `auth_service.py:8` | `UNCONFIRMED_DATAFLOW` | Dataflow variable 'token' could not be statically bound to a verified cryptographic API call | Manually review variable lineage to determine if an unmodeled cryptographic library is invoked. |\n\n---\n\n## 7. SLSA / in-toto Signed DSSE Attestation & Negative Proofs\n\nECDAT produces cryptographically non-malleable, tamper-evident audit attestations complying with the **in-toto v1.0 Statement** specification and **RFC 9162 Dead Simple Signing Envelope (DSSE)**.\n\n- **Attestation Envelope File:** `attestation.dsse.json`\n- **Payload Type:** `application/vnd.in-toto+json`\n- **Predicate Type:** `https://ecdat.dev/attestation/v1`\n- **Primary Signer Key ID:** `ed25519:5a20ea9e828ea614` (2 signatures: Ed25519 primary + ML-DSA-65 post-quantum hybrid commitment)\n- **Committed Merkle Root:** `0xc639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f`\n\n### Certified Negative Proofs\n\n> **Assertion:** Audited perimeter contains 4 declared boundary unknowns; all other paths certified.\n> \n> ECDAT certifies that within the audited codebase boundary (11 cryptographic assets discovered), no reachable vulnerable primitives outside the declared inventory exist. All exclusions and uninspected binary files are strictly quarantined in the Auditable Unknowns Ledger.\n\n### Independent Auditor Verification Protocol\n\nAuditors can independently verify the authenticity, integrity, and non-repudiation of this scan without access to the ECDAT source code:\n\n```bash\n# Verify Ed25519 DSSE envelope against the public key\npython -m ecdat.attestation.verifier --envelope ecdat_output/attestation.dsse.json --pubkey ecdat_output/attestation_pubkey.pem\n```\n\n---\n\n## 8. Pareto Migration Portfolio Optimization (Pillar 7)\n\nRather than an unranked severity list, ECDAT formulates remediation as a resource-constrained knapsack problem with target budget $B = 10.0$ developer-weeks:\n\n- **Target Sprint Capacity:** `10.0 dev-weeks`\n- **Allocated Effort:** `9.8 dev-weeks`\n- **Estate Risk Reduction Achieved:** `+96.8%` (4 / 11 assets selected)\n\n| Asset ID | Component | Algorithm | Effort (dev-wks) | Blast Reduction ($\\Delta R$) | ROI Efficiency | Sprint Status |\n| :--- | :--- | :--- | :---: | :---: | :---: | :--- |\n| `ASSET-008` | `common_crypto:token_sig` | `ECDSA-P256` | `2.9` | `30.0` | `10.35` | **SELECTED FOR SPRINT** |\n| `ASSET-009` | `x509_cert:legacy_ca` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-010` | `keyfile:legacy_rsa_private-key` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-011` | `keyfile:legacy_rsa_public-key` | `RSA-2048` | `2.3` | `10.0` | `4.35` | **SELECTED FOR SPRINT** |\n| `ASSET-005` | `app:signature` | `ECDSA-P256` | `2.3` | `2.0` | `0.87` | **DEFERRED** |\n| `ASSET-001` | `app:session_key` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-002` | `app:auth_token` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-003` | `app:encrypted_pan` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-004` | `app:encrypted_archive` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n| `ASSET-006` | `app:token_blob` | `AES-256-GCM` | `0.2` | `0.0` | `0.00` | **DEFERRED** |\n\n---\n\n## 9. Stochastic Monte Carlo Quantum Risk Analysis\n\nUnder empirical Monte Carlo sampling (5000 iterations) calibrated against the Global Risk Institute (GRI) 2025 Quantum Threat Report:\n\n- **Mean Estate Breach Probability:** `38.3%`\n- **Peak Single-Asset Breach Probability:** `89.8%`\n- **Critical Probabilistic Exposure Assets:** `4`\n";
         const PARETO_DATA = {"budget_dev_weeks": 10.0, "total_assets_count": 11, "selected_count": 4, "total_cost_allocated": 9.8, "total_risk_reduced": 60.0, "total_estate_risk": 62.0, "risk_reduction_pct": 96.8, "items": [{"asset_id": "ASSET-008", "component_name": "common_crypto:token_sig", "algorithm": "ECDSA-P256", "primitive_type": "SIGNATURE", "file_path": "common_crypto.py", "line_number": 13, "r0_score": 3, "cams_level": 0, "risk_level": "CRITICAL", "delta_r": 30.0, "cost_dev_weeks": 2.9, "efficiency": 10.345, "is_selected": true, "cumulative_risk_pct": 48.4, "cumulative_cost_weeks": 2.9}, {"asset_id": "ASSET-009", "component_name": "x509_cert:legacy_ca", "algorithm": "RSA-2048", "primitive_type": "SIGNATURE", "file_path": "certs/legacy_ca.crt", "line_number": 1, "r0_score": 1, "cams_level": 0, "risk_level": "CRITICAL", "delta_r": 10.0, "cost_dev_weeks": 2.3, "efficiency": 4.348, "is_selected": true, "cumulative_risk_pct": 64.5, "cumulative_cost_weeks": 5.2}, {"asset_id": "ASSET-010", "component_name": "keyfile:legacy_rsa_private-key", "algorithm": "RSA-2048", "primitive_type": "KEY_EXCHANGE", "file_path": "certs/legacy_rsa.key", "line_number": 1, "r0_score": 1, "cams_level": 0, "risk_level": "CRITICAL", "delta_r": 10.0, "cost_dev_weeks": 2.3, "efficiency": 4.348, "is_selected": true, "cumulative_risk_pct": 80.6, "cumulative_cost_weeks": 7.5}, {"asset_id": "ASSET-011", "component_name": "keyfile:legacy_rsa_public-key", "algorithm": "RSA-2048", "primitive_type": "SIGNATURE", "file_path": "certs/legacy_rsa.key", "line_number": 1, "r0_score": 1, "cams_level": 0, "risk_level": "CRITICAL", "delta_r": 10.0, "cost_dev_weeks": 2.3, "efficiency": 4.348, "is_selected": true, "cumulative_risk_pct": 96.8, "cumulative_cost_weeks": 9.8}, {"asset_id": "ASSET-005", "component_name": "app:signature", "algorithm": "ECDSA-P256", "primitive_type": "SIGNATURE", "file_path": "app.py", "line_number": 34, "r0_score": 1, "cams_level": 0, "risk_level": "MANUAL_REVIEW_REQUIRED", "delta_r": 2.0, "cost_dev_weeks": 2.3, "efficiency": 0.87, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-001", "component_name": "app:session_key", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "app.py", "line_number": 8, "r0_score": 1, "cams_level": 0, "risk_level": "LOW", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-002", "component_name": "app:auth_token", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "app.py", "line_number": 14, "r0_score": 1, "cams_level": 0, "risk_level": "LOW", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-003", "component_name": "app:encrypted_pan", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "app.py", "line_number": 20, "r0_score": 1, "cams_level": 0, "risk_level": "LOW", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-004", "component_name": "app:encrypted_archive", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "app.py", "line_number": 27, "r0_score": 1, "cams_level": 0, "risk_level": "LOW", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-006", "component_name": "app:token_blob", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "app.py", "line_number": 39, "r0_score": 1, "cams_level": 0, "risk_level": "MANUAL_REVIEW_REQUIRED", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}, {"asset_id": "ASSET-007", "component_name": "common_crypto:session_key", "algorithm": "AES-256-GCM", "primitive_type": "ENCRYPTION", "file_path": "common_crypto.py", "line_number": 8, "r0_score": 3, "cams_level": 0, "risk_level": "LOW", "delta_r": 0.0, "cost_dev_weeks": 0.2, "efficiency": 0.0, "is_selected": false, "cumulative_risk_pct": 100.0, "cumulative_cost_weeks": 12.1}], "frontier_points": [{"cost": 0.0, "risk_pct": 0.0, "asset_id": "origin", "algorithm": "none"}, {"cost": 2.9, "risk_pct": 48.4, "asset_id": "ASSET-008", "algorithm": "ECDSA-P256"}, {"cost": 5.2, "risk_pct": 64.5, "asset_id": "ASSET-009", "algorithm": "RSA-2048"}, {"cost": 7.5, "risk_pct": 80.6, "asset_id": "ASSET-010", "algorithm": "RSA-2048"}, {"cost": 9.8, "risk_pct": 96.8, "asset_id": "ASSET-011", "algorithm": "RSA-2048"}, {"cost": 12.1, "risk_pct": 100.0, "asset_id": "ASSET-005", "algorithm": "ECDSA-P256"}]};
         const STOCHASTIC_DATA = {"iterations": 5000, "total_simulated_assets": 11, "mean_breach_probability": 0.383, "max_breach_probability": 0.898, "critical_probabilistic_assets": 4, "high_probabilistic_assets": 1, "results": [{"asset_id": "ASSET-001", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-002", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-003", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-004", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-005", "algorithm": "ECDSA-P256", "iterations": 5000, "breach_probability": 0.041, "p50_safety_margin_years": 3.65, "p95_safety_margin_years": 0.08, "var_95_breach_year": 2030, "risk_category": "HIGH"}, {"asset_id": "ASSET-006", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-007", "algorithm": "AES-256-GCM", "iterations": 5000, "breach_probability": 0.0, "p50_safety_margin_years": 25.0, "p95_safety_margin_years": 20.0, "var_95_breach_year": 2050, "risk_category": "LOW"}, {"asset_id": "ASSET-008", "algorithm": "ECDSA-P256", "iterations": 5000, "breach_probability": 0.083, "p50_safety_margin_years": 3.7, "p95_safety_margin_years": -0.26, "var_95_breach_year": 2029, "risk_category": "CRITICAL"}, {"asset_id": "ASSET-009", "algorithm": "RSA-2048", "iterations": 5000, "breach_probability": 0.446, "p50_safety_margin_years": 0.47, "p95_safety_margin_years": -3.29, "var_95_breach_year": 2034, "risk_category": "CRITICAL"}, {"asset_id": "ASSET-010", "algorithm": "RSA-2048", "iterations": 5000, "breach_probability": 0.898, "p50_safety_margin_years": -4.95, "p95_safety_margin_years": -9.45, "var_95_breach_year": 2040, "risk_category": "CRITICAL"}, {"asset_id": "ASSET-011", "algorithm": "RSA-2048", "iterations": 5000, "breach_probability": 0.446, "p50_safety_margin_years": 0.47, "p95_safety_margin_years": -3.29, "var_95_breach_year": 2034, "risk_category": "CRITICAL"}]};
-        const NEGATIVE_PROOF_DATA = {"certificate_id": "ecdat-np-562c837e93a7d8f7", "timestamp": "2026-09-24T06:34:09.379636+00:00", "merkle_root_hex": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "target_project": "sample_crypto_app", "audited_perimeter": {"target_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app", "total_source_files": 5, "total_cryptographic_assets": 11, "merkle_root_commitment": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f"}, "quarantined_unknowns_count": 4, "assertions": [{"claim_id": "NP-CLAIM-001", "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5) detected within audited perimeter", "status": "PASSED", "details": "No forbidden algorithms detected"}, {"claim_id": "NP-CLAIM-002", "description": "All discovered asymmetric primitives are mapped to NIST FIPS 203/204/205 post-quantum migration targets", "status": "PASSED", "details": "11 primitives mapped to standard migration roadmaps"}, {"claim_id": "NP-CLAIM-003", "description": "All non-auditable files, binary blobs, and external third-party dependencies are quarantined in Unknowns Ledger", "status": "PASSED", "quarantined_items_count": 4, "details": "4 perimeter boundaries formally acknowledged and logged"}], "is_certified_clean": true};
+        const NEGATIVE_PROOF_DATA = {"certificate_id": "ecdat-np-562c837e93a7d8f7", "timestamp": "2026-09-26T00:25:40.354706+00:00", "merkle_root_hex": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f", "target_project": "sample_crypto_app", "audited_perimeter": {"target_path": "/home/mohmedh/personal/ECDAT/testbeds/sample_crypto_app", "total_source_files": 5, "total_cryptographic_assets": 11, "merkle_root_commitment": "c639e82a0db1b2efede2cbd2cf0e3ec04526b441804ad59161d41d9982fb7a0f"}, "quarantined_unknowns_count": 4, "assertions": [{"claim_id": "NP-CLAIM-001", "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5) detected within audited perimeter", "status": "PASSED", "details": "No forbidden algorithms detected"}, {"claim_id": "NP-CLAIM-002", "description": "All discovered asymmetric primitives are mapped to NIST FIPS 203/204/205 post-quantum migration targets", "status": "PASSED", "details": "11 primitives mapped to standard migration roadmaps"}, {"claim_id": "NP-CLAIM-003", "description": "All non-auditable files, binary blobs, and external third-party dependencies are quarantined in Unknowns Ledger", "status": "PASSED", "quarantined_items_count": 4, "details": "4 perimeter boundaries formally acknowledged and logged"}], "is_certified_clean": true};
         const PATH_MTU_DATA = {"route_profile": "STANDARD", "effective_mtu": 1280, "mss": 1240, "probing_method": "interface_cni_heuristic", "df_bit_strict": true, "middlebox_drop_risk": "MEDIUM", "pqc_flight_estimates": {"ML-KEM-512": {"flight_bytes": 800, "packet_segments": 1, "fits_single_packet": true, "warning": null, "primitive": "KEM", "description": "NIST Level 1 Key Encapsulation"}, "ML-KEM-768": {"flight_bytes": 1184, "packet_segments": 1, "fits_single_packet": true, "warning": null, "primitive": "KEM", "description": "NIST Level 3 Key Encapsulation"}, "ML-KEM-1024": {"flight_bytes": 1568, "packet_segments": 2, "fits_single_packet": false, "warning": "ML-KEM-1024 Flight (1568 B) exceeds route MSS (1240 B). Requires 2 TCP segments with high middlebox drop risk.", "primitive": "KEM", "description": "NIST Level 5 Key Encapsulation"}, "X25519MLKEM768": {"flight_bytes": 1216, "packet_segments": 1, "fits_single_packet": true, "warning": null, "primitive": "HYBRID_KEM", "description": "ECDHE-ML-KEM-768 Hybrid Key Exchange"}, "ML-DSA-44": {"flight_bytes": 3732, "packet_segments": 4, "fits_single_packet": false, "warning": "ML-DSA-44 Flight (3732 B) exceeds route MSS (1240 B). Requires 4 TCP segments with high middlebox drop risk.", "primitive": "SIGNATURE", "description": "NIST Level 2 Digital Signature"}, "ML-DSA-65": {"flight_bytes": 5261, "packet_segments": 5, "fits_single_packet": false, "warning": "ML-DSA-65 Flight (5261 B) exceeds route MSS (1240 B). Requires 5 TCP segments with high middlebox drop risk.", "primitive": "SIGNATURE", "description": "NIST Level 3 Digital Signature"}, "ML-DSA-87": {"flight_bytes": 7219, "packet_segments": 6, "fits_single_packet": false, "warning": "ML-DSA-87 Flight (7219 B) exceeds route MSS (1240 B). Requires 6 TCP segments with high middlebox drop risk.", "primitive": "SIGNATURE", "description": "NIST Level 5 Digital Signature"}, "SLH-DSA-128S": {"flight_bytes": 7888, "packet_segments": 7, "fits_single_packet": false, "warning": "SLH-DSA-128S Flight (7888 B) exceeds route MSS (1240 B). Requires 7 TCP segments with high middlebox drop risk.", "primitive": "SIGNATURE", "description": "NIST Level 1 Stateless Hash Signature"}}};
-        const ATTESTATION_DATA = {"payloadType": "application/vnd.in-toto+json", "payload": "eyJfdHlwZSI6Imh0dHBzOi8vaW4tdG90by5pby9TdGF0ZW1lbnQvdjEiLCJwcmVkaWNhdGUiOnsiYnVpbGREZWZpbml0aW9uIjp7ImJ1aWxkVHlwZSI6Imh0dHBzOi8vZWNkYXQuZGV2L2F0dGVzdGF0aW9uL3NjYW4vdjEiLCJleHRlcm5hbFBhcmFtZXRlcnMiOnsiZ2l0X2NvbW1pdCI6IkhFQUQiLCJ0YXJnZXRfcGF0aCI6Ii9ob21lL21vaG1lZGgvcGVyc29uYWwvRUNEQVQvdGVzdGJlZHMvc2FtcGxlX2NyeXB0b19hcHAifSwiaW50ZXJuYWxQYXJhbWV0ZXJzIjp7ImVmZmVjdGl2ZV9tdHVfYnl0ZXMiOjEyODAsInRpbWVzdGFtcCI6IjIwMjYtMDktMjRUMDY6MzQ6MDkuMzU5NzI2KzAwOjAwIiwidHJhbnNwb3J0X3JvdXRlX3Byb2ZpbGUiOiJTVEFOREFSRCJ9fSwiYnVpbGRlciI6eyJpZCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9TSUgyNjE2NC9FQ0RBVEB2Mi4wLjAiLCJ2ZW5kb3IiOiJTSUgyNjE2NCIsInZlcnNpb24iOiIyLjAuMCJ9LCJydW5EZXRhaWxzIjp7ImNhbXNfYWdpbGl0eV9kaXN0cmlidXRpb24iOnsiTDBfUklHSUQiOjExLCJMMV9DT05GSUdVUkFCTEUiOjAsIkwyX1BST1ZJREVSIjowLCJMM19SVU5USU1FX0FHSUxFIjowfSwiZXZpZGVuY2VfZGlzdHJpYnV0aW9uIjp7IkRPUk1BTlQiOjAsIkUwX1VOQ09ORklSTUVEIjowLCJFMV9TVEFUSUNfQVJUSUZBQ1QiOjgsIkUyX1JFQUNIQUJMRV9QQVRIIjowLCJFM19DT05GSUdfQ09ORklSTUVEIjozLCJFNF9SVU5USU1FX09CU0VSVkVEIjowLCJFNV9DT1JSRUxBVEVEX1NJR05FRCI6MH0sImludGVudF9kaXN0cmlidXRpb24iOnsiQVVUSEVOVElDQVRJT05fSEFORFNIQUtFIjowLCJBVVRIRU5USUNBVElPTl9TSUdOQVRVUkUiOjMsIkNPTkZJREVOVElBTElUWV9FTlZFTE9QRSI6NywiQ09ORklERU5USUFMSVRZX0lOX1RSQU5TSVQiOjAsIklOVEVHUklUWV9DSEVDS1NVTSI6MCwiT1BFUkFUSU9OQUxfVVRJTElUWSI6MX0sIm1lcmtsZV9yb290IjoiMHhjNjM5ZTgyYTBkYjFiMmVmZWRlMmNiZDJjZjBlM2VjMDQ1MjZiNDQxODA0YWQ1OTE2MWQ0MWQ5OTgyZmI3YTBmIiwibmVnYXRpdmVfcHJvb2YiOnsiY2xhaW0iOiJBdWRpdGVkIHBlcmltZXRlciBjb250YWlucyA0IGRlY2xhcmVkIGJvdW5kYXJ5IHVua25vd25zOyBhbGwgb3RoZXIgcGF0aHMgY2VydGlmaWVkLiIsInNjb3BlIjp7InBlcmltZXRlcl92ZXJpZmllZCI6dHJ1ZSwidGFyZ2V0X3BhdGgiOiIvaG9tZS9tb2htZWRoL3BlcnNvbmFsL0VDREFUL3Rlc3RiZWRzL3NhbXBsZV9jcnlwdG9fYXBwIiwidW5rbm93bnNfZGVjbGFyZWQiOjR9fSwidG90YWxfY3J5cHRvZ3JhcGhpY19hc3NldHMiOjExLCJ1bmtub3duc19sZWRnZXIiOlt7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJjb21tb25fY3J5cHRvLnB5OjEzIiwicmVhc29uIjoiRGF0YWZsb3cgdmFyaWFibGUgJ3Rva2VuX3NpZycgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifSx7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJhcHAucHk6MzQiLCJyZWFzb24iOiJEYXRhZmxvdyB2YXJpYWJsZSAnc2lnbmF0dXJlJyBjb3VsZCBub3QgYmUgc3RhdGljYWxseSBib3VuZCB0byBhIHZlcmlmaWVkIGNyeXB0b2dyYXBoaWMgQVBJIGNhbGwiLCJyZWNvbW1lbmRlZF9hY3Rpb24iOiJNYW51YWxseSByZXZpZXcgdmFyaWFibGUgbGluZWFnZSB0byBkZXRlcm1pbmUgaWYgYW4gdW5tb2RlbGVkIGNyeXB0b2dyYXBoaWMgbGlicmFyeSBpcyBpbnZva2VkLiJ9LHsiY2F0ZWdvcnkiOiJVTkNPTkZJUk1FRF9EQVRBRkxPVyIsIml0ZW1fcGF0aCI6InBheW1lbnRfc2VydmljZS5weTo4IiwicmVhc29uIjoiRGF0YWZsb3cgdmFyaWFibGUgJ2VuY3J5cHRlZF9lbnZlbG9wZScgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifSx7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJhdXRoX3NlcnZpY2UucHk6OCIsInJlYXNvbiI6IkRhdGFmbG93IHZhcmlhYmxlICd0b2tlbicgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifV0sInVua25vd25zX2xlZGdlcl9jb3VudCI6NH19LCJwcmVkaWNhdGVUeXBlIjoiaHR0cHM6Ly9lY2RhdC5kZXYvYXR0ZXN0YXRpb24vdjEiLCJzdWJqZWN0IjpbeyJkaWdlc3QiOnsic2hhMjU2IjoiYzYzOWU4MmEwZGIxYjJlZmVkZTJjYmQyY2YwZTNlYzA0NTI2YjQ0MTgwNGFkNTkxNjFkNDFkOTk4MmZiN2EwZiJ9LCJuYW1lIjoic2FtcGxlX2NyeXB0b19hcHAifV19", "signatures": [{"keyid": "ed25519:5a20ea9e828ea614", "sig": "BDzv7WXQ9UuQ19/oiHnXGG1joC8n9exsBFkEQg2XQl4U+h6m3+VsiwlhlPPzDrVLQeXt2xuQvUF1VuEQFbpVCA==", "scheme": "ed25519"}, {"keyid": "mldsa65:af9da8c56dd93823", "sig": "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", "scheme": "ML-DSA-65"}]};
+        const ATTESTATION_DATA = {"payloadType": "application/vnd.in-toto+json", "payload": "eyJfdHlwZSI6Imh0dHBzOi8vaW4tdG90by5pby9TdGF0ZW1lbnQvdjEiLCJwcmVkaWNhdGUiOnsiYnVpbGREZWZpbml0aW9uIjp7ImJ1aWxkVHlwZSI6Imh0dHBzOi8vZWNkYXQuZGV2L2F0dGVzdGF0aW9uL3NjYW4vdjEiLCJleHRlcm5hbFBhcmFtZXRlcnMiOnsiZ2l0X2NvbW1pdCI6IkhFQUQiLCJ0YXJnZXRfcGF0aCI6Ii9ob21lL21vaG1lZGgvcGVyc29uYWwvRUNEQVQvdGVzdGJlZHMvc2FtcGxlX2NyeXB0b19hcHAifSwiaW50ZXJuYWxQYXJhbWV0ZXJzIjp7ImVmZmVjdGl2ZV9tdHVfYnl0ZXMiOjEyODAsInRpbWVzdGFtcCI6IjIwMjYtMDktMjZUMDA6MjU6NDAuMzM1OTk0KzAwOjAwIiwidHJhbnNwb3J0X3JvdXRlX3Byb2ZpbGUiOiJTVEFOREFSRCJ9fSwiYnVpbGRlciI6eyJpZCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9TSUgyNjE2NC9FQ0RBVEB2Mi4wLjAiLCJ2ZW5kb3IiOiJTSUgyNjE2NCIsInZlcnNpb24iOiIyLjAuMCJ9LCJydW5EZXRhaWxzIjp7ImNhbXNfYWdpbGl0eV9kaXN0cmlidXRpb24iOnsiTDBfUklHSUQiOjExLCJMMV9DT05GSUdVUkFCTEUiOjAsIkwyX1BST1ZJREVSIjowLCJMM19SVU5USU1FX0FHSUxFIjowfSwiZXZpZGVuY2VfZGlzdHJpYnV0aW9uIjp7IkRPUk1BTlQiOjAsIkUwX1VOQ09ORklSTUVEIjowLCJFMV9TVEFUSUNfQVJUSUZBQ1QiOjgsIkUyX1JFQUNIQUJMRV9QQVRIIjowLCJFM19DT05GSUdfQ09ORklSTUVEIjozLCJFNF9SVU5USU1FX09CU0VSVkVEIjowLCJFNV9DT1JSRUxBVEVEX1NJR05FRCI6MH0sImludGVudF9kaXN0cmlidXRpb24iOnsiQVVUSEVOVElDQVRJT05fSEFORFNIQUtFIjowLCJBVVRIRU5USUNBVElPTl9TSUdOQVRVUkUiOjMsIkNPTkZJREVOVElBTElUWV9FTlZFTE9QRSI6NywiQ09ORklERU5USUFMSVRZX0lOX1RSQU5TSVQiOjAsIklOVEVHUklUWV9DSEVDS1NVTSI6MCwiT1BFUkFUSU9OQUxfVVRJTElUWSI6MX0sIm1lcmtsZV9yb290IjoiMHhjNjM5ZTgyYTBkYjFiMmVmZWRlMmNiZDJjZjBlM2VjMDQ1MjZiNDQxODA0YWQ1OTE2MWQ0MWQ5OTgyZmI3YTBmIiwibmVnYXRpdmVfcHJvb2YiOnsiY2xhaW0iOiJBdWRpdGVkIHBlcmltZXRlciBjb250YWlucyA0IGRlY2xhcmVkIGJvdW5kYXJ5IHVua25vd25zOyBhbGwgb3RoZXIgcGF0aHMgY2VydGlmaWVkLiIsInNjb3BlIjp7InBlcmltZXRlcl92ZXJpZmllZCI6dHJ1ZSwidGFyZ2V0X3BhdGgiOiIvaG9tZS9tb2htZWRoL3BlcnNvbmFsL0VDREFUL3Rlc3RiZWRzL3NhbXBsZV9jcnlwdG9fYXBwIiwidW5rbm93bnNfZGVjbGFyZWQiOjR9fSwidG90YWxfY3J5cHRvZ3JhcGhpY19hc3NldHMiOjExLCJ1bmtub3duc19sZWRnZXIiOlt7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJjb21tb25fY3J5cHRvLnB5OjEzIiwicmVhc29uIjoiRGF0YWZsb3cgdmFyaWFibGUgJ3Rva2VuX3NpZycgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifSx7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJhcHAucHk6MzQiLCJyZWFzb24iOiJEYXRhZmxvdyB2YXJpYWJsZSAnc2lnbmF0dXJlJyBjb3VsZCBub3QgYmUgc3RhdGljYWxseSBib3VuZCB0byBhIHZlcmlmaWVkIGNyeXB0b2dyYXBoaWMgQVBJIGNhbGwiLCJyZWNvbW1lbmRlZF9hY3Rpb24iOiJNYW51YWxseSByZXZpZXcgdmFyaWFibGUgbGluZWFnZSB0byBkZXRlcm1pbmUgaWYgYW4gdW5tb2RlbGVkIGNyeXB0b2dyYXBoaWMgbGlicmFyeSBpcyBpbnZva2VkLiJ9LHsiY2F0ZWdvcnkiOiJVTkNPTkZJUk1FRF9EQVRBRkxPVyIsIml0ZW1fcGF0aCI6InBheW1lbnRfc2VydmljZS5weTo4IiwicmVhc29uIjoiRGF0YWZsb3cgdmFyaWFibGUgJ2VuY3J5cHRlZF9lbnZlbG9wZScgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifSx7ImNhdGVnb3J5IjoiVU5DT05GSVJNRURfREFUQUZMT1ciLCJpdGVtX3BhdGgiOiJhdXRoX3NlcnZpY2UucHk6OCIsInJlYXNvbiI6IkRhdGFmbG93IHZhcmlhYmxlICd0b2tlbicgY291bGQgbm90IGJlIHN0YXRpY2FsbHkgYm91bmQgdG8gYSB2ZXJpZmllZCBjcnlwdG9ncmFwaGljIEFQSSBjYWxsIiwicmVjb21tZW5kZWRfYWN0aW9uIjoiTWFudWFsbHkgcmV2aWV3IHZhcmlhYmxlIGxpbmVhZ2UgdG8gZGV0ZXJtaW5lIGlmIGFuIHVubW9kZWxlZCBjcnlwdG9ncmFwaGljIGxpYnJhcnkgaXMgaW52b2tlZC4ifV0sInVua25vd25zX2xlZGdlcl9jb3VudCI6NH19LCJwcmVkaWNhdGVUeXBlIjoiaHR0cHM6Ly9lY2RhdC5kZXYvYXR0ZXN0YXRpb24vdjEiLCJzdWJqZWN0IjpbeyJkaWdlc3QiOnsic2hhMjU2IjoiYzYzOWU4MmEwZGIxYjJlZmVkZTJjYmQyY2YwZTNlYzA0NTI2YjQ0MTgwNGFkNTkxNjFkNDFkOTk4MmZiN2EwZiJ9LCJuYW1lIjoic2FtcGxlX2NyeXB0b19hcHAifV19", "signatures": [{"keyid": "ed25519:5a20ea9e828ea614", "sig": "HkH06fY9ILYtxdFqiVOFvb4mff1MJ6ZjKqpC2bckDNCQMN+Spk5f8v07koHYvzHGm4o9dISG45I6OoVJdhFXBQ==", "scheme": "ed25519"}, {"keyid": "mldsa65:af9da8c56dd93823", "sig": "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", "scheme": "ML-DSA-65"}]};
 
 
         let activeCbomFilter = 'ALL';
         let suppressOperationalUtility = false;
         let currentDrawerAsset = null;
 
-        function escapeHtml(value) {
-            const text = String(value ?? '');
-            return text.replace(/[&<>"']/g, character => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[character]));
-        }
-
-        let katexRetryTimer = null;
-        let katexRenderFrame = null;
-        let katexRetryCount = 0;
         function triggerKaTeX() {
-            if (typeof renderMathInElement !== 'function') {
-                if (!katexRetryTimer && katexRetryCount < 20) {
-                    katexRetryCount += 1;
-                    katexRetryTimer = setTimeout(() => {
-                        katexRetryTimer = null;
-                        triggerKaTeX();
-                    }, 100);
-                }
-                return;
-            }
-
-            katexRetryCount = 0;
-            if (katexRenderFrame) cancelAnimationFrame(katexRenderFrame);
-            katexRenderFrame = requestAnimationFrame(() => {
-                katexRenderFrame = null;
+            if (typeof renderMathInElement === 'function') {
                 renderMathInElement(document.body, {
                     delimiters: [
                         {left: '$$', right: '$$', display: true},
@@ -1906,7 +1623,9 @@
                     ],
                     throwOnError: false
                 });
-            });
+            } else {
+                setTimeout(triggerKaTeX, 100);
+            }
         }
         window.addEventListener('load', triggerKaTeX);
 
@@ -1933,32 +1652,19 @@
 
         function switchTab(tabId) {
             const tabs = ['contagion', 'lineage', 'mosca', 'pareto', 'cbom', 'buffer', 'supplychain', 'proof', 'unknowns', 'ciso'];
-            const tabLabels = {
-                contagion: 'Cryptographic Contagion Graph',
-                lineage: 'Father Marko Lineage',
-                mosca: 'Mosca Y-max Schedule',
-                pareto: 'Pareto Optimizer',
-                cbom: 'CBOM Inventory & Trace',
-                buffer: 'Buffer Agility Hazards',
-                supplychain: 'Supply Chain SBOM',
-                proof: 'Attestation Sandbox',
-                unknowns: 'Unknowns Ledger',
-                ciso: 'Executive CISO Report'
-            };
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-btn-${t}`);
                 const pane = document.getElementById(`tab-pane-${t}`);
-                if (btn) {
-                    btn.classList.toggle('tab-active', t === tabId);
-                }
-                if (pane) {
-                    pane.classList.toggle('hidden', t !== tabId);
+                if (btn && pane) {
+                    if (t === tabId) {
+                        btn.classList.add('tab-active');
+                        pane.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('tab-active');
+                        pane.classList.add('hidden');
+                    }
                 }
             });
-            const viewSelect = document.getElementById('dashboard-view-select');
-            const viewLabel = document.getElementById('active-view-label');
-            if (viewSelect) viewSelect.value = tabId;
-            if (viewLabel) viewLabel.textContent = tabLabels[tabId] || 'Dashboard';
             if (tabId === 'lineage') initLineageGraph();
             if (tabId === 'mosca') renderGanttChart();
             if (tabId === 'supplychain') renderSupplyChainTable();
@@ -2009,35 +1715,37 @@
             if (!asset) return;
             currentDrawerAsset = asset;
 
-            const remediationCard = document.getElementById('drawer-remed-card');
-            const isHumanReview = asset.risk_level === 'MANUAL_REVIEW_REQUIRED';
-            if (remediationCard) remediationCard.classList.toggle('hidden', isHumanReview);
+            const remedCard = document.getElementById('drawer-remed-card');
+            const algUpper = (asset.algorithm || '').toUpperCase();
+            const isAlreadySafe = algUpper.includes('ML-DSA') || algUpper.includes('ML-KEM') || algUpper.includes('DILITHIUM') || algUpper.includes('KYBER') || algUpper.includes('LWE') || algUpper.includes('RISTRETTO') || algUpper.includes('PEDERSEN') || algUpper === 'AES-256-GCM' || algUpper === 'AES-256' || asset.risk_level === 'MANUAL_REVIEW_REQUIRED';
+            if (remedCard) {
+                if (isAlreadySafe) {
+                    remedCard.classList.add('hidden');
+                } else {
+                    remedCard.classList.remove('hidden');
+                }
+            }
 
-            const setDrawerText = (id, value) => {
-                const element = document.getElementById(id);
-                if (element) element.innerText = value;
-            };
-            setDrawerText('drawer-asset-id', asset.asset_id);
-            setDrawerText('drawer-title', `${asset.component} (${asset.algorithm})`);
-            setDrawerText('drawer-file-path', `${asset.file_path} : line ${asset.line_number}`);
-            setDrawerText('drawer-sink-call', asset.evidence || 'Direct Cryptographic Primitive Call');
-            setDrawerText('drawer-tier', `${asset.x_tier} (${asset.x_years}y retention)`);
-            setDrawerText('drawer-confidence', Number(asset.confidence || 1.0).toFixed(2));
-            setDrawerText('drawer-pqc-target', asset.recommended_pqc || 'ML-KEM-768');
-            setDrawerText('drawer-hybrid-target', asset.recommended_hybrid || 'Hybrid Pairing');
-            setDrawerText('drawer-guidance', asset.guidance || 'Deploy NIST FIPS 203/204 standardized replacement.');
+            document.getElementById('drawer-asset-id').innerText = asset.asset_id;
+            document.getElementById('drawer-title').innerText = `${asset.component} (${asset.algorithm})`;
+            document.getElementById('drawer-file-path').innerText = `${asset.file_path} : line ${asset.line_number}`;
+            document.getElementById('drawer-sink-call').innerText = asset.evidence || 'Direct Cryptographic Primitive Call';
+            document.getElementById('drawer-tier').innerText = `${asset.x_tier} (${asset.x_years}y retention)`;
+            document.getElementById('drawer-confidence').innerText = Number(asset.confidence || 1.0).toFixed(2);
+            document.getElementById('drawer-pqc-target').innerText = asset.recommended_pqc || 'ML-KEM-768';
+            document.getElementById('drawer-hybrid-target').innerText = asset.recommended_hybrid || 'Hybrid Pairing';
+            document.getElementById('drawer-guidance').innerText = asset.guidance || 'Deploy NIST FIPS 203/204 standardized replacement.';
 
             const diffTerm = (asset.z_reg_year - 2026) - asset.x_years;
-            const moscaCalc = document.getElementById('drawer-mosca-calc');
-            if (moscaCalc) moscaCalc.innerHTML = `
+            document.getElementById('drawer-mosca-calc').innerHTML = `
                 $$Y_{\\max} = \\max\\left(0, (${asset.z_reg_year} - 2026) - ${asset.x_years}\\right) = \\max(0, ${diffTerm}) = \\mathbf{${asset.y_max_years}\\text{ years budget remaining}}$$
             `;
 
             const pill = document.getElementById('drawer-risk-pill');
-            if (pill && asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
+            if (asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
                 pill.innerText = 'MANUAL REVIEW REQUIRED';
                 pill.className = 'text-xs px-3 py-1 rounded-full font-mono font-bold border bg-purple-950 text-purple-300 border-purple-800';
-            } else if (pill) {
+            } else {
                 pill.innerText = `${asset.risk_level} RISK (Ymax: ${asset.y_max_years}y)`;
                 pill.className = `text-xs px-3 py-1 rounded-full font-mono font-bold border ${
                     asset.risk_level === 'CRITICAL' ? 'bg-red-950 text-red-300 border-red-800' :
@@ -2049,10 +1757,6 @@
 
             const backdrop = document.getElementById('asset-drawer-backdrop');
             const drawer = document.getElementById('asset-drawer');
-            if (!backdrop || !drawer) {
-                showDashboardToast('Asset details are unavailable in this report version. Reload the dashboard to refresh its template.', 'warning');
-                return;
-            }
             backdrop.classList.remove('opacity-0', 'pointer-events-none');
             backdrop.classList.add('opacity-100');
             drawer.classList.remove('translate-x-full');
@@ -2063,7 +1767,6 @@
         function closeAssetDrawer() {
             const backdrop = document.getElementById('asset-drawer-backdrop');
             const drawer = document.getElementById('asset-drawer');
-            if (!backdrop || !drawer) return;
             backdrop.classList.remove('opacity-100');
             backdrop.classList.add('opacity-0', 'pointer-events-none');
             drawer.classList.add('translate-x-full');
@@ -2125,7 +1828,7 @@
                     : `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-800 whitespace-nowrap">$Y_{\max} = ${a.y_max_years}\text{y}$ LOW</span>`;
 
                 tr.innerHTML = `
-                    <td data-label="Asset" class="py-3 px-4">
+                    <td class="py-3 px-4">
                         <div class="flex items-center gap-1.5">
                             <span class="font-bold text-emerald-300">${a.asset_id}</span>
                             ${evBadge}
@@ -2134,29 +1837,29 @@
                         </div>
                         <div class="text-[11px] text-slate-400 max-w-[160px] truncate" title="${a.component}">${a.component}</div>
                     </td>
-                    <td data-label="Algorithm" class="py-3 px-4">
+                    <td class="py-3 px-4">
                         <span class="text-white font-semibold">${a.algorithm}</span>
                         <div class="text-[11px] text-slate-500">${a.primitive} (${a.key_size} bit)</div>
                     </td>
-                    <td data-label="Source" class="py-3 px-4 font-mono text-slate-300">
+                    <td class="py-3 px-4 font-mono text-slate-300">
                         <div class="text-emerald-400 font-semibold max-w-[200px] truncate" title="${a.file_path}">${a.file_path}</div>
                         <div class="text-[10px] text-slate-500">line ${a.line_number}</div>
                     </td>
-                    <td data-label="Evidence" class="py-3 px-4">
+                    <td class="py-3 px-4">
                         <code class="text-[11px] bg-black/40 px-2 py-1 rounded text-amber-300 border border-slate-800/80 block max-w-[180px] truncate" title="${a.evidence}">${a.evidence}</code>
                     </td>
-                    <td data-label="Lifespan" class="py-3 px-4 whitespace-nowrap">
+                    <td class="py-3 px-4 whitespace-nowrap">
                         <div class="text-slate-300">$X_{\text{eff}} = ${a.x_years}\text{y}$</div>
                         <div class="text-[10px] text-slate-500">${a.x_tier} &bull; $P_{\text{HNDL}}: ${a.p_hndl !== undefined ? a.p_hndl : 1.0}$</div>
                     </td>
-                    <td data-label="Mosca Budget" class="py-3 px-4">
+                    <td class="py-3 px-4">
                         ${riskBadge}
                     </td>
-                    <td data-label="PQC Target" class="py-3 px-4 font-mono">
+                    <td class="py-3 px-4 font-mono">
                         <div class="text-emerald-400 font-semibold max-w-[180px] truncate" title="${a.recommended_pqc}">${a.recommended_pqc}</div>
                         <div class="text-[10px] text-slate-500 max-w-[180px] truncate" title="${a.recommended_hybrid}">${a.recommended_hybrid}</div>
                     </td>
-                    <td data-label="Details" class="py-3 px-4 text-center">
+                    <td class="py-3 px-4 text-center">
                         <button onclick="openAssetDrawer('${a.asset_id}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] transition">
                             Inspect
                         </button>
@@ -4202,7 +3905,8 @@
                 if (iterElem) iterElem.innerHTML = '<span class="text-xs text-slate-500 font-mono">N/A</span>';
                 return;
             }
-            const pBreach = STOCHASTIC_DATA.breach_probability !== undefined ? (STOCHASTIC_DATA.breach_probability * 100).toFixed(1) + '%' : 'N/A';
+            const rawProb = STOCHASTIC_DATA.mean_breach_probability ?? STOCHASTIC_DATA.breach_probability;
+            const pBreach = rawProb !== undefined ? (rawProb * 100).toFixed(1) + '%' : 'N/A';
             const varYear = STOCHASTIC_DATA.var_95_year !== undefined ? STOCHASTIC_DATA.var_95_year : (STOCHASTIC_DATA.cutoff_year || '2030');
             const nIter = STOCHASTIC_DATA.iterations !== undefined ? STOCHASTIC_DATA.iterations.toLocaleString() : '2,000';
 
@@ -4213,7 +3917,7 @@
 
         function renderPathMtuCard() {
             if (!PATH_MTU_DATA) return;
-            const mtu = PATH_MTU_DATA.min_path_mtu || 1500;
+            const mtu = PATH_MTU_DATA.effective_mtu || PATH_MTU_DATA.min_path_mtu || 1500;
             const mtuElem = document.getElementById('mtu-val');
             if (mtuElem) mtuElem.innerText = `${mtu} B`;
         }
@@ -4240,62 +3944,24 @@
             
             const selectEl = document.getElementById('fleet-project-select');
             const currentProj = selectEl ? selectEl.value : (window.ECDAT_ACTIVE_PROJECT || 'sample_crypto_app');
-
-            const restoreScanButton = () => {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = origHtml;
-                }
-            };
-
-            const waitForScan = async (baselineMtime) => {
-                const timeoutMs = 15 * 60 * 1000;
-                const pollMs = 2000;
-                const startedAt = Date.now();
-                while (Date.now() - startedAt < timeoutMs) {
-                    await new Promise(resolve => setTimeout(resolve, pollMs));
-                    const versionResp = await fetch(`/api/project/${encodeURIComponent(currentProj)}/version`, { cache: 'no-store' });
-                    if (versionResp.ok) {
-                        const version = await versionResp.json();
-                        if (Number(version.mtime || 0) > baselineMtime) return true;
-                    }
-                }
-                return false;
-            };
             
             try {
-                let baselineMtime = Number(window.ECDAT_MTIME || 0);
-                const versionResp = await fetch(`/api/project/${encodeURIComponent(currentProj)}/version`, { cache: 'no-store' });
-                if (versionResp.ok) {
-                    const version = await versionResp.json();
-                    baselineMtime = Number(version.mtime || baselineMtime);
-                }
-
                 const resp = await fetch('/api/scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: currentProj, target: currentProj, background: true })
+                    body: JSON.stringify({ name: currentProj, target: currentProj })
                 });
                 const data = await resp.json();
-                if (resp.status === 202 && data.status === 'started') {
-                    showDashboardToast('Scan started in the background. Waiting for fresh results...', 'info');
-                    const completed = await waitForScan(baselineMtime);
-                    if (!completed) {
-                        restoreScanButton();
-                        showDashboardToast('Scan is still running. The dashboard will refresh when results are ready.', 'warning');
-                        return;
-                    }
-                }
                 if (resp.ok) {
                     showDashboardToast('Scan complete! Reloading dashboard...', 'success');
                     setTimeout(() => { window.location.reload(); }, 900);
                 } else {
                     showDashboardToast('Scan error: ' + (data.error || 'Check server logs'), 'error');
-                    restoreScanButton();
+                    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
                 }
             } catch (err) {
-                showDashboardToast('Scan status unavailable: ' + (err.message || 'check the server logs'), 'error');
-                restoreScanButton();
+                showDashboardToast('Standalone viewer mode. To re-scan from CLI: ecdat scan --target <dir>', 'warning');
+                if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
             }
         }
 
@@ -4325,15 +3991,10 @@
         // 1-Click Code Remediation Interactive Modal Controller
         let _activeRemediationFile = null;
         let _activeRemediationRule = null;
-        let _activeRemediationBeforeSha256 = null;
 
         async function openRemediationModal() {
             if (!currentDrawerAsset) return;
             const asset = currentDrawerAsset;
-            if (asset.risk_level === 'MANUAL_REVIEW_REQUIRED') {
-                showToast('Manual-review assets cannot be automatically remediated.', true);
-                return;
-            }
             const modal = document.getElementById('remediation-modal');
             const filePathEl = document.getElementById('remed-modal-filepath');
             const ruleEl = document.getElementById('remed-modal-rule');
@@ -4391,10 +4052,6 @@
             }
 
             if (diffBox) diffBox.innerHTML = '<span class="text-slate-500">Generating unified dry-run patch...</span>';
-            if (applyBtn) {
-                applyBtn.disabled = true;
-                applyBtn.className = 'hidden';
-            }
             if (modal) modal.classList.remove('hidden');
 
             // Fetch Dry-Run Preview
@@ -4403,43 +4060,23 @@
                     const resp = await fetch('/api/remediation/preview', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            file_path: _activeRemediationFile,
-                            project: window.ECDAT_ACTIVE_PROJECT || '',
-                            rule: rule,
-                            asset: asset
-                        })
+                        body: JSON.stringify({ file_path: _activeRemediationFile, rule: rule })
                     });
                     const data = await resp.json();
                     if (resp.ok && data.has_changes) {
-                        _activeRemediationFile = data.file_path || _activeRemediationFile;
-                        _activeRemediationBeforeSha256 = data.before_sha256 || null;
                         if (diffChanges) diffChanges.textContent = `${data.changes_count} substitution(s)`;
                         renderHighlightedDiff(data.diff, diffBox);
-                        if (applyBtn && !isProtected) {
-                            applyBtn.disabled = false;
-                            applyBtn.className = 'px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer';
-                            applyBtn.innerHTML = '<span>Apply 1-Click Patch</span>';
-                        }
-                    } else if (resp.ok && data.remediation_status === 'UNSUPPORTED') {
-                        if (diffChanges) diffChanges.textContent = 'Manual review';
-                        diffBox.innerHTML = `<span class="text-amber-300">${escapeHtml(data.remediation_reason || 'This migration requires manual review.')}</span>`;
-                        if (applyBtn) applyBtn.className = 'hidden';
                     } else if (resp.ok) {
                         if (diffChanges) diffChanges.textContent = '0 changes';
-                        diffBox.innerHTML = '<span class="text-amber-300">No applicable static replacement was found in this file. Nothing can be applied from this preview.</span>';
-                        if (applyBtn) applyBtn.className = 'hidden';
+                        diffBox.innerHTML = '<span class="text-emerald-400">File is already clean or uses dynamic factory instantiation. No static changes needed.</span>';
+                        if (applyBtn && !isProtected) applyBtn.disabled = true;
                     } else {
-                        if (applyBtn) applyBtn.disabled = true;
                         diffBox.innerHTML = `<span class="text-rose-400">Preview Error: ${data.error || 'Failed to inspect file'}</span>`;
-                        if (applyBtn) applyBtn.className = 'hidden';
                     }
                 } catch (err) {
-                    if (applyBtn) applyBtn.className = 'hidden';
                     renderClientFallbackDiff(asset, rule, diffBox, diffChanges);
                 }
             } else {
-                if (applyBtn) applyBtn.className = 'hidden';
                 renderClientFallbackDiff(asset, rule, diffBox, diffChanges);
             }
         }
@@ -4492,13 +4129,7 @@
                 const resp = await fetch('/api/remediation/apply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        file_path: _activeRemediationFile,
-                        project: window.ECDAT_ACTIVE_PROJECT || '',
-                        rule: _activeRemediationRule,
-                        asset: currentDrawerAsset,
-                        before_sha256: _activeRemediationBeforeSha256 || ''
-                    })
+                    body: JSON.stringify({ file_path: _activeRemediationFile, rule: _activeRemediationRule })
                 });
                 const data = await resp.json();
                 if (resp.ok && data.status === 'success') {

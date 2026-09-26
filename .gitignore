@@ -126,3 +126,6 @@ Thumbs.db
 
 Research/
 stitch_ecdat_quantum_cryptographic_siem/
+
+ecdat.db
+target/

@@ -1007,9 +1007,10 @@ def main() -> int:
     verify_parser.add_argument("--allow-unverified-mldsa", dest="require_all", action="store_false", default=True, help="Allow unverified ML-DSA signatures in hybrid envelopes")
     verify_parser.add_argument("--root", required=False, help="Path to cbom_root.hex or raw root hex string")
 
-    dash_parser = subparsers.add_parser("dashboard", help="Serve and view an ECDAT cryptographic audit report (report.html)")
-    dash_parser.add_argument("--report", help="Path to report.html or output directory containing report.html")
-    dash_parser.add_argument("--port", type=int, default=8000, help="Port to serve report on (default: 8000)")
+    dash_parser = subparsers.add_parser("dashboard", help="Start the ECDAT Enterprise Post-Quantum Security Dashboard")
+    dash_parser.add_argument("--report", default=None, help="Serve standalone static report.html instead of launching web dashboard")
+    dash_parser.add_argument("--port", type=int, default=7891, help="Port to serve dashboard on (default: 7891)")
+    dash_parser.add_argument("--host", default="127.0.0.1", help="Host interface to bind (default: 127.0.0.1)")
     dash_parser.add_argument("--no-browser", action="store_true", help="Do not open web browser automatically")
 
     serve_parser = subparsers.add_parser("serve", help="Start the ECDAT Multi-Project Fleet Dashboard Server")
@@ -1045,56 +1046,59 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "dashboard":
-        import http.server
-        import socketserver
         import webbrowser
-
         report_arg = args.report
-        report_path = None
+
+        # If a specific report is requested, serve it as static airgapped file
         if report_arg:
+            import http.server
+            import socketserver
             p = Path(report_arg).resolve()
             report_path = p / "report.html" if p.is_dir() else p
-        else:
-            candidates = [
-                Path.cwd() / "report.html",
-                Path.cwd() / "output" / "report.html",
-                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "evoting_backend" / "report.html",
-                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "reports" / "cryptoapi_bench" / "report.html",
-                Path(__file__).resolve().parent.parent / "testbeds" / "benchmarks" / "reports" / "cryben" / "report.html",
-            ]
-            for c in candidates:
-                if c.exists():
-                    report_path = c
-                    break
+            if not report_path.exists():
+                print(f"[!] Error: Specified report file not found: {report_path}")
+                return 1
 
-        if not report_path or not report_path.exists():
-            print("[!] Error: report.html not found. Run 'ecdat scan' first or pass --report <path>.")
-            return 1
+            report_dir = str(report_path.parent)
+            filename = report_path.name
+            port = args.port
+            url = f"http://localhost:{port}/{filename}"
+            print(f"[*] Serving ECDAT Cryptographic Report: {report_path}")
+            print(f"[+] Local Viewer URL: {url}")
+            if not args.no_browser:
+                webbrowser.open(url)
 
-        report_dir = str(report_path.parent)
-        filename = report_path.name
+            class QuietHandler(http.server.SimpleHTTPRequestHandler):
+                def __init__(self, *a, **kw):
+                    super().__init__(*a, directory=report_dir, **kw)
+                def log_message(self, format, *a):
+                    pass
+
+            print("[*] Press Ctrl+C to stop.")
+            try:
+                with socketserver.TCPServer(("", port), QuietHandler) as httpd:
+                    httpd.serve_forever()
+            except KeyboardInterrupt:
+                print("\n[*] Server stopped.")
+                return 0
+
+        # Launch modern standalone Starlette dashboard application
+        import threading
+        import uvicorn
         port = args.port
-        url = f"http://localhost:{port}/{filename}"
-
-        print(f"[*] Serving ECDAT Cryptographic Report: {report_path}")
-        print(f"[+] Local Viewer URL: {url}")
-
+        host = args.host
+        url = f"http://{host}:{port}/dashboard"
+        print("=" * 70)
+        print(" ECDAT Enterprise Post-Quantum Security Dashboard")
+        print(f" Web UI: {url}")
+        print("=" * 70)
         if not args.no_browser:
-            webbrowser.open(url)
-
-        class QuietHandler(http.server.SimpleHTTPRequestHandler):
-            def __init__(self, *a, **kw):
-                super().__init__(*a, directory=report_dir, **kw)
-            def log_message(self, format, *a):
-                pass
-
-        print("[*] Press Ctrl+C to stop.")
+            threading.Timer(0.8, lambda: webbrowser.open(url)).start()
         try:
-            with socketserver.TCPServer(("", port), QuietHandler) as httpd:
-                httpd.serve_forever()
+            uvicorn.run("ecdat.app.main:app", host=host, port=port, reload=False, log_level="info")
         except KeyboardInterrupt:
-            print("\n[*] Server stopped.")
-            return 0
+            print("\n[*] Dashboard server stopped.")
+        return 0
     elif args.command == "scan":
         print(f"[*] Starting ECDAT cryptographic discovery on: {args.target}")
         result = run_ecdat_scan(

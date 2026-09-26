@@ -110,7 +110,7 @@ Cryptographic vulnerability propagates through software dependency contact netwo
 
 | Component / Module | $R_0$ Score | Direct Crypto | Downstream Affected Services | Actionable Mitigation Impact |
 | :--- | :---: | :---: | :--- | :--- |
-| **`common_crypto`** | **`3`** | `True` | `payment_service, api_gateway, auth_service` | SUPERSPREADER (R0=3): Migrating 'common_crypto' to PQC immediately eliminates quantum risk across 3 downstream services: payment_service, api_gateway, auth_service. |
+| **`common_crypto`** | **`3`** | `True` | `auth_service, payment_service, api_gateway` | SUPERSPREADER (R0=3): Migrating 'common_crypto' to PQC immediately eliminates quantum risk across 3 downstream services: auth_service, payment_service, api_gateway. |
 
 ---
 
