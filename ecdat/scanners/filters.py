@@ -70,3 +70,65 @@ def should_scan_file(file_path: str, base_dir: Optional[str] = None) -> bool:
             return False
 
     return True
+
+
+# Directory patterns associated with test suites, mock fixtures, and benchmarks across all ecosystems
+TEST_DIR_NAMES: Set[str] = {
+    "test", "tests", "testing", "spec", "specs", "testdata", "fixtures", "mock", "mocks",
+    "fuzz", "benchmarks", "benchmark", "benches", "bench", "integration-test", "it"
+}
+
+# Regex for language-specific test file naming conventions
+TEST_FILE_REGEX = re.compile(
+    r"""(?x)
+    # Directory indicators
+    (?:^|/)src/test/
+    |(?:^|/)test/
+    |(?:^|/)tests/
+    |(?:^|/)specs?/
+    # Java / JVM
+    |(?:Test|Tests|TestCase|IT|Benchmark)\.(?:java|kt|scala|groovy)$
+    |\b[A-Za-z0-9_]+Test\.(?:java|kt|scala|groovy)$
+    |\b[A-Za-z0-9_]+TestCase\.(?:java|kt|scala|groovy)$
+    |\b[A-Za-z0-9_]+IT\.(?:java|kt|scala|groovy)$
+    # Python
+    |(?:^|/)test_[a-zA-Z0-9_]+\.py$
+    |(?:^|/)[a-zA-Z0-9_]+_test\.py$
+    |(?:^|/)conftest\.py$
+    # Go
+    |_test\.go$
+    # JavaScript / TypeScript
+    |\.(?:test|spec)\.(?:js|ts|jsx|tsx|mjs|cjs)$
+    # Rust
+    |(?:^|/)tests/[a-zA-Z0-9_]+\.rs$
+    |_test\.rs$
+    # Ruby
+    |_spec\.rb$
+    |test_[a-zA-Z0-9_]+\.rb$
+    """,
+    re.IGNORECASE
+)
+
+def is_test_file_path(file_path: str) -> bool:
+    """
+    Evaluates whether a source file path belongs to a test suite, mock harness,
+    or benchmark across supported languages (Java, Python, Go, JS/TS, Rust, Ruby).
+    Returns True for test fixtures, False for production runtime code.
+    """
+    norm_path = str(file_path).replace("\\", "/")
+    
+    # 1. Check directory path components
+    p = Path(norm_path)
+    for part in p.parts[:-1]:
+        part_lower = part.lower()
+        if part_lower in TEST_DIR_NAMES:
+            return True
+        if part_lower.startswith("test-") or part_lower.endswith("-test") or part_lower.startswith("tests-") or part_lower.endswith("-tests"):
+            return True
+
+    # 2. Check regex against path
+    if TEST_FILE_REGEX.search(norm_path):
+        return True
+
+    return False
+

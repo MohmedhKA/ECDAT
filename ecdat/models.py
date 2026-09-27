@@ -22,6 +22,15 @@ class PrimitiveType(str, Enum):
     HASH = "HASH"                 # Hash functions / MAC
     SYMMETRIC_CIPHER = "SYMMETRIC_CIPHER" # Bulk encryption cipher
 
+class AssetScope(str, Enum):
+    """
+    CycloneDX 1.6 Component Scope:
+    PRODUCTION: Live application runtime and production code (scope: 'required').
+    TEST_FIXTURE: Test suites, mocks, benchmarks, and integration fixtures (scope: 'optional').
+    """
+    PRODUCTION = "PRODUCTION"
+    TEST_FIXTURE = "TEST_FIXTURE"
+
 class IntentClass(str, Enum):
     """
     DSIS 4-Class Functional Security Intent Lattice:
@@ -49,13 +58,15 @@ class EvidenceLevel(str, Enum):
 
 class AgilityLevel(int, Enum):
     """
-    Cryptographic Agility Maturity Score (CAMS) 0–3:
+    Cryptographic Agility Maturity Scale (CAMS) Levels 0–5:
     Measures ease of replacing cryptographic algorithms at the call-site.
     """
-    RIGID = 0         # Hardcoded literal algorithm string (baseline effort)
-    CONFIGURABLE = 1  # Loaded from environment variable or configuration file
-    PROVIDER = 2      # Abstracted behind interface / dependency injection factory
-    RUNTIME_AGILE = 3 # Policy-driven crypto-agile facade (e.g. Google Tink, KMS keyset)
+    RIGID = 0           # Level 0: Hardcoded string literals, inflexible primitives
+    CONFIGURABLE = 1    # Level 1: Parameterized configs/env vars/variables
+    PROVIDER = 2        # Level 2: Pluggable crypto provider abstraction (JCE/OpenSSL)
+    RUNTIME_AGILE = 3   # Level 3: Dynamic protocol negotiation / TLS handshake
+    ORCHESTRATED = 4    # Level 4: Centralized policy orchestration / Tink / KMS
+    QUANTUM_AGILE = 5   # Level 5: Quantum-autonomous / post-quantum native
 
 class ExposureProfile(str, Enum):
     """Adversarial network exposure profile derived from deployment manifests."""
@@ -137,6 +148,9 @@ class CryptoAsset(BaseModel):
     p_hndl: float = Field(1.0, description="Harvest-Now-Decrypt-Later interception probability [0.0 - 1.0]")
     x_auto_source: str = Field("default", description="Provenance of data lifespan X (e.g. sql_schema, orm_ttl, default)")
     risk_level: Optional[str] = Field(None, description="Assessed risk level: CRITICAL, HIGH, MEDIUM, LOW")
+    scope: AssetScope = Field(AssetScope.PRODUCTION, description="Asset execution scope (PRODUCTION vs TEST_FIXTURE)")
+    cwe_id: Optional[str] = Field(None, description="MITRE Common Weakness Enumeration ID (e.g. CWE-338)")
+    cwe_name: Optional[str] = Field(None, description="MITRE Common Weakness Enumeration title")
 
     @property
     def is_pqc(self) -> bool:

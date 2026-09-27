@@ -48,18 +48,31 @@ def run_scan_worker(project_id: str, target_dir: str, output_dir: str, scan_id: 
     recent_logs = []
     log_text_accum = []
     
+    # Prefer repo venv python if available
+    venv_py = Path(__file__).resolve().parents[2] / ".venv" / "bin" / "python"
+    py_bin = str(venv_py) if venv_py.exists() else sys.executable
+
+    proj = db.get_project(project_id) or {}
+    scan_libs = bool(proj.get("scan_libraries", 1))
+
     cmd = [
-        sys.executable,
+        py_bin,
         "-m",
         "ecdat.pipeline",
         "scan",
         "--target",
         str(target_dir),
-        "--out",
+        "--output",
         str(output_dir),
-        "--json",
-        "--sarif",
+        "--format",
+        "all",
     ]
+    if not scan_libs:
+        cmd.append("--no-scan-libraries")
+
+    cmd_str = " ".join(cmd)
+    print(f"\n[ECDAT-SCAN] Launching scan for project '{project_id}'...", flush=True)
+    print(f"[ECDAT-SCAN] Command: {cmd_str}\n", flush=True)
 
     try:
         proc = subprocess.Popen(
@@ -78,6 +91,8 @@ def run_scan_worker(project_id: str, target_dir: str, output_dir: str, scan_id: 
         for line in iter(proc.stdout.readline, ""):
             cleaned = line.rstrip()
             if cleaned:
+                # Mirror to server console in real-time
+                print(f"[{project_id}] {cleaned}", flush=True)
                 with SCAN_LOCK:
                     recent_logs.append(cleaned)
                     if len(recent_logs) > 500:
@@ -93,8 +108,19 @@ def run_scan_worker(project_id: str, target_dir: str, output_dir: str, scan_id: 
         full_log = "\n".join(log_text_accum)
         db.record_scan_finish(scan_id, status, exit_code, full_log)
 
+        if exit_code == 0:
+            print(f"\n[ECDAT-SCAN SUCCESS] Scan for '{project_id}' completed successfully (exit code 0).\n", flush=True)
+        else:
+            print(f"\n" + "=" * 70, file=sys.stderr)
+            print(f"[ECDAT-SCAN ERROR] Scan for project '{project_id}' FAILED with exit code {exit_code}!", file=sys.stderr)
+            print(f"[ECDAT-SCAN ERROR] Target directory: {target_dir}", file=sys.stderr)
+            print(f"[ECDAT-SCAN ERROR] Output directory: {output_dir}", file=sys.stderr)
+            print(f"[ECDAT-SCAN ERROR] Full Log:\n{full_log}", file=sys.stderr)
+            print("=" * 70 + "\n", file=sys.stderr, flush=True)
+
     except Exception as exc:
         err_msg = f"Scan process encountered fatal exception: {str(exc)}"
+        print(f"\n[ECDAT-SCAN FATAL ERROR] {err_msg}\n", file=sys.stderr, flush=True)
         db.record_scan_finish(scan_id, "failed", 1, err_msg)
     finally:
         with SCAN_LOCK:

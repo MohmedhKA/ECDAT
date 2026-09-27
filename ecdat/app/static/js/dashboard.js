@@ -226,11 +226,13 @@
         const targetInput = document.getElementById('proj-target-input');
         const scansInput = document.getElementById('proj-scans-input');
         const autoScanCheckbox = document.getElementById('proj-autoscan-input');
+        const scanLibsCheckbox = document.getElementById('proj-scan-libraries-input');
 
         const name = nameInput.value.trim();
         const target_dir = targetInput.value.trim();
         const scans_per_day = parseInt(scansInput.value, 10) || 1;
         const auto_scan = autoScanCheckbox ? (autoScanCheckbox.checked ? 1 : 0) : 1;
+        const scan_libraries = scanLibsCheckbox ? (scanLibsCheckbox.checked ? 1 : 0) : 1;
 
         if (!name || !target_dir) {
             alert('Please provide both Project Name and Target Directory.');
@@ -241,7 +243,7 @@
             const res = await fetch('/api/projects', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, target_dir, scans_per_day, auto_scan }),
+                body: JSON.stringify({ name, target_dir, scans_per_day, auto_scan, scan_libraries }),
             });
             const result = await res.json();
             if (!res.ok) throw new Error(result.message || 'Failed to create project');

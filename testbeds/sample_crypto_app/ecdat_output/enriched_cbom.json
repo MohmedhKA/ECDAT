@@ -4,7 +4,7 @@
   "serialNumber": "urn:uuid:ecdat-c639e82a0db1b2ef",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-09-26T00:25:40.355115+00:00",
+    "timestamp": "2026-09-27T07:36:35.345103+00:00",
     "tools": [
       {
         "name": "ECDAT",
@@ -52,6 +52,7 @@
       "type": "cryptographic-asset",
       "name": "app:session_key",
       "bom-ref": "ASSET-001",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -61,6 +62,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "EPHEMERAL"
@@ -112,6 +117,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -185,6 +194,7 @@
       "type": "cryptographic-asset",
       "name": "app:auth_token",
       "bom-ref": "ASSET-002",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -194,6 +204,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "SHORT_TERM"
@@ -245,6 +259,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -318,6 +336,7 @@
       "type": "cryptographic-asset",
       "name": "app:encrypted_pan",
       "bom-ref": "ASSET-003",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -327,6 +346,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "OPERATIONAL"
@@ -378,6 +401,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -451,6 +478,7 @@
       "type": "cryptographic-asset",
       "name": "app:encrypted_archive",
       "bom-ref": "ASSET-004",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -460,6 +488,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "ARCHIVAL"
@@ -511,6 +543,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -584,6 +620,7 @@
       "type": "cryptographic-asset",
       "name": "app:signature",
       "bom-ref": "ASSET-005",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -593,6 +630,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "HUMAN_REVIEW"
@@ -646,6 +687,18 @@
           "value": "RIGID"
         },
         {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-326"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Inadequate Encryption Strength"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
+        {
           "name": "ecdat:cdx966:reachability",
           "value": "E1_STATIC_ARTIFACT"
         },
@@ -672,6 +725,14 @@
         {
           "name": "ecdat:cdx966:pqcSegments",
           "value": "5"
+        },
+        {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-326"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Inadequate Encryption Strength"
         }
       ],
       "cdxAttestation": {
@@ -717,6 +778,7 @@
       "type": "cryptographic-asset",
       "name": "app:token_blob",
       "bom-ref": "ASSET-006",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -726,6 +788,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "HUMAN_REVIEW"
@@ -777,6 +843,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -850,6 +920,7 @@
       "type": "cryptographic-asset",
       "name": "common_crypto:session_key",
       "bom-ref": "ASSET-007",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -859,6 +930,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "EPHEMERAL"
@@ -910,6 +985,10 @@
         {
           "name": "ecdat:cams_agility_name",
           "value": "RIGID"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
         },
         {
           "name": "ecdat:cdx966:reachability",
@@ -981,6 +1060,7 @@
       "type": "cryptographic-asset",
       "name": "common_crypto:token_sig",
       "bom-ref": "ASSET-008",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -990,6 +1070,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "EPHEMERAL"
@@ -1043,6 +1127,18 @@
           "value": "RIGID"
         },
         {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-326"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Inadequate Encryption Strength"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
+        {
           "name": "ecdat:cdx966:reachability",
           "value": "E1_STATIC_ARTIFACT"
         },
@@ -1069,6 +1165,14 @@
         {
           "name": "ecdat:cdx966:pqcSegments",
           "value": "5"
+        },
+        {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-326"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Inadequate Encryption Strength"
         }
       ],
       "cdxAttestation": {
@@ -1112,6 +1216,7 @@
       "type": "cryptographic-asset",
       "name": "x509_cert:legacy_ca",
       "bom-ref": "ASSET-009",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -1121,6 +1226,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "OPERATIONAL"
@@ -1174,6 +1283,18 @@
           "value": "RIGID"
         },
         {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
+        {
           "name": "ecdat:cdx966:reachability",
           "value": "E3_CONFIG_CONFIRMED"
         },
@@ -1200,6 +1321,14 @@
         {
           "name": "ecdat:cdx966:pqcSegments",
           "value": "5"
+        },
+        {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
         }
       ],
       "cdxAttestation": {
@@ -1243,6 +1372,7 @@
       "type": "cryptographic-asset",
       "name": "keyfile:legacy_rsa_private-key",
       "bom-ref": "ASSET-010",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -1252,6 +1382,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "ARCHIVAL"
@@ -1305,6 +1439,18 @@
           "value": "RIGID"
         },
         {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
+        {
           "name": "ecdat:cdx966:reachability",
           "value": "E3_CONFIG_CONFIRMED"
         },
@@ -1331,6 +1477,14 @@
         {
           "name": "ecdat:cdx966:pqcSegments",
           "value": "1"
+        },
+        {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
         }
       ],
       "cdxAttestation": {
@@ -1374,6 +1528,7 @@
       "type": "cryptographic-asset",
       "name": "keyfile:legacy_rsa_public-key",
       "bom-ref": "ASSET-011",
+      "scope": "required",
       "cryptoProperties": {
         "assetType": "algorithm",
         "algorithmProperties": {
@@ -1383,6 +1538,10 @@
         }
       },
       "properties": [
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
         {
           "name": "ecdat:x_tier",
           "value": "OPERATIONAL"
@@ -1436,6 +1595,18 @@
           "value": "RIGID"
         },
         {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
+        },
+        {
+          "name": "ecdat:scope",
+          "value": "PRODUCTION"
+        },
+        {
           "name": "ecdat:cdx966:reachability",
           "value": "E3_CONFIG_CONFIRMED"
         },
@@ -1462,6 +1633,14 @@
         {
           "name": "ecdat:cdx966:pqcSegments",
           "value": "5"
+        },
+        {
+          "name": "ecdat:cwe_id",
+          "value": "CWE-327"
+        },
+        {
+          "name": "ecdat:cwe_name",
+          "value": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)"
         }
       ],
       "cdxAttestation": {
@@ -1511,7 +1690,12 @@
       "category": "CLASSICAL_ASYMMETRIC",
       "pqc_readiness": "VULNERABLE_CLASSICAL",
       "description": "Python OpenSSL bindings (classical public key primitives)",
-      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)",
+      "scope": "PRODUCTION",
+      "cve_id": "CVE-2023-50782",
+      "cve_severity": "HIGH",
+      "cve_summary": "Python Cryptography package vulnerable to Bleichenbacher timing oracle attack",
+      "advisory_url": "https://nvd.nist.gov/vuln/detail/CVE-2023-50782"
     },
     {
       "package_name": "pycryptodome",
@@ -1521,7 +1705,12 @@
       "category": "CLASSICAL_ASYMMETRIC",
       "pqc_readiness": "VULNERABLE_CLASSICAL",
       "description": "Python cryptography library (RSA, DSA, ECC)",
-      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)",
+      "scope": "PRODUCTION",
+      "cve_id": "CVE-2023-52323",
+      "cve_severity": "HIGH",
+      "cve_summary": "PyCryptodome and pycryptodomex side-channel leakage for OAEP decryption",
+      "advisory_url": "https://nvd.nist.gov/vuln/detail/CVE-2023-52323"
     },
     {
       "package_name": "@noble/post-quantum",
@@ -1531,7 +1720,12 @@
       "category": "POST_QUANTUM",
       "pqc_readiness": "MIGRATED_PQC",
       "description": "NIST FIPS 203/204/205 ML-KEM & ML-DSA",
-      "recommendation": "Validated: Post-Quantum standard algorithm"
+      "recommendation": "Validated: Post-Quantum standard algorithm",
+      "scope": "PRODUCTION",
+      "cve_id": null,
+      "cve_severity": null,
+      "cve_summary": null,
+      "advisory_url": null
     },
     {
       "package_name": "node-forge",
@@ -1541,7 +1735,12 @@
       "category": "CLASSICAL_ASYMMETRIC",
       "pqc_readiness": "VULNERABLE_CLASSICAL",
       "description": "RSA/ECC classical cipher suite (HNDL risk)",
-      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"
+      "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)",
+      "scope": "PRODUCTION",
+      "cve_id": "CVE-2026-33896",
+      "cve_severity": "HIGH",
+      "cve_summary": "Forge has a basicConstraints bypass in its certificate chain verification (RFC 5280 violation)",
+      "advisory_url": "https://github.com/digitalbazaar/forge/security/advisories/GHSA-2328-f5f3-gj25"
     },
     {
       "package_name": "crypto-js",
@@ -1551,7 +1750,12 @@
       "category": "SYMMETRIC_OR_HASH",
       "pqc_readiness": "SAFE_SYMMETRIC",
       "description": "AES, SHA-2/3, HMAC symmetric algorithms",
-      "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"
+      "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)",
+      "scope": "PRODUCTION",
+      "cve_id": null,
+      "cve_severity": null,
+      "cve_summary": null,
+      "advisory_url": null
     }
   ]
 }

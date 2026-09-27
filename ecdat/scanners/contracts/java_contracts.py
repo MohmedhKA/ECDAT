@@ -591,6 +591,8 @@ class JavaContractEngine(BaseContractEngine):
                         continue
 
                     raw_arg = args[0]
+                    is_param_arg = not isinstance(raw_arg, Literal)
+                    has_explicit_provider = len(args) >= 2 or qualifier in ("KeyFactory", "SecretKeyFactory")
                     resolved_arg = JavaAstHelper.resolve_ast_expression(
                         raw_arg, local_scope, class_fields, tree, file_path, maps
                     )
@@ -901,6 +903,7 @@ class JavaContractEngine(BaseContractEngine):
                         desc = f"Java {contract_name} invocation"
 
                     safe_alg = alg.lower().replace("-", "_").replace(":", "_")
+                    cams_suffix = " [provider.getcipher]" if has_explicit_provider else (" [config.get:parameter]" if is_param_arg else "")
                     assets.append(self.build_crypto_asset(
                         asset_prefix="SRC-JAVA",
                         index=len(assets) + 1,
@@ -914,7 +917,7 @@ class JavaContractEngine(BaseContractEngine):
                         has_shredding=is_shred,
                         evidence_level=EvidenceLevel.E1_STATIC_ARTIFACT,
                         evidence_source=f"java_contract:{contract_name}",
-                        matched_code=f"{qualifier}.{member}(\"{resolved_arg}\")",
+                        matched_code=f"{qualifier}.{member}(\"{resolved_arg}\"){cams_suffix}",
                         language="java",
                         cwe=cwe,
                         description=desc,

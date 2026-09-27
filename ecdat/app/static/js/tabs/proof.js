@@ -40,32 +40,62 @@
         const rawBase64 = attestation.payload || '';
         const signatures = attestation.signatures || [];
 
-        // Decode payload if present
+        // If neither proof nor attestation exists, render honest empty state
+        if (!rawBase64 && !proof.merkle_root_hex) {
+            container.innerHTML = `
+                <div class="proof-tab-view" style="animation: fadeIn 0.15s ease-out;">
+                    <div class="tab-header-banner">
+                        <div class="tab-title-wrap">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(0, 245, 160, 0.15); color: var(--pqc-emerald); display: flex; align-items: center; justify-content: center;">
+                                    ${window.getIcon ? window.getIcon('shieldCheck', 18) : ''}
+                                </div>
+                                <div>
+                                    <h2>DSSE Cryptographic Attestation & Negative Proof</h2>
+                                    <p>Cryptographic proofs, non-malleable DSSE envelopes, and mathematical perimeter certificates.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 3.5rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm); margin-top: 1.5rem;">
+                        <div style="width: 52px; height: 52px; border-radius: 12px; background: rgba(0, 245, 160, 0.1); color: var(--pqc-emerald); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                            ${window.getIcon ? window.getIcon('shieldCheck', 26) : ''}
+                        </div>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+                            No Signed Attestation Envelope Available
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                            No DSSE attestation or negative proof certificate was found for this project. Run a cryptographic discovery scan to generate authentic Merkle commitments and cryptographic proofs.
+                        </p>
+                        <button class="btn btn-emerald" onclick="window.triggerProjectScan()">
+                            ${window.getIcon ? window.getIcon('play', 14) : ''} Run Attestation Scan
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Decode authentic payload
         let decodedPayload = rawBase64 ? decodeBase64Utf8(rawBase64) : null;
         if (!decodedPayload) {
             decodedPayload = {
                 _type: 'https://in-toto.io/Statement/v1',
                 subject: [{
                     name: 'ECDAT Target Codebase',
-                    digest: { sha256: proof.merkle_root_hex || '4d42012d481cadb92e88a9f7ec7e9319ea5bbb033936619095502a3f992ab3d3' }
+                    digest: { sha256: proof.merkle_root_hex || 'N/A' }
                 }],
                 predicateType: 'https://ecdat.dev/attestation/v1',
                 predicate: {
-                    builder: { id: 'https://github.com/SIH26164/ECDAT@v2.0.0', vendor: 'SIH26164' },
-                    runDetails: {
-                        merkle_root: `0x${proof.merkle_root_hex || '4d42012d481cadb92e88a9f7ec7e9319ea5bbb033936619095502a3f992ab3d3'}`,
-                        total_cryptographic_assets: summary.posture?.total_assets || 23,
-                        negative_proof: {
-                            claim: 'Audited perimeter contains 52 declared boundary unknowns; all other paths certified clean.',
-                            perimeter_verified: true
-                        }
-                    }
+                    merkle_root: proof.merkle_root_hex ? `0x${proof.merkle_root_hex}` : 'N/A',
+                    total_cryptographic_assets: summary.posture?.total_assets || 0,
+                    assertions: proof.assertions || []
                 }
             };
         }
 
-        const merkleRoot = proof.merkle_root_hex || '4d42012d481cadb92e88a9f7ec7e9319ea5bbb033936619095502a3f992ab3d3';
-        const certId = proof.certificate_id || 'ecdat-np-f4a90f67e0270e37';
+        const merkleRoot = proof.merkle_root_hex || (decodedPayload?.predicate?.merkle_root ? decodedPayload.predicate.merkle_root.replace('0x', '') : 'N/A');
+        const certId = proof.certificate_id || 'CERT-ECDAT-PENDING';
         const isClean = proof.is_certified_clean !== undefined ? proof.is_certified_clean : true;
         const assertions = proof.assertions || [
             {
@@ -88,18 +118,9 @@
             }
         ];
 
-        // Identify dual signatures
-        const edSig = signatures.find(s => (s.scheme && s.scheme.toLowerCase().includes('ed25519')) || (s.keyid && s.keyid.toLowerCase().includes('ed25519'))) || {
-            keyid: 'ed25519:5a20ea9e828ea614',
-            sig: 'H+G9F8wWitYKc8FKMfMnb+ZiK4vVzBNleCMxpUzsCnB/bmBGm0dvxHbYHYJfhyam7Hk5KgLjuwSYmui5r1kTBg==',
-            scheme: 'ed25519'
-        };
-
-        const mldsaSig = signatures.find(s => (s.scheme && (s.scheme.includes('ML-DSA') || s.scheme.includes('mldsa') || s.scheme.includes('dilithium'))) || (s.keyid && s.keyid.toLowerCase().includes('mldsa'))) || {
-            keyid: 'mldsa65:af9da8c56dd93823',
-            sig: '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',
-            scheme: 'ML-DSA-65'
-        };
+        // Identify dual signatures (Strict zero-fabrication: only real signatures from envelope)
+        const edSig = signatures.find(s => (s.scheme && s.scheme.toLowerCase().includes('ed25519')) || (s.keyid && s.keyid.toLowerCase().includes('ed25519'))) || null;
+        const mldsaSig = signatures.find(s => (s.scheme && (s.scheme.includes('ML-DSA') || s.scheme.includes('mldsa') || s.scheme.includes('dilithium'))) || (s.keyid && s.keyid.toLowerCase().includes('mldsa'))) || null;
 
         container.innerHTML = `
             <div class="proof-tab-view" style="animation: fadeIn 0.15s ease-out;">
@@ -256,7 +277,7 @@
                                     Combines classical and post-quantum digital signatures under DSSE v1.0 envelope spec.
                                 </p>
                             </div>
-                            <span class="card-badge badge-pqc">2 / 2 Signatures Valid</span>
+                            <span class="card-badge badge-pqc">${signatures.length} Signature${signatures.length === 1 ? '' : 's'} Verified</span>
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 0.85rem;">
@@ -267,14 +288,20 @@
                                         <span class="card-badge badge-low">SIGNATURE 1</span>
                                         <strong style="color: var(--text-primary); font-size: 0.82rem;">Classical Ed25519 (RFC 8032)</strong>
                                     </div>
-                                    <span class="card-badge badge-pqc" style="font-size: 0.65rem;">VALIDATED</span>
+                                    <span class="card-badge ${edSig ? 'badge-pqc' : 'badge-low'}" style="font-size: 0.65rem;">${edSig ? 'VALIDATED' : 'UNSIGNED'}</span>
                                 </div>
-                                <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono); margin-bottom: 0.35rem;">
-                                    KeyID: <span style="color: var(--text-primary);">${escapeHtml(edSig.keyid)}</span> (Curve25519 High-Speed Classical)
-                                </div>
-                                <div class="mono" style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-base); padding: 0.35rem 0.5rem; border-radius: 4px; word-break: break-all;">
-                                    ${escapeHtml(edSig.sig.slice(0, 48))}... (${edSig.sig.length} bytes base64)
-                                </div>
+                                ${edSig ? `
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono); margin-bottom: 0.35rem;">
+                                        KeyID: <span style="color: var(--text-primary);">${escapeHtml(edSig.keyid)}</span> (Curve25519 High-Speed Classical)
+                                    </div>
+                                    <div class="mono" style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-base); padding: 0.35rem 0.5rem; border-radius: 4px; word-break: break-all;">
+                                        ${escapeHtml((edSig.sig || '').slice(0, 48))}... (${(edSig.sig || '').length} bytes base64)
+                                    </div>
+                                ` : `
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">
+                                        No Classical Ed25519 signature attached to this attestation envelope.
+                                    </div>
+                                `}
                             </div>
 
                             <!-- Signature 2: NIST FIPS 204 ML-DSA-65 -->
@@ -284,14 +311,20 @@
                                         <span class="card-badge badge-pqc">SIGNATURE 2</span>
                                         <strong style="color: var(--pqc-emerald); font-size: 0.82rem;">NIST FIPS 204 ML-DSA-65 (Dilithium3)</strong>
                                     </div>
-                                    <span class="card-badge badge-pqc" style="font-size: 0.65rem;">QUANTUM-SAFE</span>
+                                    <span class="card-badge ${mldsaSig ? 'badge-pqc' : 'badge-high'}" style="font-size: 0.65rem;">${mldsaSig ? 'QUANTUM-SAFE' : 'ABSENT'}</span>
                                 </div>
-                                <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono); margin-bottom: 0.35rem;">
-                                    KeyID: <span style="color: var(--text-primary);">${escapeHtml(mldsaSig.keyid)}</span> (Module-Lattice Security Category 3)
-                                </div>
-                                <div class="mono" style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-base); padding: 0.35rem 0.5rem; border-radius: 4px; word-break: break-all;">
-                                    ${escapeHtml(mldsaSig.sig.slice(0, 48))}... (${mldsaSig.sig.length.toLocaleString()} bytes base64)
-                                </div>
+                                ${mldsaSig ? `
+                                    <div style="font-size: 0.72rem; color: var(--text-secondary); font-family: var(--font-mono); margin-bottom: 0.35rem;">
+                                        KeyID: <span style="color: var(--text-primary);">${escapeHtml(mldsaSig.keyid)}</span> (Module-Lattice Security Category 3)
+                                    </div>
+                                    <div class="mono" style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-base); padding: 0.35rem 0.5rem; border-radius: 4px; word-break: break-all;">
+                                        ${escapeHtml((mldsaSig.sig || '').slice(0, 48))}... (${(mldsaSig.sig || '').length.toLocaleString()} bytes base64)
+                                    </div>
+                                ` : `
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">
+                                        No Post-Quantum ML-DSA-65 signature attached (classical-only attestation).
+                                    </div>
+                                `}
                             </div>
                         </div>
 

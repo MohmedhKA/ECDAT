@@ -37,6 +37,14 @@ CREATE TABLE IF NOT EXISTS package_manifest_rules (
     PRIMARY KEY (ecosystem, package_name)
 );
 
+CREATE TABLE IF NOT EXISTS cwe_taxonomy (
+    finding_or_alg TEXT PRIMARY KEY,   -- finding key or algorithm name (e.g. 'UNTRUSTED-PRNG', 'RSA', 'MD5')
+    cwe_id TEXT NOT NULL,              -- e.g. 'CWE-338', 'CWE-327'
+    name TEXT NOT NULL,                -- Official MITRE CWE Title
+    description TEXT,
+    mitre_url TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS db_metadata (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -47,3 +55,4 @@ CREATE INDEX IF NOT EXISTS idx_sig_eco_contract_sym ON crypto_signatures(ecosyst
 CREATE INDEX IF NOT EXISTS idx_sig_eco_namespace ON crypto_signatures(ecosystem, namespace);
 CREATE INDEX IF NOT EXISTS idx_sig_norm_alg ON crypto_signatures(normalized_alg);
 CREATE INDEX IF NOT EXISTS idx_pkg_eco_name ON package_manifest_rules(ecosystem, package_name);
+CREATE INDEX IF NOT EXISTS idx_cwe_id ON cwe_taxonomy(cwe_id);

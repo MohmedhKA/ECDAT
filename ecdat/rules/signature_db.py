@@ -45,6 +45,12 @@ class SignatureDatabase:
                     if SCHEMA_SQL_PATH.exists():
                         conn.executescript(SCHEMA_SQL_PATH.read_text(encoding="utf-8"))
                     seed_database(conn)
+                else:
+                    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cwe_taxonomy'")
+                    if not cur.fetchone():
+                        if SCHEMA_SQL_PATH.exists():
+                            conn.executescript(SCHEMA_SQL_PATH.read_text(encoding="utf-8"))
+                        seed_database(conn)
         finally:
             conn.close()
 
@@ -154,6 +160,49 @@ class SignatureDatabase:
                 sig["default_risk"], sig["pqc_recommendation"], sig.get("cwe"), sig.get("description")
             ))
             conn.commit()
+        finally:
+            conn.close()
+
+    def lookup_cwe(self, identifier: str) -> Optional[Dict[str, Any]]:
+        """
+        Looks up canonical CWE definition by finding key, algorithm, or CWE ID.
+        (e.g. 'UNTRUSTED-PRNG', 'RSA', 'CWE-338').
+        """
+        if not identifier:
+            return None
+        clean_id = str(identifier).strip().upper()
+        conn = self._get_connection()
+        try:
+            cur = conn.cursor()
+            # 1. Exact match on finding_or_alg
+            cur.execute("""
+                SELECT * FROM cwe_taxonomy 
+                WHERE UPPER(finding_or_alg) = ?
+                LIMIT 1
+            """, (clean_id,))
+            row = cur.fetchone()
+            if row:
+                return dict(row)
+
+            # 2. Exact match on cwe_id (e.g. 'CWE-338')
+            cur.execute("""
+                SELECT * FROM cwe_taxonomy 
+                WHERE UPPER(cwe_id) = ?
+                LIMIT 1
+            """, (clean_id,))
+            row = cur.fetchone()
+            if row:
+                return dict(row)
+
+            # 3. Substring match
+            cur.execute("""
+                SELECT * FROM cwe_taxonomy 
+                WHERE ? LIKE '%' || UPPER(finding_or_alg) || '%'
+                ORDER BY LENGTH(finding_or_alg) DESC
+                LIMIT 1
+            """, (clean_id,))
+            row = cur.fetchone()
+            return dict(row) if row else None
         finally:
             conn.close()
 

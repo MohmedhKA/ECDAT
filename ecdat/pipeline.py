@@ -101,6 +101,7 @@ def run_ecdat_scan(
     generate_negative_proof: bool = True,
     subdirs: Optional[Any] = None,
     ebpf_log: Optional[str] = None,
+    scan_libraries: bool = True,
 ) -> Dict[str, Any]:
     """
     Executes an end-to-end cryptographic discovery, temporal risk analysis,
@@ -231,13 +232,16 @@ def run_ecdat_scan(
         hazards = audit_python_buffer_file(str(py_file))
         all_buffer_hazards.extend(hazards)
 
-    # 1b. Audit Polyglot Package Manifests (package.json, go.mod, Cargo.toml, requirements.txt)
-    manifest_deps = discover_manifest_crypto_dependencies(str(target_path))
-    if parsed_subdirs:
-        manifest_deps = [
-            m for m in manifest_deps
-            if any(sub in Path(getattr(m, "manifest_path", "")).parts for sub in parsed_subdirs)
-        ]
+    # 1b. Audit Polyglot Package Manifests (pom.xml, package.json, go.mod, Cargo.toml, requirements.txt)
+    if scan_libraries:
+        manifest_deps = discover_manifest_crypto_dependencies(str(target_path))
+        if parsed_subdirs:
+            manifest_deps = [
+                m for m in manifest_deps
+                if any(sub in Path(getattr(m, "manifest_path", "")).parts for sub in parsed_subdirs)
+            ]
+    else:
+        manifest_deps = []
 
     # 1c. Autonomous Schema Lifespans & Deployment Exposure Scans
     schema_lifespans = extract_schemas_lifespan(str(target_path))
@@ -529,10 +533,12 @@ def run_ecdat_scan(
     # 6. Generate enriched CycloneDX 1.6 / Discussion #966 CBOM JSON
     cbom_components = []
     for asset, score, rec in assessments:
+        scope_str = asset.scope.value if hasattr(asset, "scope") and hasattr(asset.scope, "value") else str(getattr(asset, "scope", "PRODUCTION"))
         comp = {
             "type": "cryptographic-asset",
             "name": asset.component_name,
             "bom-ref": asset.asset_id,
+            "scope": "required" if scope_str == "PRODUCTION" else "optional",
             "cryptoProperties": {
                 "assetType": "algorithm",
                 "algorithmProperties": {
@@ -542,6 +548,7 @@ def run_ecdat_scan(
                 },
             },
             "properties": [
+                {"name": "ecdat:scope", "value": scope_str},
                 {"name": "ecdat:x_tier", "value": asset.x_tier.value},
                 {"name": "ecdat:x_years_effective", "value": str(score.x_years_effective)},
                 {"name": "ecdat:y_max_years", "value": str(score.y_max_years)},
@@ -557,6 +564,10 @@ def run_ecdat_scan(
                 {"name": "ecdat:cams_agility_name", "value": getattr(asset, "agility_level", AgilityLevel.RIGID).name},
             ],
         }
+        if getattr(asset, "cwe_id", None):
+            comp["properties"].append({"name": "ecdat:cwe_id", "value": str(asset.cwe_id)})
+        if getattr(asset, "cwe_name", None):
+            comp["properties"].append({"name": "ecdat:cwe_name", "value": str(asset.cwe_name)})
         enriched_comp = enrich_cyclonedx_component_966(comp, asset, score, rec, path_mtu=path_mtu)
         cbom_components.append(enriched_comp)
 
@@ -639,6 +650,11 @@ def run_ecdat_scan(
     report_file_html = out_path / "report.html"
     with open(report_file_html, "w", encoding="utf-8") as f:
         f.write(report_html)
+
+    # Save dedicated manifest_dependencies.json for supply chain inspection
+    manifest_file = out_path / "manifest_dependencies.json"
+    with open(manifest_file, "w", encoding="utf-8") as f:
+        json.dump([d.model_dump() if hasattr(d, "model_dump") else d.dict() for d in manifest_deps], f, indent=2)
 
     # Clean up stale dashboard.html if present
     (out_path / "dashboard.html").unlink(missing_ok=True)
@@ -992,6 +1008,7 @@ def main() -> int:
     scan_parser.add_argument("--subdirs", help="Comma-separated list of subdirectories to scan within target (e.g. backend,blockchain)")
     scan_parser.add_argument("--format", choices=["cbom", "sarif", "all"], default="all", help="Output format (cbom, sarif, or all; default: all)")
     scan_parser.add_argument("--ebpf-log", default=None, help="Path to eBPF runtime trace log to correlate with static CBOM assets")
+    scan_parser.add_argument("--scan-libraries", action=argparse.BooleanOptionalAction, default=True, help="Scan polyglot package manifests and dependencies (default: True)")
 
     gate_parser = subparsers.add_parser("gate", help="Evaluate CI/CD Cryptographic Quality Gate")
     gate_parser.add_argument("--target", required=True, help="Target project directory to scan")
@@ -1113,6 +1130,7 @@ def main() -> int:
             generate_negative_proof=args.generate_negative_proof,
             subdirs=args.subdirs,
             ebpf_log=getattr(args, "ebpf_log", None),
+            scan_libraries=getattr(args, "scan_libraries", True),
         )
         print(f"[+] Scan Complete!")
         print(f"    - Total Assets:      {result['total_assets']}")

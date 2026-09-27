@@ -126,13 +126,20 @@
             });
         }
 
+        // Compute total portfolio cost & dynamic slider ceiling
+        const maxPortfolioCost = frontierPoints.length > 0 
+            ? frontierPoints[frontierPoints.length - 1].cost 
+            : items.reduce((acc, i) => acc + (i.cost_dev_weeks || 0), 0);
+        const sliderMax = Math.max(30.0, Math.min(150.0, Math.ceil(maxPortfolioCost / 5) * 5));
+
         // State object
         const paretoState = {
-            budgetWeeks: rawPareto.budget_dev_weeks || 10.0,
+            budgetWeeks: rawPareto.budget_dev_weeks || Math.min(10.0, sliderMax),
             selectedAssetIds: new Set(items.filter(i => i.is_selected).map(i => i.asset_id)),
             filterMode: 'ALL',
             searchQuery: '',
-            isAutoKnapsack: true
+            isAutoKnapsack: true,
+            horizonMode: 'DYNAMIC' // 'DYNAMIC' (Dynamic Budget Focus) or 'FULL' (Full Portfolio)
         };
 
         // If no assets were pre-selected, run knapsack initially
@@ -165,9 +172,17 @@
                             <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin: 0;">Pareto Frontier Migration Portfolio</h2>
                             <span class="card-badge badge-pqc" id="pareto-mode-badge">0/1 KNAPSACK OPTIMAL</span>
                         </div>
-                        <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">
+                        <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0 0 0.5rem 0;">
                             Multi-objective optimization mapping developer capacity (weeks) against cryptographic risk reduction (&Delta;R). Identifies non-dominated Pareto migration candidates for maximum security ROI.
                         </p>
+                        <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                            <span class="card-badge" style="background: rgba(2, 132, 199, 0.08); color: var(--accent-cyan); border: 1px solid rgba(2, 132, 199, 0.25); font-size: 0.72rem; padding: 0.2rem 0.6rem; font-family: var(--font-mono); font-weight: 700;">
+                                BASELINE SCOPE: STATIC REPOSITORY & CONSTANT SCAN
+                            </span>
+                            <span class="card-badge badge-pqc" style="font-size: 0.72rem; padding: 0.2rem 0.6rem;">
+                                0/1 KNAPSACK INTEGER DP SOLVER
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Quick Preset Buttons -->
@@ -240,7 +255,9 @@
                         </div>
                     </div>
 
-                </div>                <!-- Interactive Budget Slider & Chart Section -->
+                </div>
+
+                <!-- Interactive Budget Slider & Chart Section -->
                 <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; box-shadow: var(--shadow-sm);">
                     
                     <!-- Slider Bar -->
@@ -260,22 +277,34 @@
                             </div>
                         </div>
 
-                        <input type="range" id="pareto-budget-slider" min="1.0" max="30.0" step="0.5" value="${paretoState.budgetWeeks}" style="width: 100%; accent-color: var(--pqc-emerald); cursor: pointer;">
+                        <input type="range" id="pareto-budget-slider" min="1.0" max="${sliderMax}" step="0.5" value="${paretoState.budgetWeeks}" style="width: 100%; accent-color: var(--pqc-emerald); cursor: pointer;">
                         
                         <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); margin-top: 0.35rem; font-family: var(--font-mono);">
                             <span>1.0w (Immediate Sprint)</span>
-                            <span>10.0w (Recommended Horizon)</span>
-                            <span>20.0w (Quarterly Target)</span>
-                            <span>30.0w (Full Overhaul)</span>
+                            <span>${(sliderMax * 0.25).toFixed(0)}.0w (Quarterly Target)</span>
+                            <span>${(sliderMax * 0.50).toFixed(0)}.0w (Strategic Horizon)</span>
+                            <span>${sliderMax.toFixed(0)}.0w (Full Portfolio)</span>
                         </div>
                     </div>
 
                     <!-- SVG Chart Container -->
                     <div style="position: relative;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
-                                <span>Pareto Frontier Curve</span>
-                                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: normal;">(Cost vs. Cumulative Risk Reduction)</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
+                                    <span>Pareto Frontier Curve</span>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">(Cost vs. Cumulative Risk Reduction)</span>
+                                </div>
+                                <!-- Horizon View Mode Toggle -->
+                                <div style="display: flex; align-items: center; gap: 0.35rem;" id="pareto-horizon-toggles">
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">HORIZON:</span>
+                                    <button class="btn btn-secondary ${paretoState.horizonMode === 'DYNAMIC' ? 'active' : ''}" id="pareto-horizon-dynamic-btn" style="padding: 0.2rem 0.55rem; font-size: 0.7rem;">
+                                        Dynamic Focus
+                                    </button>
+                                    <button class="btn btn-secondary ${paretoState.horizonMode === 'FULL' ? 'active' : ''}" id="pareto-horizon-full-btn" style="padding: 0.2rem 0.55rem; font-size: 0.7rem;">
+                                        Full Estate (${sliderMax.toFixed(0)}w)
+                                    </button>
+                                </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.7rem;">
                                 <div style="display: flex; align-items: center; gap: 0.35rem;">
@@ -294,7 +323,7 @@
                         </div>
 
                         <!-- Render SVG Curve -->
-                        <div id="pareto-chart-svg-box" style="width: 100%; min-height: 250px; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden;">
+                        <div id="pareto-chart-svg-box" style="width: 100%; min-height: 280px; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); overflow: hidden;">
                             <!-- SVG generated dynamically -->
                         </div>
 
@@ -418,29 +447,56 @@
             if (!chartBox) return;
 
             const width = chartBox.clientWidth || 800;
-            const height = 240;
+            const height = 280;
             const padL = 55;
             const padR = 35;
-            const padT = 25;
+            const padT = 30;
             const padB = 40;
 
-            const maxCost = Math.max(30.0, Math.ceil(paretoState.budgetWeeks * 1.2));
+            // Dynamic Horizon Scaling:
+            // In DYNAMIC mode, dynamically scale the chart maxCost to the active remediation budget horizon
+            // so the curve dynamically fills the chart section without an empty flat tail stretching to 150w!
+            const maxCost = paretoState.horizonMode === 'FULL'
+                ? sliderMax
+                : Math.max(15.0, Math.min(sliderMax, Math.ceil(paretoState.budgetWeeks * 1.6)));
             const maxRisk = 100.0;
 
             const xScale = (c) => padL + (Math.min(c, maxCost) / maxCost) * (width - padL - padR);
             const yScale = (r) => (height - padB) - (Math.min(r, maxRisk) / maxRisk) * (height - padT - padB);
 
-            // Filter points within maxCost
+            // Filter points within maxCost so we never stack points at the boundary
             const sortedPts = [...frontierPoints].sort((a, b) => a.cost - b.cost);
+            const visiblePts = [];
+            for (let i = 0; i < sortedPts.length; i++) {
+                const p = sortedPts[i];
+                if (p.cost <= maxCost) {
+                    visiblePts.push(p);
+                } else {
+                    const prev = sortedPts[i - 1] || { cost: 0, risk_pct: 0 };
+                    const diffCost = p.cost - prev.cost;
+                    if (diffCost > 0) {
+                        const t = (maxCost - prev.cost) / diffCost;
+                        const interpRisk = prev.risk_pct + t * (p.risk_pct - prev.risk_pct);
+                        visiblePts.push({
+                            cost: maxCost,
+                            risk_pct: Math.min(100.0, interpRisk),
+                            asset_id: 'boundary',
+                            algorithm: p.algorithm,
+                            isBoundary: true
+                        });
+                    }
+                    break;
+                }
+            }
 
             // Build smooth path
             let pathD = `M ${xScale(0)} ${yScale(0)}`;
-            sortedPts.forEach(p => {
+            visiblePts.forEach(p => {
                 pathD += ` L ${xScale(p.cost)} ${yScale(p.risk_pct)}`;
             });
 
             // Gradient area fill
-            const lastPt = sortedPts[sortedPts.length - 1];
+            const lastPt = visiblePts[visiblePts.length - 1] || { cost: 0, risk_pct: 0 };
             const areaD = pathD + ` L ${xScale(lastPt.cost)} ${yScale(0)} Z`;
 
             // Active operating point
@@ -457,24 +513,25 @@
                     <text x="${padL - 10}" y="${y + 4}" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="end">${r}%</text>
                 `;
             }
-            for (let c = 0; c <= maxCost; c += 5) {
+            const gridStep = maxCost <= 20 ? 2.5 : (maxCost <= 40 ? 5 : (maxCost <= 80 ? 10 : 25));
+            for (let c = 0; c <= maxCost; c += gridStep) {
                 const x = xScale(c);
                 gridLines += `
                     <line x1="${x}" y1="${padT}" x2="${x}" y2="${height - padB}" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
-                    <text x="${x}" y="${height - 15}" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="middle">${c}w</text>
+                    <text x="${x}" y="${height - 15}" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace" text-anchor="middle">${Number.isInteger(c) ? c : c.toFixed(1)}w</text>
                 `;
             }
 
             // Scatter point markers
             let pointCircles = '';
-            sortedPts.forEach(p => {
-                if (p.asset_id === 'origin') return;
+            visiblePts.forEach(p => {
+                if (p.asset_id === 'origin' || p.isBoundary) return;
                 const px = xScale(p.cost);
                 const py = yScale(p.risk_pct);
                 const isWithin = p.cost <= paretoState.budgetWeeks;
                 const fillCol = isWithin ? 'var(--pqc-emerald)' : '#64748b';
                 pointCircles += `
-                    <circle class="pareto-pt" cx="${px}" cy="${py}" r="5" fill="${fillCol}" stroke="#060811" stroke-width="1.5" style="cursor: pointer; transition: transform 0.2s;" data-cost="${p.cost}" data-risk="${p.risk_pct}" data-asset="${p.asset_id}" data-algo="${p.algorithm}" />
+                    <circle class="pareto-pt" cx="${px}" cy="${py}" r="4" fill="${fillCol}" stroke="#060811" stroke-width="1.5" style="cursor: pointer; transition: transform 0.2s;" data-cost="${p.cost}" data-risk="${p.risk_pct}" data-asset="${p.asset_id}" data-algo="${p.algorithm}" />
                 `;
             });
 
@@ -645,6 +702,23 @@
                 paretoState.budgetWeeks = parseFloat(e.target.value);
                 paretoState.isAutoKnapsack = true;
                 runKnapsackSolve(paretoState.budgetWeeks);
+                updateParetoView();
+            });
+        }
+
+        const horizonDynamicBtn = document.getElementById('pareto-horizon-dynamic-btn');
+        const horizonFullBtn = document.getElementById('pareto-horizon-full-btn');
+        if (horizonDynamicBtn && horizonFullBtn) {
+            horizonDynamicBtn.addEventListener('click', () => {
+                paretoState.horizonMode = 'DYNAMIC';
+                horizonDynamicBtn.classList.add('active');
+                horizonFullBtn.classList.remove('active');
+                updateParetoView();
+            });
+            horizonFullBtn.addEventListener('click', () => {
+                paretoState.horizonMode = 'FULL';
+                horizonFullBtn.classList.add('active');
+                horizonDynamicBtn.classList.remove('active');
                 updateParetoView();
             });
         }

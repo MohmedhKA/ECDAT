@@ -42,11 +42,16 @@ def init_db(db_path: Optional[Path] = None) -> None:
                     output_dir TEXT NOT NULL,
                     scans_per_day INTEGER DEFAULT 1,
                     auto_scan INTEGER DEFAULT 1,
+                    scan_libraries INTEGER DEFAULT 1,
                     created_at TEXT NOT NULL,
                     last_scanned TEXT,
                     status TEXT DEFAULT 'idle'
                 );
             """)
+            try:
+                conn.execute("ALTER TABLE projects ADD COLUMN scan_libraries INTEGER DEFAULT 1")
+            except sqlite3.OperationalError:
+                pass
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS scan_history (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,6 +104,7 @@ def add_project(
     output_dir: Optional[str] = None,
     scans_per_day: int = 1,
     auto_scan: int = 1,
+    scan_libraries: int = 1,
     db_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     init_db(db_path)
@@ -119,14 +125,15 @@ def add_project(
     try:
         with conn:
             conn.execute("""
-                INSERT INTO projects (id, name, target_dir, output_dir, scans_per_day, auto_scan, created_at, last_scanned, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO projects (id, name, target_dir, output_dir, scans_per_day, auto_scan, scan_libraries, created_at, last_scanned, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     name=excluded.name,
                     target_dir=excluded.target_dir,
                     output_dir=excluded.output_dir,
                     scans_per_day=excluded.scans_per_day,
-                    auto_scan=excluded.auto_scan
+                    auto_scan=excluded.auto_scan,
+                    scan_libraries=excluded.scan_libraries
             """, (
                 pid,
                 name.strip(),
@@ -134,6 +141,7 @@ def add_project(
                 str(out_path),
                 max(1, int(scans_per_day)),
                 1 if auto_scan else 0,
+                1 if scan_libraries else 0,
                 now_iso,
                 None,
                 "idle"

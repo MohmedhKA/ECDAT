@@ -18,9 +18,12 @@ from ecdat.models import (
     EvidenceLevel,
     IntentClass,
     AgilityLevel,
+    AssetScope,
 )
 from ecdat.intent.classifier import classify_intent
 from ecdat.agility.cams_detector import detect_cams_agility
+from ecdat.scanners.filters import is_test_file_path
+from ecdat.rules.signature_db import get_signature_db
 
 
 class CryptoAssetFactory:
@@ -52,7 +55,33 @@ class CryptoAssetFactory:
 
         # Classify intent & CAMS agility
         intent, _ = classify_intent(var_name=component_name, context_lines=matched_code, primitive_type=primitive_type)
-        cams_level, cams_desc = detect_cams_agility(source_line=matched_code)
+        cams_level, cams_desc = detect_cams_agility(source_line=matched_code, algorithm=algorithm)
+
+        # Infer Execution Scope (Production vs Test Fixture)
+        scope = AssetScope.TEST_FIXTURE if is_test_file_path(file_path) else AssetScope.PRODUCTION
+
+        # Resolve Canonical MITRE CWE
+        cwe_id: Optional[str] = None
+        cwe_name: Optional[str] = None
+        db = get_signature_db()
+        cwe_entry = None
+        if cwe:
+            cwe_entry = db.lookup_cwe(cwe)
+        if not cwe_entry and algorithm:
+            cwe_entry = db.lookup_cwe(algorithm)
+        if not cwe_entry:
+            for candidate in [component_name, description]:
+                if candidate:
+                    cwe_entry = db.lookup_cwe(candidate)
+                    if cwe_entry:
+                        break
+
+        if cwe_entry:
+            cwe_id = cwe_entry.get("cwe_id")
+            cwe_name = cwe_entry.get("name")
+        elif cwe:
+            cwe_id = cwe if cwe.startswith("CWE-") else f"CWE-{cwe}"
+            cwe_name = description or "Cryptographic Weakness"
 
         raw_props: Dict[str, Any] = {
             "source": "contract_engine",
@@ -60,9 +89,13 @@ class CryptoAssetFactory:
             "matched_code": matched_code[:120],
             "description": description,
             "cams_evidence": cams_desc,
+            "ecdat:scope": scope.value,
         }
         if cwe:
-            raw_props["cwe"] = cwe
+            raw_props["cwe"] = cwe_id or cwe
+        if cwe_id:
+            raw_props["ecdat:cwe_id"] = cwe_id
+            raw_props["ecdat:cwe_name"] = cwe_name
         if risk_level:
             raw_props["ecdat:risk_level"] = risk_level
         if extra_properties:
@@ -84,6 +117,9 @@ class CryptoAssetFactory:
             evidence_level=evidence_level,
             evidence_sources=[evidence_source],
             agility_level=cams_level,
+            scope=scope,
+            cwe_id=cwe_id,
+            cwe_name=cwe_name,
         )
 
         # 1. Post-Quantum Cryptography (FIPS 203, 204, 205, LWE)

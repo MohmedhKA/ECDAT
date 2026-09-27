@@ -149,10 +149,9 @@ def discover_polyglot_crypto_assets(target_dir: str) -> List[CryptoAsset]:
         a.asset_id = f"SRC-CRYPTO-{idx:03d}"
         if a.agility_level == AgilityLevel.RIGID:
             matched = a.raw_properties.get("matched_code", "")
-            if matched:
-                lvl, desc = detect_cams_agility(matched)
-                if lvl != AgilityLevel.RIGID:
-                    a.agility_level = lvl
-                    a.raw_properties["cams_evidence"] = desc
+            lvl, desc = detect_cams_agility(matched or a.algorithm, algorithm=a.algorithm)
+            if lvl != AgilityLevel.RIGID:
+                a.agility_level = lvl
+                a.raw_properties["cams_evidence"] = desc
 
     return all_assets

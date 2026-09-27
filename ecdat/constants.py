@@ -108,7 +108,9 @@ CAMS_AGILITY_DISCOUNTS = {
     0: 0.0,   # RIGID: Hardcoded algorithm literals (no discount)
     1: 0.30,  # CONFIGURABLE: Config-driven parameters (30% discount)
     2: 0.60,  # PROVIDER: Abstracted factory / provider architecture (60% discount)
-    3: 0.85,  # RUNTIME_AGILE: Dynamic crypto-agile facade with KMS (85% discount)
+    3: 0.85,  # RUNTIME_AGILE: Dynamic protocol negotiation / TLS handshake (85% discount)
+    4: 0.90,  # ORCHESTRATED: Policy-driven orchestration / Tink / KMS (90% discount)
+    5: 0.95,  # QUANTUM_AGILE: Autonomous quantum-safe algorithms (95% discount)
 }
 
 # Functional Security Intent Risk Multipliers (DSIS Lattice)
@@ -131,3 +133,203 @@ EVIDENCE_LEVEL_DESCRIPTIONS = {
     "E5_CORRELATED_SIGNED": "Multi-modal correlation confirmed and cryptographically signed.",
     "DORMANT": "Static asset not observed executing during dynamic coverage window.",
 }
+
+# MITRE Common Weakness Enumeration (CWE) Formal Cryptographic Taxonomy
+CWE_TAXONOMY = {
+    # Cryptographic Weakness Findings
+    "UNTRUSTED-PRNG": {
+        "cwe_id": "CWE-338",
+        "name": "Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/338.html",
+        "description": "The product uses a weak PRNG (e.g. java.util.Random, math/rand) in a security or cryptographic context where predictability creates vulnerability.",
+    },
+    "PREDICTABLE-SEED": {
+        "cwe_id": "CWE-335",
+        "name": "Incorrect Usage of Seeds in Pseudo-Random Number Generator (PRNG)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/335.html",
+        "description": "The pseudo-random number generator is seeded with a constant, timestamp, or predictable input value.",
+    },
+    "PREDICTABLE-KEYSTORE-PASSWORD": {
+        "cwe_id": "CWE-259",
+        "name": "Use of Hard-coded Password",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/259.html",
+        "description": "A hard-coded password or keystore passphrase is used in source code.",
+    },
+    "HARDCODED-PASSWORD": {
+        "cwe_id": "CWE-798",
+        "name": "Use of Hard-coded Credentials",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/798.html",
+        "description": "Authentication secrets or cryptographic credentials are embedded directly in source code.",
+    },
+    "PREDICTABLE-KEY": {
+        "cwe_id": "CWE-321",
+        "name": "Use of Hard-coded Cryptographic Key",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/321.html",
+        "description": "The use of a hard-coded cryptographic key significantly increases the possibility that keys will become compromised.",
+    },
+    "STATIC-IV": {
+        "cwe_id": "CWE-329",
+        "name": "Generation of Predictable IV with CBC Mode",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/329.html",
+        "description": "The software generates a predictable or static initialization vector (IV) for encryption.",
+    },
+    "PBE-WEAK-ITERATION": {
+        "cwe_id": "CWE-326",
+        "name": "Inadequate Encryption Strength",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/326.html",
+        "description": "Password-based encryption parameters use an insufficient iteration count.",
+    },
+    "STATIC-SALT": {
+        "cwe_id": "CWE-326",
+        "name": "Inadequate Encryption Strength",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/326.html",
+        "description": "A fixed or static salt is used in cryptographic key derivation.",
+    },
+    "CLEARTEXT-HTTP": {
+        "cwe_id": "CWE-319",
+        "name": "Cleartext Transmission of Sensitive Information",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/319.html",
+        "description": "The software transmits sensitive data over an unencrypted network protocol (HTTP/ws).",
+    },
+    "UNENCRYPTED-SOCKET": {
+        "cwe_id": "CWE-319",
+        "name": "Cleartext Transmission of Sensitive Information",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/319.html",
+        "description": "Network sockets communicate without transport layer encryption (TLS).",
+    },
+    "IMPROPER-SSL-SOCKET-FACTORY": {
+        "cwe_id": "CWE-295",
+        "name": "Improper Certificate Validation",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/295.html",
+        "description": "Custom SSL socket factory bypasses trust manager or certificate chain validation.",
+    },
+    "DUMMY-CERT-VALIDATION": {
+        "cwe_id": "CWE-295",
+        "name": "Improper Certificate Validation",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/295.html",
+        "description": "TrustManager implementation blindly accepts all X.509 server certificates.",
+    },
+    "DUMMY-HOSTNAME-VERIFIER": {
+        "cwe_id": "CWE-295",
+        "name": "Improper Certificate Validation",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/295.html",
+        "description": "HostnameVerifier implementation returns true unconditionally, allowing MITM attacks.",
+    },
+    # Algorithm Classifications
+    "MD5": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "MD5 suffers from practical collision attacks and is disallowed by NIST for cryptographic use.",
+    },
+    "HMAC-MD5": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "HMAC constructed over MD5 should be migrated to HMAC-SHA-256 or KMAC per NIST SP 800-131A.",
+    },
+    "SHA-1": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "SHA-1 collision resistance is broken; disallowed by NIST SP 800-131A Rev 2.",
+    },
+    "DES": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "DES 56-bit key size is vulnerable to practical brute-force attacks.",
+    },
+    "3DES": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Triple-DES 64-bit block size is vulnerable to Sweet32 collision attacks; disallowed by NIST.",
+    },
+    "RC4": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "RC4 stream cipher keystream biases allow plaintext recovery; prohibited in TLS (RFC 7465).",
+    },
+    "BLOWFISH": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Blowfish 64-bit block cipher is vulnerable to Sweet32 birthday attacks on large data streams.",
+    },
+    "RSA": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Classical RSA integer factorization is completely broken in polynomial time by Shor's algorithm on a CRQC.",
+    },
+    "DSA": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Classical DSA discrete logarithm is completely broken by Shor's algorithm on a CRQC.",
+    },
+    "ECDSA": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Classical Elliptic Curve DSA is completely broken by Shor's algorithm on a CRQC.",
+    },
+    "ECDH": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Quantum Vulnerable)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Classical ECDH key exchange is susceptible to Shor's algorithm and retroactive HNDL attacks.",
+    },
+    "TLS": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Classical Handshake)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "Standard TLS configuration without hybrid post-quantum key exchange is vulnerable to HNDL interception.",
+    },
+    "TLSv1.2": {
+        "cwe_id": "CWE-327",
+        "name": "Use of a Broken or Risky Cryptographic Algorithm (Classical Handshake)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/327.html",
+        "description": "TLS 1.2 lacks native post-quantum key encapsulation support and uses legacy handshake negotiation.",
+    },
+    # Additional Top 100 Cryptographic Vulnerabilities
+    "ECB": {
+        "cwe_id": "CWE-1240",
+        "name": "Use of a Cryptographic Primitive with a Risky Implementation (ECB Mode)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/1240.html",
+        "description": "Encryption in ECB mode leaks structural patterns because identical plaintext blocks produce identical ciphertext blocks.",
+    },
+    "RSA-NO-OAEP": {
+        "cwe_id": "CWE-780",
+        "name": "Use of RSA Algorithm without OAEP",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/780.html",
+        "description": "RSA encryption without Optimal Asymmetric Encryption Padding (OAEP) is vulnerable to chosen-ciphertext and Bleichenbacher padding attacks.",
+    },
+    "MD4": {
+        "cwe_id": "CWE-328",
+        "name": "Use of Weak Hash (MD4)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/328.html",
+        "description": "MD4 is cryptographically broken and collision-vulnerable; hand calculation level effort can find collisions.",
+    },
+    "WEAK-KEY-LENGTH": {
+        "cwe_id": "CWE-326",
+        "name": "Inadequate Encryption Strength (<2048 bits)",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/326.html",
+        "description": "Asymmetric key lengths below 2048 bits or symmetric keys below 128 bits are vulnerable to brute-force factorization.",
+    },
+    "TIMING-SIDE-CHANNEL": {
+        "cwe_id": "CWE-208",
+        "name": "Observable Timing Discrepancy",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/208.html",
+        "description": "Non-constant-time comparison of MAC, signature, or secret values creates an exploitable timing oracle.",
+    },
+    "WEAK-KDF": {
+        "cwe_id": "CWE-916",
+        "name": "Use of Password Hash With Insufficient Computational Effort",
+        "mitre_url": "https://cwe.mitre.org/data/definitions/916.html",
+        "description": "Single-iteration or unsalted hashing used for password storage or key derivation allows rapid GPU/ASIC rainbow table cracking.",
+    },
+}
+

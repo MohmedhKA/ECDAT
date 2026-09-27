@@ -73,6 +73,7 @@ async def api_create_project(request):
     output_dir = body.get("output_dir")
     scans_per_day = int(body.get("scans_per_day", 1))
     auto_scan = int(body.get("auto_scan", 1))
+    scan_libraries = int(body.get("scan_libraries", 1))
 
     if not name or not target_dir:
         return JSONResponse({"status": "error", "message": "name and target_dir are required."}, status_code=400)
@@ -83,6 +84,7 @@ async def api_create_project(request):
         output_dir=output_dir,
         scans_per_day=scans_per_day,
         auto_scan=auto_scan,
+        scan_libraries=scan_libraries,
     )
     return JSONResponse({"status": "success", "project": project})
 

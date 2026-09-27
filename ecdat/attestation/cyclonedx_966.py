@@ -86,9 +86,15 @@ def enrich_cyclonedx_component_966(
         "pathMtuProfile": path_mtu_profile,
     }
 
+    # Set standard CycloneDX 1.6 component scope
+    scope_val = getattr(asset, "scope", None)
+    scope_str = scope_val.value if hasattr(scope_val, "value") else str(scope_val or "PRODUCTION")
+    component["scope"] = "required" if scope_str == "PRODUCTION" else "optional"
+
     # 4. Also register as flat properties for backward-compatible CycloneDX 1.6 parsers
     existing_props = component.setdefault("properties", [])
     existing_props.extend([
+        {"name": "ecdat:scope", "value": scope_str},
         {"name": "ecdat:cdx966:reachability", "value": asset.evidence_level.value},
         {"name": "ecdat:cdx966:dataLifetimeYears", "value": str(score.x_years_effective)},
         {"name": "ecdat:cdx966:runtimeStatus", "value": exec_status},
@@ -97,5 +103,9 @@ def enrich_cyclonedx_component_966(
         {"name": "ecdat:cdx966:routeProfile", "value": path_mtu_profile["routeProfile"]},
         {"name": "ecdat:cdx966:pqcSegments", "value": str(rec.packet_segments)},
     ])
+    if getattr(asset, "cwe_id", None):
+        existing_props.append({"name": "ecdat:cwe_id", "value": str(asset.cwe_id)})
+    if getattr(asset, "cwe_name", None):
+        existing_props.append({"name": "ecdat:cwe_name", "value": str(asset.cwe_name)})
 
     return component

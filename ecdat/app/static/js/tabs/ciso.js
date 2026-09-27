@@ -74,6 +74,9 @@
         let tableHeaderDone = false;
         let tableHtml = '';
         let inList = false;
+        let inCodeBlock = false;
+        let codeBlockLang = '';
+        let codeBlockLines = [];
 
         function closeTable() {
             if (inTable) {
@@ -95,6 +98,41 @@
         for (let i = 0; i < lines.length; i++) {
             const rawLine = lines[i];
             const line = rawLine.trim();
+
+            // Code block handling (fenced ``` blocks)
+            if (line.startsWith('```')) {
+                closeTable();
+                closeList();
+                if (!inCodeBlock) {
+                    inCodeBlock = true;
+                    codeBlockLang = line.slice(3).trim() || 'bash';
+                    codeBlockLines = [];
+                    continue;
+                } else {
+                    inCodeBlock = false;
+                    const codeContent = codeBlockLines.join('\n');
+                    output.push(`
+                        <div class="ciso-terminal-block" style="background: #0f172a; border: 1px solid #334155; border-radius: var(--radius-md); margin: 1rem 0 1.35rem 0; overflow: hidden; box-shadow: var(--shadow-sm);">
+                            <div style="background: #1e293b; color: #94a3b8; padding: 0.4rem 0.85rem; font-size: 0.7rem; font-family: var(--font-mono); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                                    <span style="margin-left: 0.35rem; font-weight: 700; text-transform: uppercase;">${escapeHtml(codeBlockLang)}</span>
+                                </div>
+                                <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(codeContent)}')); alert('Command copied to clipboard');" style="padding: 0.15rem 0.5rem; font-size: 0.65rem; background: #334155; color: #f8fafc; border: 1px solid #475569;">Copy</button>
+                            </div>
+                            <pre style="margin: 0; padding: 0.85rem 1rem; overflow-x: auto; background: transparent; color: #38bdf8; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.55;"><code>${escapeHtml(codeContent)}</code></pre>
+                        </div>
+                    `);
+                    continue;
+                }
+            }
+
+            if (inCodeBlock) {
+                codeBlockLines.push(rawLine);
+                continue;
+            }
 
             // Table row detection
             if (line.startsWith('|') && line.endsWith('|')) {
@@ -199,41 +237,52 @@
             .replace(/`([^`]+)`/g, '<code class="mono" style="background: var(--bg-sunken); border: 1px solid var(--border-subtle); padding: 0.15rem 0.4rem; border-radius: 4px; color: #0284c7; font-size: 0.76rem;">$1</code>');
     }
 
-    const DEFAULT_CISO_BRIEFING = `# Executive Post-Quantum Migration Action Plan & Regulatory Briefing
-
-## Executive Summary
-This enterprise post-quantum cryptographic discovery assessment establishes an empirical, audit-defensible baseline for the target infrastructure. Automated scanning correlated **23 active cryptographic assets** across the perimeter against federal transition deadlines mandated by the **US Executive Office of the President (OMB M-23-02 / NSM-10)**, the **National Security Agency (NSA CNSA 2.0)**, and the **National Institute of Standards and Technology (NIST FIPS 203/204/205)**.
-
-> "The threat of Harvest-Now-Decrypt-Later (HNDL) attacks mandates that high-secrecy assets (lifetime > 10y) be migrated to quantum-resistant encapsulation before the 2030 regulatory enforcement horizon."
-
----
-
-## 1. Statutory Mandates & Compliance Horizon
-1. **NSA CNSA 2.0 Software & Firmware Signing (Deadline: 2025)**: Requires transitioning firmware updates and software artifact signing to stateful hash-based signatures (LMS/XMSS) or ML-DSA-65. The assessed pipeline currently incorporates dual-mode in-toto DSSE signatures.
-2. **NIST Classical Cipher Sunset (Deadline: 2030)**: Complete statutory deprecation of RSA-2048, ECDSA-P256, and Diffie-Hellman across federal systems. Replacement algorithms: **ML-KEM-768 (FIPS 203)** and **ML-DSA-65 (FIPS 204)**.
-3. **EU DORA & NIS2 Compliance**: Enforces operational cryptographic resilience and supply-chain bill of materials verification for financial and critical infrastructure networks.
-
----
-
-## 2. Resource Allocation & Remediation ROI
-Applying the **ECDAT Pareto Knapsack Optimizer**, allocating **9.8 Developer Weeks** to the top 4 high-contagion components yields a **71.6% reduction in total estate quantum risk**.
-
-- **Priority 1**: Replace RSA-2048 blind signatures with tanuki / lattice-based post-quantum blind commitments or ephemeral zeroization.
-- **Priority 2**: Upgrade edge ingress proxies to hybrid **X25519Kyber768** key exchange to mitigate transit eavesdropping.
-- **Priority 3**: Verify path MTU segmentation limits for ML-DSA-65 certificates to prevent firewall drop rates.
-`;
-
     window.renderCisoTab = function(container, data) {
         const summary = data.summary || {};
         const cisoSummary = summary.ciso || {};
         const posture = summary.posture || {};
         const pareto = summary.pareto || {};
-        const rawMarkdown = data.ciso_markdown && data.ciso_markdown.trim().length > 20 ?
-            data.ciso_markdown : DEFAULT_CISO_BRIEFING;
+        const hasMarkdown = data.ciso_markdown && data.ciso_markdown.trim().length > 20;
 
-        const readinessScore = posture.readiness_score || 68;
-        const totalCostWeeks = pareto.total_cost_allocated || 9.8;
-        const riskReducedPct = pareto.risk_reduction_pct || 71.6;
+        if (!hasMarkdown) {
+            container.innerHTML = `
+                <div class="ciso-tab-view" style="animation: fadeIn 0.15s ease-out; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="tab-header-banner">
+                        <div class="tab-title-wrap">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <div class="card-icon" style="background: var(--accent-purple-bg); color: var(--accent-purple);">
+                                    ${getIcon('fileText', 20)}
+                                </div>
+                                <div>
+                                    <h2 style="margin: 0;">CISO Executive Action Plan & Regulatory Compliance</h2>
+                                    <p style="margin: 0;">High-level strategic governance dashboard mapping transition roadmaps directly against NSA CNSA 2.0, NIST FIPS 203/204/205, and OMB M-23-02.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 3.5rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm); margin-top: 1rem;">
+                        <div style="width: 52px; height: 52px; border-radius: 12px; background: rgba(124, 58, 237, 0.1); color: var(--accent-purple); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                            ${getIcon('fileText', 26)}
+                        </div>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+                            No CISO Migration Briefing Generated Yet
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                            No executive migration report was found for this project. Trigger a full cryptographic discovery scan to compute the Pareto migration frontier, budget allocations, and compile the statutory CISO transition report.
+                        </p>
+                        <button class="btn btn-emerald" onclick="window.triggerProjectScan()">
+                            ${getIcon('play', 14)} Run Discovery Scan
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const rawMarkdown = data.ciso_markdown.trim();
+        const readinessScore = posture.readiness_score !== undefined ? posture.readiness_score : 0;
+        const totalCostWeeks = pareto.total_cost_allocated !== undefined ? pareto.total_cost_allocated : 0;
+        const riskReducedPct = pareto.risk_reduction_pct !== undefined ? pareto.risk_reduction_pct : 0;
 
         container.innerHTML = `
             <div class="ciso-tab-view" style="animation: fadeIn 0.15s ease-out; display: flex; flex-direction: column; gap: 1.5rem;">

@@ -42,28 +42,66 @@ def get_project_summary(output_dir_str: str) -> Dict[str, Any]:
     # 1. CBOM & Posture Analysis
     components = cbom_data.get("components", [])
     total_assets = len(components)
+    production_count = 0
+    test_fixture_count = 0
+
     critical_count = 0
     high_count = 0
     med_count = 0
     low_count = 0
+
+    prod_critical_count = 0
+    prod_high_count = 0
+    prod_med_count = 0
+    prod_low_count = 0
+
     pqc_count = 0
     classical_count = 0
     deprecated_count = 0
 
-    cams_levels = {"L1": 0, "L2": 0, "L3": 0, "L4": 0, "L5": 0}
+    prod_pqc_count = 0
+    prod_classical_count = 0
+    prod_deprecated_count = 0
+
+    cams_levels = {"L0": 0, "L1": 0, "L2": 0, "L3": 0, "L4": 0, "L5": 0}
     algo_counts: Dict[str, int] = {}
+    mosca_results = mosca_data.get("results", {})
 
     for comp in components:
         props = comp.get("properties", [])
-        risk = str(get_prop(props, "ecdat:risk_level", "LOW")).upper()
+        asset_id = comp.get("bom-ref") or comp.get("name", "")
+
+        scope_prop = comp.get("scope") or get_prop(props, "ecdat:scope", "required")
+        is_prod = str(scope_prop).lower() in ("required", "production")
+
+        if is_prod:
+            production_count += 1
+        else:
+            test_fixture_count += 1
+
+        # Correlate with stochastic Monte Carlo risk if available; else static regulatory
+        static_risk = str(get_prop(props, "ecdat:risk_level", "LOW")).upper()
+        if asset_id in mosca_results and mosca_results[asset_id].get("risk_category"):
+            risk = str(mosca_results[asset_id]["risk_category"]).upper()
+        else:
+            risk = static_risk
+
         if risk == "CRITICAL":
             critical_count += 1
+            if is_prod:
+                prod_critical_count += 1
         elif risk == "HIGH":
             high_count += 1
+            if is_prod:
+                prod_high_count += 1
         elif risk == "MEDIUM":
             med_count += 1
+            if is_prod:
+                prod_med_count += 1
         else:
             low_count += 1
+            if is_prod:
+                prod_low_count += 1
 
         crypto = comp.get("cryptoProperties", {})
         algo_info = crypto.get("algorithmProperties", {})
@@ -73,20 +111,52 @@ def get_project_summary(output_dir_str: str) -> Dict[str, Any]:
         name_lower = algo_name.lower()
         if any(pqc in name_lower for pqc in ["ml-dsa", "ml-kem", "dilithium", "kyber", "sphincs", "falcon", "lwe"]):
             pqc_count += 1
+            if is_prod:
+                prod_pqc_count += 1
         elif any(dep in name_lower for dep in ["md5", "des", "rc4", "sha1", "blowfish"]):
             deprecated_count += 1
+            if is_prod:
+                prod_deprecated_count += 1
         else:
             classical_count += 1
+            if is_prod:
+                prod_classical_count += 1
 
-        cams = str(get_prop(props, "ecdat:cams_agility_level", "1"))
-        key = f"L{cams}"
+        cams = str(get_prop(props, "ecdat:cams_agility_level", "0"))
+        key = cams if cams.startswith("L") else f"L{cams}"
         if key in cams_levels:
             cams_levels[key] += 1
+        else:
+            cams_levels["L0"] += 1
 
-    # Posture readiness score (0 - 100)
-    if total_assets > 0:
-        penalty = (critical_count * 25 + high_count * 12 + med_count * 4) / max(1, total_assets)
-        readiness_score = max(5, min(100, int(100 - penalty + (pqc_count * 5))))
+    # Posture readiness score: evaluates production assets when available
+    target_count = production_count if production_count > 0 else total_assets
+    target_crit = prod_critical_count if production_count > 0 else critical_count
+    target_high = prod_high_count if production_count > 0 else high_count
+    target_pqc = prod_pqc_count if production_count > 0 else pqc_count
+    target_dep = prod_deprecated_count if production_count > 0 else deprecated_count
+    target_classical = prod_classical_count if production_count > 0 else classical_count
+
+    pqc_migration_pct = round((target_pqc / max(1, target_count)) * 100.0, 1) if target_count > 0 else 0.0
+
+    if target_count > 0:
+        # Base health: proportion of safe assets (PQC + non-critical classical)
+        safe_assets = target_pqc + max(0, target_classical - target_crit - target_high)
+        base_score = (safe_assets / target_count) * 100.0
+
+        # Risk penalty per asset
+        penalty = ((target_crit * 35.0) + (target_high * 15.0) + (target_dep * 20.0)) / target_count
+        raw_score = int(max(5.0, min(100.0, base_score - penalty)))
+
+        # Safety Cap Invariant: If unmigrated CRITICAL assets exist in production, readiness cannot exceed 55%
+        if target_crit > 0:
+            crit_ratio = target_crit / target_count
+            cap = int(max(8, min(55, 60 - (crit_ratio * 50))))
+            readiness_score = min(cap, raw_score)
+        elif target_high > 0:
+            readiness_score = min(75, raw_score)
+        else:
+            readiness_score = raw_score
     else:
         readiness_score = 100
 
@@ -147,11 +217,21 @@ def get_project_summary(output_dir_str: str) -> Dict[str, Any]:
     return {
         "posture": {
             "readiness_score": readiness_score,
+            "pqc_migration_pct": pqc_migration_pct,
             "total_assets": total_assets,
+            "production_count": production_count,
+            "test_fixture_count": test_fixture_count,
             "critical_count": critical_count,
             "high_count": high_count,
             "med_count": med_count,
             "low_count": low_count,
+            "prod_critical_count": prod_critical_count,
+            "prod_high_count": prod_high_count,
+            "prod_med_count": prod_med_count,
+            "prod_low_count": prod_low_count,
+            "prod_pqc_count": prod_pqc_count,
+            "prod_classical_count": prod_classical_count,
+            "prod_deprecated_count": prod_deprecated_count,
             "pqc_count": pqc_count,
             "classical_count": classical_count,
             "deprecated_count": deprecated_count,
@@ -234,6 +314,10 @@ def get_tab_details(output_dir_str: str, tab_name: str) -> Dict[str, Any]:
     ciso_md_file = out_dir / "ciso_migration_report.md"
     ciso_text = ciso_md_file.read_text(encoding="utf-8", errors="replace") if ciso_md_file.exists() else ""
 
+    manifest_deps = safe_load_json(out_dir / "manifest_dependencies.json")
+    if manifest_deps is None and "dependencies" in cbom_data:
+        manifest_deps = cbom_data.get("dependencies", [])
+
     summary = get_project_summary(output_dir_str)
 
     clean_tab = tab_name.lower().replace("-", "_").replace(" ", "")
@@ -242,6 +326,7 @@ def get_tab_details(output_dir_str: str, tab_name: str) -> Dict[str, Any]:
         "tab": clean_tab,
         "summary": summary,
         "cbom": cbom_data,
+        "manifest_dependencies": manifest_deps or [],
         "contagion": contagion_data,
         "lineage": lineage_data,
         "mosca": mosca_data,

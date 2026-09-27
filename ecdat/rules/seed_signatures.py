@@ -800,6 +800,18 @@ SEED_PACKAGE_RULES: List[Dict[str, Any]] = [
     {"ecosystem": "npm", "package_name": "bcrypt", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "Password hashing function", "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"},
     {"ecosystem": "npm", "package_name": "argon2", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "Memory-hard password hashing", "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"},
     {"ecosystem": "go", "package_name": "golang.org/x/crypto", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "DEPENDS_ON_ALG", "description": "Go extended cryptographic algorithms (Argon2, Bcrypt, ChaCha20Poly1305, SSH)", "recommendation": "Audit primitive usage: ensure parameters meet post-quantum and Grover security thresholds"},
+
+    # Java / Maven Ecosystem
+    {"ecosystem": "maven", "package_name": "org.bouncycastle:bcprov-jdk18on", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Bouncy Castle Java Cryptography Provider (RSA, EC, DH, DSA)", "recommendation": "Urgent: Migrate classical RSA/ECC to hybrid NIST FIPS 203/204 (ML-KEM/ML-DSA)"},
+    {"ecosystem": "maven", "package_name": "org.bouncycastle:bcprov-jdk15on", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Legacy Bouncy Castle Provider (vulnerable classical cipher suites)", "recommendation": "Urgent: Upgrade to BouncyCastle PQC and migrate classical algorithms"},
+    {"ecosystem": "maven", "package_name": "org.bouncycastle:bcpkix-jdk18on", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Bouncy Castle PKIX / X.509 / CMS / PKCS certificate manager", "recommendation": "Migrate X.509 certificates to hybrid classical/post-quantum ML-DSA"},
+    {"ecosystem": "maven", "package_name": "org.bouncycastle:bcpqc-addon", "category": "POST_QUANTUM", "pqc_readiness": "MIGRATED_PQC", "description": "Bouncy Castle Post-Quantum Cryptography Addon (ML-KEM, ML-DSA, Falcon, SPHINCS+)", "recommendation": "Validated: Post-Quantum standard algorithm"},
+    {"ecosystem": "maven", "package_name": "org.springframework.security:spring-security-crypto", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "Spring Security password hashing and symmetric key encryptors", "recommendation": "Maintain: Symmetric/hash algorithm (ensure key size >= 256 bits for Grover resistance)"},
+    {"ecosystem": "maven", "package_name": "org.jasypt:jasypt", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "Jasypt Java Simplified Encryption (PBE with MD5/SHA and DES/TripleDES/AES)", "recommendation": "Migrate PBE to strong algorithms (PBEWithHmacSHA256AndAES_256) or quantum-safe KDFs"},
+    {"ecosystem": "maven", "package_name": "org.keycloak:keycloak-crypto-default", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "VULNERABLE_CLASSICAL", "description": "Keycloak default crypto provider (RSA/ECDSA JWT and SAML)", "recommendation": "Plan migration to post-quantum signature schemes for identity assertions"},
+    {"ecosystem": "maven", "package_name": "org.apache.commons:commons-crypto", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "SAFE_SYMMETRIC", "description": "Apache Commons Crypto JNI wrapper for OpenSSL AES/GCM", "recommendation": "Maintain: Symmetric AES-256 is quantum-resistant against Grover's algorithm"},
+    {"ecosystem": "maven", "package_name": "com.google.crypto.tink:tink", "category": "SYMMETRIC_OR_HASH", "pqc_readiness": "CLASSICAL_HYBRID", "description": "Google Tink multi-language cryptographic library", "recommendation": "Audit Tink keysets and transition hybrid KEMs as Tink PQC matures"},
+    {"ecosystem": "maven", "package_name": "com.nimbusds:nimbus-jose-jwt", "category": "CLASSICAL_ASYMMETRIC", "pqc_readiness": "DEPENDS_ON_ALG", "description": "Nimbus JOSE+JWT JSON Web Token and Signature framework", "recommendation": "Audit signing keys: replace RS256/ES256 with quantum-safe hybrid schemes"},
 ]
 
 def seed_database(conn: sqlite3.Connection) -> None:
@@ -828,6 +840,16 @@ def seed_database(conn: sqlite3.Connection) -> None:
         """, (
             pkg["ecosystem"], pkg["package_name"], pkg["category"],
             pkg["pqc_readiness"], pkg["description"], pkg["recommendation"]
+        ))
+
+    from ecdat.constants import CWE_TAXONOMY
+    for key, cwe_info in CWE_TAXONOMY.items():
+        cursor.execute("""
+            INSERT OR REPLACE INTO cwe_taxonomy (
+                finding_or_alg, cwe_id, name, description, mitre_url
+            ) VALUES (?, ?, ?, ?, ?)
+        """, (
+            key, cwe_info["cwe_id"], cwe_info["name"], cwe_info.get("description", ""), cwe_info["mitre_url"]
         ))
 
     cursor.execute("INSERT OR REPLACE INTO db_metadata (key, value) VALUES ('version', '2026.1')")

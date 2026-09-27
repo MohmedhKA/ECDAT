@@ -69,6 +69,19 @@
                 const xYears = dataLifetime.effectiveSecrecyYears !== undefined ? dataLifetime.effectiveSecrecyYears : getProp(props, 'ecdat:x_years_effective', '0.0');
                 const yMax = getProp(props, 'ecdat:y_max_years', '24.0');
 
+                // Determine Execution Scope (CycloneDX standard scope: required vs optional)
+                const rawScope = comp.scope || getProp(props, 'ecdat:scope', 'required');
+                const isTestFixture = String(rawScope).toLowerCase() === 'optional' || 
+                                     String(rawScope).toUpperCase() === 'TEST_FIXTURE' ||
+                                     callLocation.includes('/test/') ||
+                                     callLocation.includes('/tests/') ||
+                                     callLocation.includes('Test.java');
+                const scope = isTestFixture ? 'TEST_FIXTURE' : 'PRODUCTION';
+
+                // Resolve MITRE CWE Weakness
+                const cweId = getProp(props, 'ecdat:cwe_id') || getProp(props, 'cwe', '');
+                const cweName = getProp(props, 'ecdat:cwe_name') || '';
+
                 // Determine classification category
                 const algoLower = (algorithm + ' ' + name).toLowerCase();
                 let category = 'CLASSICAL';
@@ -101,6 +114,9 @@
                     xYears: xYears,
                     yMax: yMax,
                     category: category,
+                    scope: scope,
+                    cweId: cweId,
+                    cweName: cweName,
                 };
             });
 
@@ -162,17 +178,29 @@
 
         // State for filtering
         let activeFilter = 'ALL';
+        let activeScope = 'ALL';
+        let activeCwe = 'ALL';
         let searchQuery = '';
 
         function getCounts() {
+            const cweMap = {};
+            assets.forEach(a => {
+                if (a.cweId) {
+                    cweMap[a.cweId] = (cweMap[a.cweId] || 0) + 1;
+                }
+            });
+
             return {
                 all: assets.length,
+                production: assets.filter(a => a.scope === 'PRODUCTION').length,
+                testFixture: assets.filter(a => a.scope === 'TEST_FIXTURE').length,
                 classical: assets.filter(a => a.category === 'CLASSICAL').length,
                 transition: assets.filter(a => a.category === 'TRANSITION').length,
                 pqc: assets.filter(a => a.category === 'PQC').length,
                 deprecated: assets.filter(a => a.category === 'DEPRECATED').length,
                 critical: assets.filter(a => a.riskLevel === 'CRITICAL').length,
                 high: assets.filter(a => a.riskLevel === 'HIGH').length,
+                cweCounts: cweMap,
             };
         }
 
@@ -190,7 +218,7 @@
                                 </div>
                                 <div>
                                     <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin: 0;">CycloneDX 1.6 Cryptographic BOM</h2>
-                                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0.2rem 0 0 0;">Comprehensive machine-readable inventory of cryptographic assets, primitives, key sizes, and PQC replacements.</p>
+                                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0.2rem 0 0 0;">Comprehensive machine-readable inventory of cryptographic assets, MITRE CWE weaknesses, primitives, key sizes, and PQC replacements.</p>
                                 </div>
                             </div>
                         </div>
@@ -211,22 +239,22 @@
                     </div>
 
                     <!-- KPI Metric Summary Bar -->
-                    <div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.25rem;">
+                    <div class="stat-row" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.25rem;">
                         <div class="stat-item" style="box-shadow: var(--shadow-sm);">
                             <div class="stat-val text-emerald">${counts.all}</div>
-                            <div class="stat-label">Total Assets Discovered</div>
+                            <div class="stat-label">Total Assets (${counts.production} Prod | ${counts.testFixture} Test)</div>
                         </div>
                         <div class="stat-item" style="box-shadow: var(--shadow-sm);">
                             <div class="stat-val" style="color: var(--pqc-emerald);">${counts.pqc}</div>
-                            <div class="stat-label">Post-Quantum (NIST FIPS 203/204)</div>
+                            <div class="stat-label">Post-Quantum (FIPS 203/204)</div>
                         </div>
                         <div class="stat-item" style="box-shadow: var(--shadow-sm);">
                             <div class="stat-val text-critical">${counts.critical + counts.high}</div>
                             <div class="stat-label">Critical / High Risk Assets</div>
                         </div>
                         <div class="stat-item" style="box-shadow: var(--shadow-sm);">
-                            <div class="stat-val" style="color: var(--accent-cyan);">${counts.transition}</div>
-                            <div class="stat-label">Hybrid / Transition State</div>
+                            <div class="stat-val" style="color: #d97706;">${Object.keys(counts.cweCounts).length} Types</div>
+                            <div class="stat-label">MITRE CWE Weaknesses</div>
                         </div>
                         <div class="stat-item" style="box-shadow: var(--shadow-sm);">
                             <div class="stat-val text-critical">${counts.deprecated}</div>
@@ -235,20 +263,48 @@
                     </div>
 
                     <!-- Search & Filter Controls -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; box-shadow: var(--shadow-sm);">
-                        <!-- Filter Pills -->
-                        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="cbom-filter-pills">
-                            <button class="nav-tab-item active" data-filter="ALL">All <span class="nav-tab-badge">${counts.all}</span></button>
-                            <button class="nav-tab-item" data-filter="CLASSICAL">Classical <span class="nav-tab-badge">${counts.classical}</span></button>
-                            <button class="nav-tab-item" data-filter="TRANSITION">Transition <span class="nav-tab-badge">${counts.transition}</span></button>
-                            <button class="nav-tab-item" data-filter="PQC">Post-Quantum <span class="nav-tab-badge">${counts.pqc}</span></button>
-                            <button class="nav-tab-item" data-filter="DEPRECATED">Deprecated <span class="nav-tab-badge" style="background: rgba(244, 63, 94, 0.2); color: var(--sev-critical);">${counts.deprecated}</span></button>
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; box-shadow: var(--shadow-sm);">
+                        
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.85rem;">
+                            <!-- Filter Controls Left -->
+                            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+                                <!-- Tri-State Scope Selector -->
+                                <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-sunken); padding: 0.2rem 0.35rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);" id="cbom-scope-pills">
+                                    <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-left: 0.2rem; margin-right: 0.1rem;">Scope:</span>
+                                    <button class="nav-tab-item active" data-scope="ALL" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;">All <span class="nav-tab-badge">${counts.all}</span></button>
+                                    <button class="nav-tab-item" data-scope="PRODUCTION" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;">Production <span class="nav-tab-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">${counts.production}</span></button>
+                                    <button class="nav-tab-item" data-scope="TEST_FIXTURE" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;">Test Fixtures <span class="nav-tab-badge" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8;">${counts.testFixture}</span></button>
+                                </div>
+
+                                <!-- Category Filter Pills -->
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;" id="cbom-filter-pills">
+                                    <button class="nav-tab-item active" data-filter="ALL" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">All Types</button>
+                                    <button class="nav-tab-item" data-filter="CLASSICAL" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">Classical <span class="nav-tab-badge">${counts.classical}</span></button>
+                                    <button class="nav-tab-item" data-filter="TRANSITION" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">Transition <span class="nav-tab-badge">${counts.transition}</span></button>
+                                    <button class="nav-tab-item" data-filter="PQC" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">Post-Quantum <span class="nav-tab-badge">${counts.pqc}</span></button>
+                                    <button class="nav-tab-item" data-filter="DEPRECATED" style="padding: 0.2rem 0.45rem; font-size: 0.72rem;">Deprecated <span class="nav-tab-badge" style="background: rgba(244, 63, 94, 0.2); color: var(--sev-critical);">${counts.deprecated}</span></button>
+                                </div>
+                            </div>
+
+                            <!-- Live Search Input -->
+                            <div style="position: relative; min-width: 240px; flex: 1; max-width: 380px;">
+                                <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: var(--text-muted); display: inline-flex;">${window.getIcon ? window.getIcon('search', 14) : ''}</span>
+                                <input type="text" id="cbom-search-input" class="form-input" style="padding-left: 2.2rem; font-size: 0.8rem; width: 100%;" placeholder="Filter by asset, algorithm, CWE, scope...">
+                            </div>
                         </div>
 
-                        <!-- Live Search Input -->
-                        <div style="position: relative; min-width: 280px; flex: 1; max-width: 440px;">
-                            <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: var(--text-muted); display: inline-flex;">${window.getIcon ? window.getIcon('search', 14) : ''}</span>
-                            <input type="text" id="cbom-search-input" class="form-input" style="padding-left: 2.2rem; font-size: 0.8rem; width: 100%;" placeholder="Filter by asset, algorithm, component, primitive...">
+                        <!-- Dedicated CWE Weakness Filter Section (Top 100 Reference) -->
+                        <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; padding-top: 0.5rem; border-top: 1px dashed var(--border-subtle);" id="cbom-cwe-pills">
+                            <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; color: #d97706; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                ${window.getIcon ? window.getIcon('alertTriangle', 12) : ''} MITRE CWE:
+                            </span>
+                            <button class="nav-tab-item active" data-cwe="ALL" style="padding: 0.15rem 0.45rem; font-size: 0.7rem;">All CWEs</button>
+                            ${Object.entries(counts.cweCounts).sort((a,b) => b[1] - a[1]).map(([cKey, cVal]) => `
+                                <button class="nav-tab-item" data-cwe="${escapeHtml(cKey)}" style="padding: 0.15rem 0.45rem; font-size: 0.7rem; font-family: var(--font-mono);">
+                                    ${escapeHtml(cKey)} <span class="nav-tab-badge" style="background: rgba(245, 158, 11, 0.2); color: #d97706;">${cVal}</span>
+                                </button>
+                            `).join('')}
+                            <button class="nav-tab-item" data-cwe="NONE" style="padding: 0.15rem 0.45rem; font-size: 0.7rem;">Clean / None <span class="nav-tab-badge">${assets.filter(a => !a.cweId).length}</span></button>
                         </div>
                     </div>
 
@@ -256,19 +312,20 @@
                     <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);">
                         <div style="padding: 0.75rem 1.25rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono);">
                             <span id="cbom-table-count-label">Showing ${assets.length} Assets</span>
-                            <span>CycloneDX v1.6 Spec • Section 966 Formally Correlated</span>
+                            <span>CycloneDX v1.6 Spec • Section 966 &bull; Top 100 CWE Correlated</span>
                         </div>
                         <div style="overflow-x: auto;">
                             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem;" id="cbom-table">
                                 <thead>
                                     <tr style="background: var(--bg-sunken); border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono);">
-                                        <th style="padding: 0.75rem 1rem;">Asset Name & Location</th>
-                                        <th style="padding: 0.75rem 0.85rem;">Primitive Type</th>
-                                        <th style="padding: 0.75rem 0.85rem;">Algorithm</th>
-                                        <th style="padding: 0.75rem 0.85rem;">Key Length</th>
-                                        <th style="padding: 0.75rem 0.85rem;">CAMS Level</th>
-                                        <th style="padding: 0.75rem 0.85rem;">Risk Score</th>
-                                        <th style="padding: 0.75rem 0.85rem;">Mosca X &bull; Y<sub>max</sub></th>
+                                        <th style="padding: 0.75rem 1rem; min-width: 220px;">Asset Name & Location</th>
+                                        <th style="padding: 0.75rem 0.75rem; text-align: center;">Scope</th>
+                                        <th style="padding: 0.75rem 0.85rem; min-width: 160px;">Weakness (CWE)</th>
+                                        <th style="padding: 0.75rem 0.85rem;">Primitive &bull; Algorithm</th>
+                                        <th style="padding: 0.75rem 0.75rem;">Key Length</th>
+                                        <th style="padding: 0.75rem 0.75rem;">CAMS Level</th>
+                                        <th style="padding: 0.75rem 0.75rem;">Risk Score</th>
+                                        <th style="padding: 0.75rem 0.75rem;">Mosca X &bull; Y<sub>max</sub></th>
                                         <th style="padding: 0.75rem 1rem;">Recommended PQC Replacement</th>
                                         <th style="padding: 0.75rem 0.85rem; text-align: right;">Action</th>
                                     </tr>
@@ -301,6 +358,11 @@
             return assets.filter(item => {
                 const matchFilter = (activeFilter === 'ALL') || (item.category === activeFilter);
                 if (!matchFilter) return false;
+                const matchScope = (activeScope === 'ALL') || (item.scope === activeScope);
+                if (!matchScope) return false;
+                const matchCwe = (activeCwe === 'ALL') || 
+                                (activeCwe === 'NONE' ? !item.cweId : item.cweId === activeCwe);
+                if (!matchCwe) return false;
                 if (!searchQuery) return true;
                 const q = searchQuery.toLowerCase();
                 return (
@@ -308,6 +370,9 @@
                     item.name.toLowerCase().includes(q) ||
                     item.algorithm.toLowerCase().includes(q) ||
                     item.primitive.toLowerCase().includes(q) ||
+                    item.scope.toLowerCase().includes(q) ||
+                    (item.cweId && item.cweId.toLowerCase().includes(q)) ||
+                    (item.cweName && item.cweName.toLowerCase().includes(q)) ||
                     item.recommendedPqc.toLowerCase().includes(q) ||
                     item.callLocation.toLowerCase().includes(q)
                 );
@@ -327,7 +392,7 @@
             if (filtered.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                        <td colspan="10" style="padding: 3rem; text-align: center; color: var(--text-muted);">
                             <div style="font-size: 1.5rem; margin-bottom: 0.5rem; display: inline-flex;">${window.getIcon ? window.getIcon('search', 28) : ''}</div>
                             <div>No cryptographic assets match the selected filter query.</div>
                         </td>
@@ -351,39 +416,72 @@
                         data-id="${escapeHtml(item.id)}"
                         onmouseover="this.style.backgroundColor='var(--bg-card-hover)'" 
                         onmouseout="this.style.backgroundColor='transparent'">
-                        <td style="padding: 0.85rem 1rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span class="mono" style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: 700;">${escapeHtml(item.id)}</span>
-                                <span style="font-weight: 600; color: var(--text-primary);">${escapeHtml(item.name)}</span>
-                            </div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.25rem;" class="truncate" title="${escapeHtml(item.callLocation)}">
-                                <span style="display: inline-flex;">${window.getIcon ? window.getIcon('mapPin', 11) : ''}</span>
+                        
+                        <!-- 1. Asset Name & Location -->
+                        <td style="padding: 0.85rem 1rem; max-width: 260px;">
+                            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.82rem; word-break: break-word;">${escapeHtml(item.name)}</div>
+                            <div class="mono" style="font-size: 0.7rem; color: var(--accent-cyan); font-weight: 700; margin-top: 0.15rem;">${escapeHtml(item.id)}</div>
+                            <div style="font-size: 0.68rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="truncate" title="${escapeHtml(item.callLocation)}">
+                                <span style="display: inline-flex; flex-shrink: 0;">${window.getIcon ? window.getIcon('mapPin', 11) : ''}</span>
                                 <span>${escapeHtml(item.callLocation)}</span>
                             </div>
                         </td>
+
+                        <!-- 2. Scope Column -->
+                        <td style="padding: 0.85rem 0.75rem; text-align: center; white-space: nowrap;">
+                            <span class="card-badge ${item.scope === 'PRODUCTION' ? 'badge-pqc' : 'badge-low'}" style="font-size: 0.65rem; font-weight: 700;">
+                                ${item.scope === 'PRODUCTION' ? 'PRODUCTION' : 'TEST FIXTURE'}
+                            </span>
+                        </td>
+
+                        <!-- 3. Dedicated Weakness (CWE) Column -->
+                        <td style="padding: 0.85rem 0.85rem; white-space: nowrap;">
+                            ${item.cweId ? `
+                                <a href="https://cwe.mitre.org/data/definitions/${escapeHtml(item.cweId.replace('CWE-', ''))}.html" target="_blank" rel="noopener noreferrer" 
+                                   onclick="event.stopPropagation();" 
+                                   class="cwe-pill-badge"
+                                   title="${escapeHtml(item.cweName || item.cweId)}: Click to view official MITRE definition">
+                                   <span>${escapeHtml(item.cweId)}</span>
+                                   <span style="font-size: 0.65rem; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;">${escapeHtml(item.cweName || '')}</span>
+                                   <span>↗</span>
+                                </a>
+                            ` : `
+                                <span style="color: var(--text-muted); font-size: 0.72rem; font-family: var(--font-mono);">None (Clean)</span>
+                            `}
+                        </td>
+
+                        <!-- 4. Primitive & Algorithm -->
                         <td style="padding: 0.85rem 0.85rem;">
-                            <span style="background: var(--bg-sunken); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-family: var(--font-mono); color: var(--text-secondary); border: 1px solid var(--border-subtle);">
+                            <div style="${algoColor}">${escapeHtml(item.algorithm)}</div>
+                            <span style="background: var(--bg-sunken); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-secondary); border: 1px solid var(--border-subtle); display: inline-block; margin-top: 0.2rem;">
                                 ${escapeHtml(item.primitive)}
                             </span>
                         </td>
-                        <td style="padding: 0.85rem 0.85rem; ${algoColor}">
-                            ${escapeHtml(item.algorithm)}
-                        </td>
-                        <td style="padding: 0.85rem 0.85rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);">
+
+                        <!-- 5. Key Length -->
+                        <td style="padding: 0.85rem 0.75rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);">
                             ${escapeHtml(item.keyLength)}
                         </td>
-                        <td style="padding: 0.85rem 0.85rem;">
+
+                        <!-- 6. CAMS Level -->
+                        <td style="padding: 0.85rem 0.75rem;">
                             <span style="font-size: 0.72rem; font-family: var(--font-mono); padding: 0.15rem 0.45rem; border-radius: 4px; background: rgba(2, 132, 199, 0.08); color: var(--accent-cyan); border: 1px solid rgba(2, 132, 199, 0.2);">
                                 ${escapeHtml(item.camsLevel)} (${escapeHtml(item.camsName)})
                             </span>
                         </td>
-                        <td style="padding: 0.85rem 0.85rem;">
+
+                        <!-- 7. Risk Score -->
+                        <td style="padding: 0.85rem 0.75rem;">
                             <span class="card-badge ${riskBadgeClass}">${escapeHtml(item.riskLevel)}</span>
                         </td>
-                        <td style="padding: 0.85rem 0.85rem; font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap;">
+
+                        <!-- 8. Mosca X • Ymax -->
+                        <td style="padding: 0.85rem 0.75rem; font-family: var(--font-mono); font-size: 0.72rem; white-space: nowrap;">
                             <span style="color: var(--accent-cyan); font-weight: 700;" title="Effective Secrecy Lifespan (X_eff)">X:${escapeHtml(item.xYears)}y</span> &bull; 
                             <span style="color: #f59e0b; font-weight: 700;" title="Migration Budget Horizon (Y_max)">Y:${escapeHtml(item.yMax)}y</span>
                         </td>
+
+                        <!-- 9. Recommended PQC Replacement -->
                         <td style="padding: 0.85rem 1rem;">
                             <div style="color: var(--pqc-emerald); font-weight: 600; font-size: 0.76rem; display: flex; align-items: center; gap: 0.35rem;">
                                 <span style="display: inline-flex;">${window.getIcon ? window.getIcon('shieldCheck', 13) : ''}</span> ${escapeHtml(item.recommendedPqc)}
@@ -392,6 +490,8 @@
                                 Hybrid: ${escapeHtml(item.recommendedHybrid)}
                             </div>
                         </td>
+
+                        <!-- 10. Action Button -->
                         <td style="padding: 0.85rem 0.85rem; text-align: right;">
                             <button class="btn btn-secondary cbom-inspect-btn" data-id="${escapeHtml(item.id)}" style="padding: 0.25rem 0.6rem; font-size: 0.72rem;">
                                 Inspect →
@@ -400,6 +500,7 @@
                     </tr>
                 `;
             }).join('');
+
 
             // Attach row click handlers
             container.querySelectorAll('.cbom-row').forEach(row => {
@@ -492,6 +593,8 @@
                 <div style="background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem;">
                     <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">CycloneDX Discussion 966 Cryptographic Provenance</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; font-family: var(--font-mono);">
+                        <div><span style="color: var(--text-secondary);">Execution Scope:</span> <span style="font-weight: 700; color: ${asset.scope === 'PRODUCTION' ? '#10b981' : '#64748b'};">${escapeHtml(asset.scope === 'PRODUCTION' ? 'PRODUCTION (Required)' : 'TEST FIXTURE (Optional)')}</span></div>
+                        <div><span style="color: var(--text-secondary);">MITRE CWE:</span> ${asset.cweId ? `<a href="https://cwe.mitre.org/data/definitions/${escapeHtml(asset.cweId.replace('CWE-', ''))}.html" target="_blank" rel="noopener noreferrer" style="color: #d97706; font-weight: 700; text-decoration: none;">${escapeHtml(asset.cweId)}: ${escapeHtml(asset.cweName || 'Weakness')} ↗</a>` : '<span style="color: var(--text-muted);">None</span>'}</div>
                         <div><span style="color: var(--text-secondary);">Source Location:</span> <span style="color: var(--text-primary); font-weight: 600;">${escapeHtml(asset.callLocation)}</span></div>
                         <div><span style="color: var(--text-secondary);">Evidence Level:</span> <span style="color: var(--accent-cyan); font-weight: 700;">${escapeHtml(asset.evidenceLevel)}</span></div>
                         <div><span style="color: var(--text-secondary);">Intent Class:</span> <span style="color: var(--text-primary); font-weight: 600;">${escapeHtml(asset.intentClass)}</span></div>
@@ -869,6 +972,30 @@
                     filterPills.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     activeFilter = btn.getAttribute('data-filter') || 'ALL';
+                    renderRows();
+                });
+            });
+        }
+
+        const scopePills = document.getElementById('cbom-scope-pills');
+        if (scopePills) {
+            scopePills.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    scopePills.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeScope = btn.getAttribute('data-scope') || 'ALL';
+                    renderRows();
+                });
+            });
+        }
+
+        const cwePills = document.getElementById('cbom-cwe-pills');
+        if (cwePills) {
+            cwePills.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cwePills.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeCwe = btn.getAttribute('data-cwe') || 'ALL';
                     renderRows();
                 });
             });
