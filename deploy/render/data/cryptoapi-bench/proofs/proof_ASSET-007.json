@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-007",
+  "component_name": "BrokenCryptoABICase12:blowfish_128",
+  "path_hash": "057ab5304d4a4cb3",
+  "algorithm": "Blowfish-128",
+  "key_size": 128,
+  "primitive_type": "KEY_EXCHANGE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 6,
+  "leaf_hash": "019b56c418a7b8a330f50a3e8b223f82a1824eece30b3b434901b462ab438971",
+  "sibling_path": [
+    {
+      "hash": "eedd21e78e066710ceddd1d399606c29b37d88515a1e555f0ff5ae1760aaa053",
+      "position": "right"
+    },
+    {
+      "hash": "8356f1da61d182bc06b44a01032ca408d9ea08ab740e857ebe08dbff15283c42",
+      "position": "left"
+    },
+    {
+      "hash": "a1c4bd29dfc56081e8899efd86c5e7a64986e66f63546183086f362f1adabe58",
+      "position": "left"
+    },
+    {
+      "hash": "fed87676cb949945bbb543b176be5c70cdb6dae78656a5c4963f45364c09a015",
+      "position": "right"
+    },
+    {
+      "hash": "b34bd1409b97f6d13a6c9c7feafcd7f57b8770e7aaa2338488dbd56a71816ced",
+      "position": "right"
+    },
+    {
+      "hash": "46122b6a482ad76e81d2335f0349ce2ccdab2c160b20dd1c1b2f87a59a8da196",
+      "position": "right"
+    },
+    {
+      "hash": "016322d1931530013037a2ce187d4bacc0161eb3637d9ab86c69619a0f1f8719",
+      "position": "right"
+    },
+    {
+      "hash": "845cc356397c8e2f19d6ebd49245832f43716d3dc87dc2e9b5ecb2b9c2d13227",
+      "position": "right"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

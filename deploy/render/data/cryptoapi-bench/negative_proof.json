@@ -1,0 +1,35 @@
+{
+  "certificate_id": "ecdat-np-7abaa8220f626ca2",
+  "timestamp": "2026-09-28T09:23:28.869763+00:00",
+  "merkle_root_hex": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "target_project": "CryptoAPI-Bench",
+  "audited_perimeter": {
+    "target_path": "/home/mohmedh/personal/ECDAT/testbeds/benchmarks/CryptoAPI-Bench",
+    "total_source_files": 289,
+    "total_cryptographic_assets": 289,
+    "merkle_root_commitment": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5"
+  },
+  "quarantined_unknowns_count": 5,
+  "assertions": [
+    {
+      "claim_id": "NP-CLAIM-001",
+      "description": "Zero forbidden legacy ciphers (DES, 3DES, RC4, MD4, MD5) detected within audited perimeter",
+      "status": "FAILED",
+      "details": "Found forbidden: ['MD4', 'RC4', 'DES', 'MD5']"
+    },
+    {
+      "claim_id": "NP-CLAIM-002",
+      "description": "All discovered asymmetric primitives are mapped to NIST FIPS 203/204/205 post-quantum migration targets",
+      "status": "PASSED",
+      "details": "289 primitives mapped to standard migration roadmaps"
+    },
+    {
+      "claim_id": "NP-CLAIM-003",
+      "description": "All non-auditable files, binary blobs, and external third-party dependencies are quarantined in Unknowns Ledger",
+      "status": "PASSED",
+      "quarantined_items_count": 5,
+      "details": "5 perimeter boundaries formally acknowledged and logged"
+    }
+  ],
+  "is_certified_clean": false
+}

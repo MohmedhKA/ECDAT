@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-158",
+  "component_name": "InsecureAsymmetricCipherABICase2:rsa_1024",
+  "path_hash": "1bcec43a3e1bd625",
+  "algorithm": "RSA-1024",
+  "key_size": 1024,
+  "primitive_type": "SIGNATURE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 157,
+  "leaf_hash": "1da5a8d23ef9804cefd8f16657d8abce001304831d7d0287d897632ceba8d355",
+  "sibling_path": [
+    {
+      "hash": "6e05ec7fc926eb5bb7c15493c1fc017f2cdf16c50826e4f190c29a9a54feb10d",
+      "position": "left"
+    },
+    {
+      "hash": "7a3e4c45115742cd7f1810dec64586760235fd830885130c9205b13730fa6ab9",
+      "position": "right"
+    },
+    {
+      "hash": "1f63c5a50b0a112330c07eb97fb74671e51c3622802a70272573c6e3b08f6b24",
+      "position": "left"
+    },
+    {
+      "hash": "24ed92954fcf1552663beeb52fb8d3b6a7faf63517a9b387bac094150f236718",
+      "position": "left"
+    },
+    {
+      "hash": "66ad5748f1a2a0484ed1ea20542759619c45369fb4615c69877158e40ad5a548",
+      "position": "left"
+    },
+    {
+      "hash": "12205076b8055e74def419b4023310620d08834962c2a8d879d13c98e0e24239",
+      "position": "right"
+    },
+    {
+      "hash": "f968f43fa72782390cb78f8fd217912f7e4d148ff440750ba26b484c6e1e218b",
+      "position": "right"
+    },
+    {
+      "hash": "c14ea649b7a61e59921c6eac566b75718f13b6656c125731736c2dd6b7796cbc",
+      "position": "left"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

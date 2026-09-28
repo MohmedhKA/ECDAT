@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-103",
+  "component_name": "BrokenMacBBCase1:hmac_md5",
+  "path_hash": "6caea9b2a2b52d16",
+  "algorithm": "HMAC-MD5",
+  "key_size": 128,
+  "primitive_type": "HASH",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 102,
+  "leaf_hash": "bf50710c759e6a45adce5c470ef575888bbb345550a8cde50be51daecaed1294",
+  "sibling_path": [
+    {
+      "hash": "fd98659671c86771da131fd56337dbaaed809883e969f90c8c6dccf6e58ab8dd",
+      "position": "right"
+    },
+    {
+      "hash": "bce9d6cd500a0b63eaac2840c20fe38eb6804f358df87de63332ec21aa282226",
+      "position": "left"
+    },
+    {
+      "hash": "31fa844138faab3d249ade7d49025e6e59a26da9e7cef2003b1ea6e6c76818dd",
+      "position": "left"
+    },
+    {
+      "hash": "d91ef26162b47089f8bad3ec049665343b5072d85ed418a0fe001d90b1519667",
+      "position": "right"
+    },
+    {
+      "hash": "4f421beecb37cef5aa5a47da2af09c710eb21cd54bfe5a0365f2f28e817418d6",
+      "position": "right"
+    },
+    {
+      "hash": "68d0691696307eeccd25bdbdce6cebd66ccbd76885a9964d2b8cc839a42f4283",
+      "position": "left"
+    },
+    {
+      "hash": "6ca31825adeb6d8c8065ef74dd85fd6f0806ce6150a0b0a8847238b5f4377605",
+      "position": "left"
+    },
+    {
+      "hash": "845cc356397c8e2f19d6ebd49245832f43716d3dc87dc2e9b5ecb2b9c2d13227",
+      "position": "right"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

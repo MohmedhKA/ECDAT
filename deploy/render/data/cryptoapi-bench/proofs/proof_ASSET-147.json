@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-147",
+  "component_name": "HttpProtocolABICase1:cleartext_http",
+  "path_hash": "243c34677e4c0dbe",
+  "algorithm": "CLEARTEXT-HTTP",
+  "key_size": null,
+  "primitive_type": "KEY_EXCHANGE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 146,
+  "leaf_hash": "2abfc0efb4710299547aa301c755daa6bbbb47ef6f57e06450fa5bad5d06d6fe",
+  "sibling_path": [
+    {
+      "hash": "2ba437c14181eb7f386b702a6af5c220630738edc95030e5f16331cf6d2f03e6",
+      "position": "right"
+    },
+    {
+      "hash": "40e03c4a7f7d92410b91793228b92906f65080135c4f0ba29ec06faa183f9af1",
+      "position": "left"
+    },
+    {
+      "hash": "3cefb742fd32fa0562956bb8f901a55548c78642eae2661844d443c615b99f16",
+      "position": "right"
+    },
+    {
+      "hash": "651572284ccb7b5b9454d32a8be5466657ecff02e8cbd9df36febaf5daa14a10",
+      "position": "right"
+    },
+    {
+      "hash": "66ad5748f1a2a0484ed1ea20542759619c45369fb4615c69877158e40ad5a548",
+      "position": "left"
+    },
+    {
+      "hash": "12205076b8055e74def419b4023310620d08834962c2a8d879d13c98e0e24239",
+      "position": "right"
+    },
+    {
+      "hash": "f968f43fa72782390cb78f8fd217912f7e4d148ff440750ba26b484c6e1e218b",
+      "position": "right"
+    },
+    {
+      "hash": "c14ea649b7a61e59921c6eac566b75718f13b6656c125731736c2dd6b7796cbc",
+      "position": "left"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

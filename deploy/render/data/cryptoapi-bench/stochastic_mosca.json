@@ -1,0 +1,2900 @@
+{
+  "iterations": 5000,
+  "total_simulated_assets": 289,
+  "mean_breach_probability": 0.558,
+  "max_breach_probability": 0.615,
+  "critical_probabilistic_assets": 183,
+  "high_probabilistic_assets": 0,
+  "results": [
+    {
+      "asset_id": "ASSET-001",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-002",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-003",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-004",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-005",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-006",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-007",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-008",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-009",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-010",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-011",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-012",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-013",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-014",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-015",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-016",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-017",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-018",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-019",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-020",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-021",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-022",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-023",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-024",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-025",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-026",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-027",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-028",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-029",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-030",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-031",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-032",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-033",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-034",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-035",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-036",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-037",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-038",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-039",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-040",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-041",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-042",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-043",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-044",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-045",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-046",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-047",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-048",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-049",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-050",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-051",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-052",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-053",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-054",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-055",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-056",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-057",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-058",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-059",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-060",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-061",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-062",
+      "algorithm": "DES-56",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-063",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-064",
+      "algorithm": "Blowfish-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-065",
+      "algorithm": "RC4",
+      "iterations": 5000,
+      "breach_probability": 0.274,
+      "p50_safety_margin_years": 1.71,
+      "p95_safety_margin_years": -2.52,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-066",
+      "algorithm": "RC4-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-067",
+      "algorithm": "RC2",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-068",
+      "algorithm": "RC2-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-069",
+      "algorithm": "IDEA",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-070",
+      "algorithm": "IDEA-128",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-071",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-072",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-073",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-074",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-075",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-076",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-077",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-078",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-079",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-080",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-081",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-082",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-083",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-084",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-085",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-086",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-087",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-088",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-089",
+      "algorithm": "SHA-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-090",
+      "algorithm": "SHA-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-091",
+      "algorithm": "SHA-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-092",
+      "algorithm": "SHA-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-093",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-094",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-095",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-096",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-097",
+      "algorithm": "SHA-1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-098",
+      "algorithm": "MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-099",
+      "algorithm": "MD4",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-100",
+      "algorithm": "MD2",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-101",
+      "algorithm": "SHA-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-102",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-103",
+      "algorithm": "HMAC-MD5",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-104",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-105",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-106",
+      "algorithm": "HMAC-SHA1",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-107",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-108",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-109",
+      "algorithm": "HMAC-SHA256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-110",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-111",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-112",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-113",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-114",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-115",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-116",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-117",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-118",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-119",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-120",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-121",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-122",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-123",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-124",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-125",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-126",
+      "algorithm": "DUMMY-CERT-VALIDATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-127",
+      "algorithm": "DUMMY-CERT-VALIDATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-128",
+      "algorithm": "DUMMY-CERT-VALIDATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-129",
+      "algorithm": "DUMMY-HOSTNAME-VERIFIER",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-130",
+      "algorithm": "TLS-HOSTNAME-VERIFIER",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-131",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-132",
+      "algorithm": "AES-ECB",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-133",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-134",
+      "algorithm": "AES-ECB",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-135",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-136",
+      "algorithm": "AES-ECB",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-137",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-138",
+      "algorithm": "AES-ECB",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-139",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-140",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-141",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-142",
+      "algorithm": "DYNAMIC_UNRESOLVED",
+      "iterations": 5000,
+      "breach_probability": 0.367,
+      "p50_safety_margin_years": 1.16,
+      "p95_safety_margin_years": -2.61,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-143",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-144",
+      "algorithm": "AES-ECB",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-145",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-146",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-147",
+      "algorithm": "CLEARTEXT-HTTP",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-148",
+      "algorithm": "CLEARTEXT-HTTP",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-149",
+      "algorithm": "CLEARTEXT-HTTP",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-150",
+      "algorithm": "CLEARTEXT-HTTP",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-151",
+      "algorithm": "CLEARTEXT-HTTP",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-152",
+      "algorithm": "IMPROPER-SSL-SOCKET-FACTORY",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-153",
+      "algorithm": "RSA-1024",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-154",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-155",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-156",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-157",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-158",
+      "algorithm": "RSA-1024",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-159",
+      "algorithm": "RSA-1024",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-160",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-161",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-162",
+      "algorithm": "RSA-1024",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-163",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-164",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-165",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.446,
+      "p50_safety_margin_years": 0.47,
+      "p95_safety_margin_years": -3.29,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-166",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-167",
+      "algorithm": "RSA-1024",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-168",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-169",
+      "algorithm": "RSA-2048",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-170",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-171",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-172",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-173",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-174",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-175",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-176",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-177",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-178",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-179",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-180",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-181",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-182",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-183",
+      "algorithm": "PBE-WEAK-ITERATION",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-184",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-185",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-186",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-187",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-188",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-189",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-190",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-191",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-192",
+      "algorithm": "PREDICTABLE-KEY",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-193",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-194",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-195",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-196",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-197",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-198",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-199",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-200",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-201",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-202",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-203",
+      "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-204",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-205",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-206",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-207",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-208",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-209",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-210",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-211",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-212",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-213",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-214",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-215",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-216",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-217",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-218",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-219",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-220",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-221",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-222",
+      "algorithm": "HARDCODED-PASSWORD",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-223",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-224",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-225",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-226",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-227",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-228",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-229",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-230",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-231",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-232",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-233",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-234",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-235",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-236",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-237",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-238",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-239",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-240",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-241",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-242",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-243",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-244",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-245",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-246",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-247",
+      "algorithm": "PREDICTABLE-SEED",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-248",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-249",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-250",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-251",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-252",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-253",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-254",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-255",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-256",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-257",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-258",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-259",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-260",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-261",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-262",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-263",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-264",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-265",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-266",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-267",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-268",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-269",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-270",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-271",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-272",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-273",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-274",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-275",
+      "algorithm": "STATIC-IV",
+      "iterations": 5000,
+      "breach_probability": 0.519,
+      "p50_safety_margin_years": -0.2,
+      "p95_safety_margin_years": -4.42,
+      "var_95_breach_year": 2033,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-276",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-277",
+      "algorithm": "AES-256",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-278",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-279",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-280",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-281",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-282",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-283",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-284",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-285",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-286",
+      "algorithm": "STATIC-SALT",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-287",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    },
+    {
+      "asset_id": "ASSET-288",
+      "algorithm": "UNTRUSTED-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.615,
+      "p50_safety_margin_years": -1.26,
+      "p95_safety_margin_years": -5.49,
+      "var_95_breach_year": 2034,
+      "risk_category": "CRITICAL"
+    },
+    {
+      "asset_id": "ASSET-289",
+      "algorithm": "SECURE-PRNG",
+      "iterations": 5000,
+      "breach_probability": 0.0,
+      "p50_safety_margin_years": 25.0,
+      "p95_safety_margin_years": 20.0,
+      "var_95_breach_year": 2050,
+      "risk_category": "LOW"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-026",
+  "component_name": "BrokenCryptoABICase7:rc4_128",
+  "path_hash": "f16d24fb71235905",
+  "algorithm": "RC4-128",
+  "key_size": 128,
+  "primitive_type": "ENCRYPTION",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 25,
+  "leaf_hash": "fe9c90214a8b36cc0697e4d718fc926e5085c9c86f5baf1d170a3c4f6d61d54d",
+  "sibling_path": [
+    {
+      "hash": "57b8fef50e884c5ae02e18491c9457ee2af6d0a0c349b837813724539e807fc9",
+      "position": "left"
+    },
+    {
+      "hash": "d91bc61c7bd4fc0b778b25cf723915f10a2d6daa27693aaea06ed9b8a3f3be68",
+      "position": "right"
+    },
+    {
+      "hash": "afd3c713235286c6f1430bbe4cb34980fe77b56e8977e547cdac4857582d6d05",
+      "position": "right"
+    },
+    {
+      "hash": "3d322dfba538ae24e5a7ad4aad385a9906e9123627eee17e6e21c8e06529feb2",
+      "position": "left"
+    },
+    {
+      "hash": "687abeb672e4d7de7b06d556cbcf80811fd12497b46860fb633aa5a1ab118b15",
+      "position": "left"
+    },
+    {
+      "hash": "46122b6a482ad76e81d2335f0349ce2ccdab2c160b20dd1c1b2f87a59a8da196",
+      "position": "right"
+    },
+    {
+      "hash": "016322d1931530013037a2ce187d4bacc0161eb3637d9ab86c69619a0f1f8719",
+      "position": "right"
+    },
+    {
+      "hash": "845cc356397c8e2f19d6ebd49245832f43716d3dc87dc2e9b5ecb2b9c2d13227",
+      "position": "right"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

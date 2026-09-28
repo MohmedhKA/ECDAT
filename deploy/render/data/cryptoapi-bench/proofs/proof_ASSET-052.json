@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-052",
+  "component_name": "BrokenCryptoABSCase1:des_56",
+  "path_hash": "7c8edb406711073d",
+  "algorithm": "DES-56",
+  "key_size": 56,
+  "primitive_type": "ENCRYPTION",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 51,
+  "leaf_hash": "e449aec8831b7e2420b1d92f6103051b1abc65770f7beb9f40335460bf9ada85",
+  "sibling_path": [
+    {
+      "hash": "a4323a960aa6968d61372d7f28b9d33b6fbb410207a2e42e341fbb70be8d049c",
+      "position": "left"
+    },
+    {
+      "hash": "b099fddc158e1d635a0b69553ee3c426c6f25c16de4343234a551bf5f6a74ff4",
+      "position": "left"
+    },
+    {
+      "hash": "de02720c42464190d2837bc4a1a76ef44294bd45905094decd5d475a310096d0",
+      "position": "right"
+    },
+    {
+      "hash": "1c6e279a16b6ad1f0f629925480387c82ccdc2c630140442d1db55c5656e1c9d",
+      "position": "right"
+    },
+    {
+      "hash": "65bb0e5aa305eff60069a295da65f80d20719f895c6979a490d72742960b6a72",
+      "position": "left"
+    },
+    {
+      "hash": "cc587ca279694d2293ad51cb1c7e9a1199ac0f6949652aa4bec9feb2a716d7b1",
+      "position": "left"
+    },
+    {
+      "hash": "016322d1931530013037a2ce187d4bacc0161eb3637d9ab86c69619a0f1f8719",
+      "position": "right"
+    },
+    {
+      "hash": "845cc356397c8e2f19d6ebd49245832f43716d3dc87dc2e9b5ecb2b9c2d13227",
+      "position": "right"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

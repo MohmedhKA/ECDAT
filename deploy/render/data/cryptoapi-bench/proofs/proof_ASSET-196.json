@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-196",
+  "component_name": "PredictableKeyStorePasswordABHCase2:keystore_password",
+  "path_hash": "9375c9e14b034d91",
+  "algorithm": "PREDICTABLE-KEYSTORE-PASSWORD",
+  "key_size": null,
+  "primitive_type": "KEY_EXCHANGE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 195,
+  "leaf_hash": "2ada1801eb1279d8999a3d12ac5e9c8cb9a52d85e58c447ae97eebe5d548f3f5",
+  "sibling_path": [
+    {
+      "hash": "16daf8a08a9cb42193ba0980e10346ce0ae4a3e714aea7509d69da42356ed732",
+      "position": "left"
+    },
+    {
+      "hash": "9cb3fe6cf7dceabe9cf54f481b66d5728b2346c37217f76ebfe31d4c3d9a71ee",
+      "position": "left"
+    },
+    {
+      "hash": "9003dc34df0324a80a78638818920a5cedeb3b0075e53983b2bff58cdc56aebb",
+      "position": "right"
+    },
+    {
+      "hash": "08a1d4c6960b479c41747635c85b1c23cefecdfc14a0f67aaa3826070fa04a4c",
+      "position": "right"
+    },
+    {
+      "hash": "7af5262c5d2196507bf628e9894980c45b0b3e6328b0faddb5014d229b24a87d",
+      "position": "right"
+    },
+    {
+      "hash": "c9cd584253020e755e9602e56e5e6090a5338369cc96dc9f3c7560c13c1304ba",
+      "position": "right"
+    },
+    {
+      "hash": "6ebfce105e0ba1a79dff99365bfd17b44972730fe9db88df4bc82f30323c71c5",
+      "position": "left"
+    },
+    {
+      "hash": "c14ea649b7a61e59921c6eac566b75718f13b6656c125731736c2dd6b7796cbc",
+      "position": "left"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

@@ -79,6 +79,12 @@ testbeds/*_scan_output/
 !testbeds/sample_crypto_app/ecdat_output/*.hex
 proofs/
 test_probe.txt
+!deploy/render/
+!deploy/render/**
+!deploy/render/**/*.hex
+!deploy/render/**/proofs/
+!deploy/render/**/proofs/**
+
 
 # ------------------------------------------------------------------------------
 # Binaries & Compiled Executables

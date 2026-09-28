@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-108",
+  "component_name": "BrokenMacCorrected:aes_256",
+  "path_hash": "b7f679cc29f2818c",
+  "algorithm": "AES-256",
+  "key_size": 256,
+  "primitive_type": "KEY_EXCHANGE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "LOW",
+  "y_max_years": 19.0,
+  "z_regulatory_year": 2050,
+  "leaf_index": 107,
+  "leaf_hash": "1b6af7bcedeb5089d98c73d27f9a8b9de731ac5e999636554d61bc9bdbfaa3a2",
+  "sibling_path": [
+    {
+      "hash": "1428b6d6b7be569b60b9f5d4ed5c62bc64e71cbb54e74bab41215071afe877da",
+      "position": "left"
+    },
+    {
+      "hash": "b04d1a9979756c59c96d2abd98fd09367a9de6a857c3e0139f68556859cb1e3a",
+      "position": "left"
+    },
+    {
+      "hash": "63718bb09be99ccdb3216ba794ef1b2fdb4971cecad33e00c3b1d0fc1f4905f9",
+      "position": "right"
+    },
+    {
+      "hash": "fdbafb4757670f59be5a89e8e916eadd1b966046ccc1793e0e7b12403734b63d",
+      "position": "left"
+    },
+    {
+      "hash": "4f421beecb37cef5aa5a47da2af09c710eb21cd54bfe5a0365f2f28e817418d6",
+      "position": "right"
+    },
+    {
+      "hash": "68d0691696307eeccd25bdbdce6cebd66ccbd76885a9964d2b8cc839a42f4283",
+      "position": "left"
+    },
+    {
+      "hash": "6ca31825adeb6d8c8065ef74dd85fd6f0806ce6150a0b0a8847238b5f4377605",
+      "position": "left"
+    },
+    {
+      "hash": "845cc356397c8e2f19d6ebd49245832f43716d3dc87dc2e9b5ecb2b9c2d13227",
+      "position": "right"
+    },
+    {
+      "hash": "58863fda6ee069cf942cfb4ffbcf505838ebc363f77ec7133f91b7b9ae2f21a4",
+      "position": "right"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}

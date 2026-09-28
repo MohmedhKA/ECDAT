@@ -1,0 +1,54 @@
+{
+  "asset_id": "ASSET-286",
+  "component_name": "StaticSaltsBBCase1:static_salt",
+  "path_hash": "719ec66dce590c02",
+  "algorithm": "STATIC-SALT",
+  "key_size": null,
+  "primitive_type": "KEY_EXCHANGE",
+  "x_tier": "OPERATIONAL",
+  "risk_level": "CRITICAL",
+  "y_max_years": -5.0,
+  "z_regulatory_year": 2026,
+  "leaf_index": 285,
+  "leaf_hash": "7362af7af0b922ceb0f3babd8d83de8c6ee7911e548c6a16d4f8b3a11a59222f",
+  "sibling_path": [
+    {
+      "hash": "8f756ebe9e66cde59b8171ccae33e6da2171d33148792160fee8a63e6db64982",
+      "position": "left"
+    },
+    {
+      "hash": "c581d7db5f7a9bcfa17c7e1db147fd52bbaf8c449d72f1aa24e509f2dff77f65",
+      "position": "right"
+    },
+    {
+      "hash": "fde665c9fabd7f92a2fc33c1a80da3cab447ff3207e06fd2d33ef44d5689995f",
+      "position": "left"
+    },
+    {
+      "hash": "af098b0186a53f7b5186aa2079da2f1f9914665417fc8f21c31f6a411fda3fb8",
+      "position": "left"
+    },
+    {
+      "hash": "ae10cca00bf491368b0c0054f5d583c4c7a0368f8909477364f737286e0f3905",
+      "position": "left"
+    },
+    {
+      "hash": "f15ff96a8c65b09cd0d7eefedf6bd37712e0e5ef8eabf758e7a18c758896df28",
+      "position": "right"
+    },
+    {
+      "hash": "1b1a82889d211bb2a75eb89530dee09bad27702fc2f870f577cfad1bfc2cb5bf",
+      "position": "right"
+    },
+    {
+      "hash": "898f901f585049b563d1990654c7f4171f758a0f275d8ccf77dba13afe6e6140",
+      "position": "right"
+    },
+    {
+      "hash": "25fd3f5b8a5733a5bb4df85c15f6f395010b09d17f4b0b76210baa61a16828b9",
+      "position": "left"
+    }
+  ],
+  "expected_root": "2df9c2d84eb0a75eb4313f5ec9130b27fb86fb4765d8336543c00b78bf8f01a5",
+  "salt": "ECDAT_SALT_2026"
+}
