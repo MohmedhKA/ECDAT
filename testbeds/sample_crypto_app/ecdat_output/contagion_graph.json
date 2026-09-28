@@ -25,9 +25,9 @@
       "size": 36,
       "group": "superspreader",
       "dependents": [
-        "payment_service",
+        "auth_service",
         "api_gateway",
-        "auth_service"
+        "payment_service"
       ]
     },
     {
